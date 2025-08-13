@@ -1,3 +1,15 @@
+main:
+  push:
+    - stages:
+        - name: sync to github
+          imports: https://cnb.cool/pylover/key/-/blob/main/github.yml
+          image: tencentcom/git-sync
+          settings:
+            target_url: https://github.com/pylover7/PyTool.git
+            auth_type: https
+            username: ${GIT_USERNAME}
+            password: ${GIT_ACCESS_TOKEN}
+
 $:
   vscode:
     - docker:
@@ -28,14 +40,15 @@ $:
         - name: docker push
           script: docker push ${IMAGE_TAG}
 
-main:
   push:
     - stages:
-        - name: sync to github
-          imports: https://cnb.cool/pylover/key/-/blob/main/github.yml
-          image: tencentcom/git-sync
-          settings:
-            target_url: https://github.com/pylover7/PyTool.git
-            auth_type: https
-            username: ${GIT_USERNAME}
-            password: ${GIT_ACCESS_TOKEN}
+      - name: TCA backend
+        image: tencentcom/tca-plugin:latest
+        settings:
+          mode: local
+          org_sid: DlV3t9YzRYP
+          team_name: pytool
+          scheme_id: 7844
+          scan_dir: backend/app
+        settingsFrom:
+          - https://cnb.cool/pylover/key/-/blob/main/tca.yml
