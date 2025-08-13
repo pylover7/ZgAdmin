@@ -10,6 +10,24 @@ main:
             username: ${GIT_USERNAME}
             password: ${GIT_ACCESS_TOKEN}
 
+"(main|dev/*)":
+  pull_request:
+    - stages:
+      - name: 代码评审
+        image: cnbcool/ai-review:latest
+        settings:
+          type: code-review
+      - name: TCA backend
+        image: tencentcom/tca-plugin:latest
+        settings:
+          mode: local
+          org_sid: DlV3t9YzRYP
+          team_name: pytool
+          scheme_id: 7844
+          scan_dir: backend/app
+        settingsFrom:
+          - https://cnb.cool/pylover/key/-/blob/main/tca.yml
+
 $:
   vscode:
     - docker:
@@ -39,16 +57,3 @@ $:
           script: docker images
         - name: docker push
           script: docker push ${IMAGE_TAG}
-
-  push:
-    - stages:
-      - name: TCA backend
-        image: tencentcom/tca-plugin:latest
-        settings:
-          mode: local
-          org_sid: DlV3t9YzRYP
-          team_name: pytool
-          scheme_id: 7844
-          scan_dir: backend/app
-        settingsFrom:
-          - https://cnb.cool/pylover/key/-/blob/main/tca.yml
