@@ -4,7 +4,7 @@ $:
         image: ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:env
         volumes:
             - ./backend/.venv:rw
-            - ./backend/app/static:rw
+            - ./backend/static:rw
             - ./frontend/node_modules:rw
       runner:
         cpus: 8
