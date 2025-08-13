@@ -80,8 +80,4 @@ $:
         - name: docker list
           script: docker images
         - name: docker push
-          script: docker push ${IMAGE_TAG}
-
-  push:
-    - stages:
-      
+          script: docker push ${IMAGE_TAG}  
