@@ -5,8 +5,6 @@ from app.settings import settings
 
 pay_path = Path(settings.CONFIG_PATH).joinpath("pay.ini")
 config_path = Path.joinpath(Path(__file__).parent.parent.parent, "config", "config.yml")
-static_path = Path.joinpath(Path(__file__).parent.parent, "static")
-Path(static_path).mkdir(parents=True, exist_ok=True)
 
 
 class Config:
