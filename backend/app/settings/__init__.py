@@ -139,7 +139,8 @@ class Settings(BaseSettings):
             },
             "access": {
                 "()": "uvicorn.logging.AccessFormatter",
-                "fmt": "%(asctime)s | %(levelprefix)s %(client_addr)s - %(status_code)s - %(request_line)s"
+                "fmt": "%(asctime)s | %(levelprefix)s %(client_addr)s - "
+                       "%(status_code)s - %(request_line)s"
             }
         },
         "handlers": {

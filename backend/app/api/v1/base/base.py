@@ -1,12 +1,12 @@
-import json
+# import json
 from datetime import timedelta, datetime
-from uuid import uuid4
+# from uuid import uuid4
 
-from fastapi import APIRouter, Request, WebSocket
-from fastapi.websockets import WebSocketState
+from fastapi import APIRouter, Request
+# from fastapi.websockets import WebSocketState
 from sqlmodel import select
 from jwt.exceptions import ExpiredSignatureError
-from wechatpayv3 import WeChatPayType
+# from wechatpayv3 import WeChatPayType
 
 from app.controllers.department import deptController
 from app.controllers.user import userController
@@ -20,7 +20,7 @@ from app.settings import settings
 from app.utils import menuTree, now
 from app.utils.jwtt import create_access_token, decode_access_token
 from app.utils.password import get_password_hash, verify_password
-from app.utils.pay import notify_url
+# from app.utils.pay import notify_url
 # from app.utils.pay.wechat import wxpay
 
 router = APIRouter()
@@ -29,7 +29,11 @@ router = APIRouter()
 @router.post("/accessToken", summary="获取token")
 async def login_access_token(
         session: SessionDep, request: Request, credentials: CredentialsSchema):
-    user: User = await userController.authenticate(session=session, credentials=credentials, request=request)
+    user: User = await userController.authenticate(
+        session=session,
+        credentials=credentials,
+        request=request
+    )
     await userController.update_last_login(session=session, id=user.id.__str__())
     roles = [item.code for item in user.roles]
     try:
