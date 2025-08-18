@@ -44,12 +44,6 @@ main:
           team_name: pytool
           scheme_id: 7845
           scan_dir: frontend/src
-          total_fatal: 0
-          total_error: 5
-          total_warning: 10
-          incr_fatal: 0
-          incr_error: 3
-          incr_warning: 5
         settingsFrom:
           - https://cnb.cool/pylover/key/-/blob/main/tca.yml
 
