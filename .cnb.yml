@@ -12,45 +12,46 @@ main:
 
 "(main|dev/*)":
   pull_request:
-    - stages:
+    - name: AI 代码审评
+      stages:
       - name: 代码评审
         image: cnbcool/ai-review:latest
         settings:
           type: code-review
-      - name: TCA
-        jobs:
-          backend:
-            image: tencentcom/tca-plugin:latest
-            settings:
-              mode: local
-              org_sid: DlV3t9YzRYP
-              team_name: pytool
-              scheme_id: 7844
-              scan_dir: backend/app
-              total_fatal: 0
-              total_error: 5
-              total_warning: 10
-              incr_fatal: 0
-              incr_error: 3
-              incr_warning: 5
-            settingsFrom:
-              - https://cnb.cool/pylover/key/-/blob/main/tca.yml
-          frontend:
-            image: tencentcom/tca-plugin:latest
-            settings:
-              mode: local
-              org_sid: DlV3t9YzRYP
-              team_name: pytool
-              scheme_id: 7845
-              scan_dir: frontend/src
-              total_fatal: 0
-              total_error: 5
-              total_warning: 10
-              incr_fatal: 0
-              incr_error: 3
-              incr_warning: 5
-            settingsFrom:
-              - https://cnb.cool/pylover/key/-/blob/main/tca.yml
+    - name: TCA 后端代码审查
+      stages:
+      - image: tencentcom/tca-plugin:latest
+        settings:
+          mode: local
+          org_sid: DlV3t9YzRYP
+          team_name: pytool
+          scheme_id: 7844
+          scan_dir: backend/app
+          total_fatal: 0
+          total_error: 5
+          total_warning: 10
+          incr_fatal: 0
+          incr_error: 3
+          incr_warning: 5
+        settingsFrom:
+          - https://cnb.cool/pylover/key/-/blob/main/tca.yml
+    - name: TCA 前端代码分析
+      stages:
+      - image: tencentcom/tca-plugin:latest
+        settings:
+          mode: local
+          org_sid: DlV3t9YzRYP
+          team_name: pytool
+          scheme_id: 7845
+          scan_dir: frontend/src
+          total_fatal: 0
+          total_error: 5
+          total_warning: 10
+          incr_fatal: 0
+          incr_error: 3
+          incr_warning: 5
+        settingsFrom:
+          - https://cnb.cool/pylover/key/-/blob/main/tca.yml
 
 $:
   vscode:
