@@ -5,8 +5,8 @@ from sqlmodel import col
 
 from app.controllers.role import roleController
 from app.core.dependency import SessionDep
-from app.models import RoleCreate, Success, RoleFilter, Role, SuccessExtra, RoleUpdate, UpdateRoleStatus, BaseModel, \
-    UpdateRoleAuth
+from app.models import RoleCreate, Success, RoleFilter, Role, SuccessExtra, \
+    RoleUpdate, UpdateRoleStatus, BaseModel, UpdateRoleAuth
 
 roleRouter = APIRouter()
 

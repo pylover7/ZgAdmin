@@ -1,7 +1,6 @@
 from typing import TYPE_CHECKING
 from uuid import UUID
 
-from pydantic import EmailStr
 from sqlmodel import Field, Relationship, SQLModel
 
 from .base import BaseModel, TimestampMixin

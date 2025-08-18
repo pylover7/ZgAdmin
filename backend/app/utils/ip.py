@@ -1,9 +1,9 @@
 import re
+import ipaddress
 from pydantic import BaseModel
 
 import httpx
 from fastapi import Request
-import ipaddress
 
 from app.settings.log import logger
 

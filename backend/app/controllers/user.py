@@ -67,7 +67,10 @@ class UserController(CRUDBase[User, UserCreate, UserUpdate]):
         return user
 
     async def authenticate(
-            self, session: Session, credentials: CredentialsSchema, request: Request) -> User | None:
+        self, session: Session,
+        credentials: CredentialsSchema,
+        request: Request
+    ) -> User | None:
         user: User = await self.get_user_by_name(session=session, username=credentials.username)
         sysBro = await getReqSysBro(request=request)
         ip_area = await getIpAddress(request.client.host)
