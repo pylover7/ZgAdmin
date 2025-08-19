@@ -34,7 +34,7 @@ def create_app() -> FastAPI:
     )
     register_exceptions(app)
     register_routers(app, prefix="/api")
-    static_path = Path.joinpath(Path(__file__).parent, "static")
+    static_path = Path.joinpath(Path(__file__).parent.parent, "static")
     app.mount("/static", StaticFiles(directory=static_path), name="static")
     return app
 
