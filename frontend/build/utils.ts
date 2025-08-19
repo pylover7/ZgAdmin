@@ -14,6 +14,12 @@ import {
 /** 启动`node`进程时所在工作目录的绝对路径 */
 const root: string = process.cwd();
 
+/** CNB 中后端 URL 环境变量 */
+const BACKEND_URL = process.env.CNB_VSCODE_PROXY_URI.replace(
+  /\{\{port\}\}/g,
+  "7001"
+);
+
 /**
  * @description 根据可选的路径片段生成一个新的绝对路径
  * @param dir 路径片段，默认`build`
@@ -107,4 +113,12 @@ const getPackageSize = options => {
   });
 };
 
-export { root, pathResolve, alias, __APP_INFO__, wrapperEnv, getPackageSize };
+export {
+  root,
+  pathResolve,
+  alias,
+  __APP_INFO__,
+  wrapperEnv,
+  getPackageSize,
+  BACKEND_URL
+};

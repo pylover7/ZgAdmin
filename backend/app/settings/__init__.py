@@ -39,9 +39,9 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 2
     REFRESH_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 2
-    FRONTEND_HOST: str = "http://localhost:5173"
+    FRONTEND_HOST: str = "http://localhost:7000"
     HOST: str = "0.0.0.0"
-    PORT: int = 7000
+    PORT: int = 7001
     RELOAD: bool = False
     DEBUG: bool = False
     ENVIRONMENT: Literal["local", "staging", "production"] = "local"
@@ -49,7 +49,7 @@ class Settings(BaseSettings):
 
     BACKEND_CORS_ORIGINS: Annotated[
         list[AnyUrl] | str, BeforeValidator(parse_cors)
-    ] = []
+    ] = ["*"]
 
     @computed_field  # type: ignore[prop-decorator]
     @property

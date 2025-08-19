@@ -1,4 +1,7 @@
 import { http } from "@/utils/http";
+import { apiV1 } from "./utils";
+
+const baseUrl = (url: string) => apiV1(`/base${url}`);
 
 export type UserResult = {
   success: boolean;
@@ -70,7 +73,7 @@ type ResultTable = {
 
 /** 登录 */
 export const getLogin = (data?: object) => {
-  return http.request<UserResult>("post", "/login", { data });
+  return http.request<UserResult>("post", baseUrl("/accessToken"), { data });
 };
 
 /** 刷新`token` */
