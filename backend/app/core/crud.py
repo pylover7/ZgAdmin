@@ -1,4 +1,5 @@
 from typing import Generic, NewType, Type, TypeVar
+from uuid import UUID
 
 from sqlmodel import Session, SQLModel, Column, select, col, func
 
@@ -40,7 +41,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         return db_obj
 
     async def get(self, session: Session, id: str) -> ModelType | None:
-        return session.get(self.model, id)
+        return session.get(self.model, UUID(id))
 
     async def get_latest(self, session: Session) -> ModelType | None:
         statement = select(self.model).order_by(col("id").desc())
