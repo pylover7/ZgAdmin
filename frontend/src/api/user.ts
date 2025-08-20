@@ -4,6 +4,8 @@ import { apiV1 } from "./utils";
 const baseUrl = (url: string) => apiV1(`/base${url}`);
 
 export type UserResult = {
+  code: number;
+  msg: string;
   success: boolean;
   data: {
     /** 头像 */

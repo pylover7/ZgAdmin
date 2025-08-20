@@ -54,10 +54,11 @@ class Success(JSONResponse):
         self,
         code: int = 200,
         msg: Optional[str] = "OK",
+        success: bool = True,
         data: Optional[Any] = None,
         **kwargs,
     ):
-        content = {"code": code, "msg": msg, "data": data}
+        content = {"code": code, "success": success, "msg": msg, "data": data}
         content.update(kwargs)
         super().__init__(content=content, status_code=code)
 

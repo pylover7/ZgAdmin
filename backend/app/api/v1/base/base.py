@@ -34,7 +34,7 @@ async def login_access_token(
         credentials=credentials,
         request=request
     )
-    await userController.update_last_login(session=session, id=str(user.id))
+    await userController.update_last_login(session=session, id=user.id)
     roles = [item.code for item in user.roles]
     try:
         depart = deptController.get_all_name(session, user)
@@ -55,7 +55,7 @@ async def login_access_token(
         roles=roles,
         accessToken=create_access_token(
             data=JWTPayload(
-                user_id=(user.id),
+                user_id=(str(user.id)),
                 username=user.username,
                 is_superuser=user.is_superuser,
                 exp=expire,
