@@ -1,6 +1,13 @@
 import { http } from "@/utils/http";
 
+import { apiV1 } from "./utils";
+
+const systemUrl = (url: string) => apiV1(`/system${url}`);
+const deptUrl = (url: string) => systemUrl(`/dept${url}`);
+
 type Result = {
+  code: number;
+  msg: string;
   success: boolean;
   data?: Array<any>;
 };
@@ -44,9 +51,14 @@ export const getMenuList = (data?: object) => {
   return http.request<Result>("post", "/menu", { data });
 };
 
+/** */
+export const addDept = (data?: object) => {
+  return http.request<Result>("post", deptUrl("/add"), { data });
+};
+
 /** 获取系统管理-部门管理列表 */
 export const getDeptList = (data?: object) => {
-  return http.request<Result>("post", "/dept", { data });
+  return http.request<Result>("get", deptUrl("/list"), { data });
 };
 
 /** 获取系统监控-在线用户列表 */
