@@ -70,8 +70,9 @@ RUN wget https://download.jetbrains.com/fonts/JetBrainsMono-2.304.zip -O /tmp/je
     rm /tmp/jetbrains-mono.zip && fc-cache -fv
 
 # 安装 WebStorm
-RUN wget https://download.jetbrains.com/webstorm/WebStorm-2025.2.tar.gz
-RUN tar -zxvf WebStorm-2025.2.tar.gz -C /ide_cnb
+RUN wget -O /tmp/webstorm.tar.gz https://download.jetbrains.com/webstorm/WebStorm-2025.2.tar.gz && \
+    mkdir -p /ide_cnb && \
+    tar -zxvf /tmp/webstorm.tar.gz -C /ide_cnb
 
 # 安装 btop
 RUN git clone https://github.com/aristocratos/btop.git /btop
