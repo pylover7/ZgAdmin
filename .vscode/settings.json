@@ -139,6 +139,7 @@
     "python.linting.enabled": true,
     "python.linting.lintOnSave": true,
     "python.languageServer": "Pylance",
+    "python.defaultInterpreterPath": "/workspace/backend/.venv/bin/python",
     "workbench.iconTheme": "vscode-icons",
     "codingcopilot.welcomeMessage": "never",
     "gitlens.showWelcomeOnInstall": false,
