@@ -14,6 +14,7 @@ def md5_encrypt(input_string) -> str:
     encrypted_string = md5_hash.hexdigest()
     return encrypted_string
 
+
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(md5_encrypt(plain_password), hashed_password)
 

@@ -13,6 +13,8 @@ type Result = {
 };
 
 type ResultTable = {
+  code: number;
+  msg: string;
   success: boolean;
   data?: {
     /** 列表数据 */
@@ -51,9 +53,19 @@ export const getMenuList = (data?: object) => {
   return http.request<Result>("post", "/menu", { data });
 };
 
-/** */
+/** 新增部门 */
 export const addDept = (data?: object) => {
   return http.request<Result>("post", deptUrl("/add"), { data });
+};
+
+/** 删除部门 */
+export const deleteDept = (data?: [string]) => {
+  return http.request<Result>("post", deptUrl("/delete"), { data });
+};
+
+/** 更新部门信息 */
+export const updateDept = (data?: object) => {
+  return http.request<Result>("post", deptUrl("/update"), { data });
 };
 
 /** 获取系统管理-部门管理列表 */
