@@ -138,6 +138,7 @@
     "python.analysis.autoImportCompletions": true,
     "python.linting.enabled": true,
     "python.linting.lintOnSave": true,
+    "python.languageServer": "Pylance",
     "workbench.iconTheme": "vscode-icons",
     "codingcopilot.welcomeMessage": "never",
     "gitlens.showWelcomeOnInstall": false,
