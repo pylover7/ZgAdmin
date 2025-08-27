@@ -45,7 +45,7 @@ class Department(DepartmentBase, TimestampMixin, table=True):
 
 
 class DepartCreate(DepartmentBase):
-    user: list = None
+    user: list = []
 
 
 class DepartUpdate(SQLModel):

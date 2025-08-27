@@ -10,8 +10,7 @@ departRouter = APIRouter()
 @departRouter.post("/add", summary="添加部门")
 async def add_depart(session: SessionDep, data: DepartCreate):
     result = await deptController.create(session, data)
-    data = await result.to_dict()
-    return Success(msg="部门添加成功！", data=data)
+    return Success(msg="部门添加成功！", data=await result.to_dict())
 
 
 @departRouter.post("/delete", summary="删除部门")
@@ -30,5 +29,4 @@ async def depart_list(session: SessionDep):
 @departRouter.post("/update", summary="修改部门信息")
 async def update_depart(session: SessionDep, data: DepartUpdate):
     result = await deptController.update(session, data.id, data)
-    data = await result.to_dict()
-    return Success(msg="部门更新成功！", data=data)
+    return Success(msg="部门更新成功！", data=await result.to_dict())
