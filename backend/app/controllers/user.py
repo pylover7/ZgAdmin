@@ -1,3 +1,5 @@
+from typing import Optional
+from uuid import UUID
 from sqlmodel import Session, select
 from fastapi.exceptions import HTTPException
 from fastapi import Request
@@ -54,7 +56,7 @@ class UserController(CRUDBase[User, UserCreate, UserUpdate]):
         session_user = session.exec(statement).first()
         return session_user
 
-    async def get_user_by_name(self, session: Session, username: str):
+    async def get_user_by_name(self, session: Session, username: str) -> Optional[User]:
         """
         通过用户名获取用户
 
@@ -83,7 +85,7 @@ class UserController(CRUDBase[User, UserCreate, UserUpdate]):
         except Exception:
             logger.loginFail(
                 user=user.username,
-                ip=request.client.host,
+                ip=request.client.host if request.client else "unknown",
                 ip_area=ip_area,
                 system=sysBro.system,
                 browser=sysBro.browser,
@@ -115,7 +117,7 @@ class UserController(CRUDBase[User, UserCreate, UserUpdate]):
         )
         return user
 
-    async def update_last_login(self, session: Session, id: str):
+    async def update_last_login(self, session: Session, id: UUID):
         user = session.get(User, id)
         user.last_login = now(0)
         session.add(user)
