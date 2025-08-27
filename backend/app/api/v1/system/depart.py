@@ -29,4 +29,5 @@ async def depart_list(session: SessionDep):
 @departRouter.post("/update", summary="修改部门信息")
 async def update_depart(session: SessionDep, data: DepartUpdate):
     result = await deptController.update(session, data.id, data)
-    return Success(msg="部门更新成功！", data=await result.to_dict())
+    data_dict = await result.to_dict() if result is not None else None
+    return Success(msg="部门更新成功！", data=data_dict)
