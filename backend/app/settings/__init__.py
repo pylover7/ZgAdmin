@@ -48,7 +48,7 @@ class Settings(BaseSettings):
     DATETIME_FORMAT: str = "%Y-%m-%d %H:%M:%S"
 
     BACKEND_CORS_ORIGINS: Annotated[
-        list[AnyUrl] | str, BeforeValidator(parse_cors)
+        list[AnyUrl] | list[str] | str, BeforeValidator(parse_cors)
     ] = ["*"]
 
     @computed_field  # type: ignore[prop-decorator]

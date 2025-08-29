@@ -35,7 +35,7 @@ async def login_access_token(
         credentials=credentials,
         request=request
     )
-    await userController.update_last_login(session=session, id=UUID(user.id))
+    await userController.update_last_login(session=session, id=user.id)
     roles = [item.code for item in user.roles]
     try:
         depart = deptController.get_all_name(session, user)

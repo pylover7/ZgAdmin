@@ -1,3 +1,4 @@
+import datetime
 from typing import Optional
 from uuid import UUID
 from sqlmodel import Session, select
@@ -17,28 +18,30 @@ class UserController(CRUDBase[User, UserCreate, UserUpdate]):
     def __init__(self):
         super().__init__(model=User)
 
-    async def create(self, session: Session, user_create: UserCreate) -> User:
+    async def create(self, session: Session, obj_in: UserCreate) -> User:
         """
         创建用户
 
         :param session: session
-        :param user_create: 用户创建数据
+        :param obj_in: 用户创建数据
         :return: 用户对象
         """
         db_obj = User.model_validate(
-            user_create, update={
+            obj_in, update={
                 "hashed_password": get_password_hash(
-                    user_create.password)}
+                    obj_in.password)}
         )
         session.add(db_obj)
         session.commit()
         session.refresh(db_obj)
         return db_obj
 
-    async def update(self, session: Session, user_id: str,
-                     user_in: UserUpdate) -> User | None:
-        db_user = session.get(User, user_id)
-        user_data = user_in.model_dump(exclude_unset=True)
+    async def update(self, session: Session, id: str,
+                     obj_in: UserUpdate) -> User | None:
+        db_user = session.get(User, id)
+        if db_user is None:
+            return None
+        user_data = obj_in.model_dump(exclude_unset=True)
         extra_data = {}
         if "password" in user_data:
             password = user_data["password"]
@@ -72,11 +75,11 @@ class UserController(CRUDBase[User, UserCreate, UserUpdate]):
         self, session: Session,
         credentials: CredentialsSchema,
         request: Request
-    ) -> User | None:
-        user: User = await self.get_user_by_name(session=session, username=credentials.username)
+    ) -> User:
+        user: User | None = await self.get_user_by_name(session=session, username=credentials.username)
         sysBro = await getReqSysBro(request=request)
-        ip_area = await getIpAddress(request.client.host)
-        if not user:
+        ip_area = await getIpAddress(request.client.host if request.client else "unknown")
+        if user is None:
             raise HTTPException(status_code=400, detail="无效的用户名")
         try:
             result = verify_password(credentials.password, user.password)
@@ -95,7 +98,7 @@ class UserController(CRUDBase[User, UserCreate, UserUpdate]):
         if user.is_superuser:  # 超级管理员不验证状态
             logger.loginSuccess(
                 user=user.username,
-                ip=request.client.host,
+                ip=request.client.host if request.client else "unknown",
                 ip_area=ip_area,
                 system=sysBro.system,
                 browser=sysBro.browser,
@@ -109,7 +112,7 @@ class UserController(CRUDBase[User, UserCreate, UserUpdate]):
                 raise HTTPException(status_code=400, detail="用户已被禁用")
         logger.loginSuccess(
             user=user.username,
-            ip=request.client.host,
+            ip=request.client.host if request.client else "unknown",
             ip_area=ip_area,
             system=sysBro.system,
             browser=sysBro.browser,
