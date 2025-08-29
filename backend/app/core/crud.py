@@ -34,7 +34,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
 
     async def update(self, session: Session, id: str,
                      obj_in: UpdateSchemaType) -> Optional[ModelType]:
-        db_obj: Optional[ModelType] = session.get(self.model, UUID(id))
+        db_obj: Optional[ModelType] = session.get(self.model, id)
         if db_obj is None:
             return None
         # Update fields manually

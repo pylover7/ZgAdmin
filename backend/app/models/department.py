@@ -49,7 +49,7 @@ class DepartCreate(DepartmentBase):
 
 
 class DepartUpdate(SQLModel):
-    id: str
+    id: UUID
     name: str
     parentId: UUID | None = None
     sort: int | None = None

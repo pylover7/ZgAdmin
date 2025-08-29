@@ -1,4 +1,5 @@
 interface FormItemProps {
+  id: string;
   higherDeptOptions: Record<string, unknown>[];
   parentId: number;
   name: string;

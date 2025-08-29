@@ -2,7 +2,7 @@ import dayjs from "dayjs";
 import editForm from "../form.vue";
 import { handleTree } from "@/utils/tree";
 import { message } from "@/utils/message";
-import { addDept, deleteDept, getDeptList } from "@/api/system";
+import { addDept, deleteDept, getDeptList, updateDept } from "@/api/system";
 import { usePublicHooks } from "../../hooks";
 import { addDialog } from "@/components/ReDialog";
 import { reactive, ref, onMounted, h } from "vue";
@@ -107,6 +107,7 @@ export function useDept() {
       title: `${title}部门`,
       props: {
         formInline: {
+          id: row?.id ?? null,
           higherDeptOptions: formatHigherDeptOptions(cloneDeep(dataList.value)),
           parentId: row?.parentId ?? null,
           name: row?.name ?? "",
@@ -145,8 +146,11 @@ export function useDept() {
                 }
               });
             } else {
-              // 实际开发先调用修改接口，再进行下面操作
-              chores();
+              updateDept(curData).then(res => {
+                if (res.success) {
+                  chores();
+                }
+              });
             }
           }
         });

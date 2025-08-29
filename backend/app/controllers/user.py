@@ -122,7 +122,7 @@ class UserController(CRUDBase[User, UserCreate, UserUpdate]):
 
     async def update_last_login(self, session: Session, id: UUID):
         user = session.get(User, id)
-        user.last_login = now(0)
+        user.last_login = now(0) # type: ignore
         session.add(user)
         session.commit()
         session.refresh(user)
