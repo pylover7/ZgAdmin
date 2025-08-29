@@ -140,6 +140,7 @@ export function useDept() {
             console.log("curData", curData);
             // 表单规则校验通过
             if (title === "新增") {
+              delete curData.id;
               addDept(curData).then(res => {
                 if (res.success) {
                   chores();
