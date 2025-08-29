@@ -32,7 +32,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         session.commit()
         return True
 
-    async def update(self, session: Session, id: str,
+    async def update(self, session: Session, id: UUID,
                      obj_in: UpdateSchemaType) -> Optional[ModelType]:
         db_obj: Optional[ModelType] = session.get(self.model, id)
         if db_obj is None:
