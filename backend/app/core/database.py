@@ -165,6 +165,23 @@ def init_menus(session: Session):
         session.add(operationLog)
         session.add(systemLog)
         session.commit()
+    
+async def init_dept(session: Session):
+    """
+    初始化部门
+    :return:
+    """
+    depts = session.exec(select(Department)).all()
+    if len(depts) == 0:
+        dept = Department(
+            name="管理员",
+            status=1,
+            remark="管理员所属部门",
+        )
+        session.add(dept)
+        session.commit()
+        session.refresh(dept)
+        return dept
 
 
 async def init_data(app: FastAPI) -> None:
@@ -176,6 +193,7 @@ async def init_data(app: FastAPI) -> None:
         settings.GOODS_PATH,
     ])
     with Session(engine) as session:
+        dept = await init_dept(session)
         admin = session.exec(
             select(User).where(User.email == settings.FIRST_SUPERUSER)
         ).first()
@@ -190,15 +208,20 @@ async def init_data(app: FastAPI) -> None:
                 status=1,
                 is_superuser=True,
             )
-            admin = await userController.create(session=session, user_create=user_in)
+            admin = await userController.create(session=session, obj_in=user_in)
             logger.info(f"创建管理员账户成功，管理员用户名为：{admin.username}")
+            if dept is not None:
+                dept.users.append(admin)
+                session.add(dept)
+                session.commit()
+                session.refresh(admin)
         else:
             logger.info("管理员账户已存在，跳过管理员创建...")
 
         logger.info("初始化API...")
         init_api(app, session)
         logger.info("初始化菜单...")
-        init_menus(session)
+        init_menus(session)        
         logger.info("启动定时任务...")
         scheduler.add_job(
             update_expired_orders,
