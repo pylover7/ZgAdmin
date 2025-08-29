@@ -69,8 +69,8 @@ export const updateDept = (data?: object) => {
 };
 
 /** 获取系统管理-部门管理列表 */
-export const getDeptList = (data?: object) => {
-  return http.request<Result>("get", deptUrl("/list"), { data });
+export const getDeptList = () => {
+  return http.request<Result>("get", deptUrl("/list"));
 };
 
 /** 获取系统监控-在线用户列表 */
