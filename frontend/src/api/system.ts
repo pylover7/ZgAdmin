@@ -4,6 +4,7 @@ import { apiV1 } from "./utils";
 
 const systemUrl = (url: string) => apiV1(`/system${url}`);
 const deptUrl = (url: string) => systemUrl(`/dept${url}`);
+const munuUrl = (url: string) => systemUrl(`/menu${url}`);
 
 type Result = {
   code: number;
@@ -50,7 +51,7 @@ export const getRoleList = (data?: object) => {
 
 /** 获取系统管理-菜单管理列表 */
 export const getMenuList = (data?: object) => {
-  return http.request<Result>("post", "/menu", { data });
+  return http.request<Result>("get", munuUrl("/list"), { data });
 };
 
 /** 新增部门 */

@@ -20,7 +20,7 @@ async def delete_menu(session: SessionDep, data: list[str]):
     return Success(msg="菜单删除成功！")
 
 
-@menuRouter.get("/all", summary="获取菜单列表")
+@menuRouter.get("/list", summary="获取菜单列表")
 async def menu_list(session: SessionDep):
     menu_obj = await menuController.all(session)
     result = [await item.to_dict() for item in menu_obj]
