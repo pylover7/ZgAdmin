@@ -1,7 +1,7 @@
 import editForm from "../form.vue";
 import { handleTree } from "@/utils/tree";
 import { message } from "@/utils/message";
-import { addMenu, getMenuList, updateMenu } from "@/api/system";
+import { addMenu, deleteMenu, getMenuList, updateMenu } from "@/api/system";
 import { transformI18n } from "@/plugins/i18n";
 import { addDialog } from "@/components/ReDialog";
 import { reactive, ref, onMounted, h } from "vue";
@@ -206,10 +206,14 @@ export function useMenu() {
   }
 
   function handleDelete(row) {
-    message(`您删除了名称为${transformI18n(row.title)}的菜单`, {
-      type: "success"
+    deleteMenu([row.id]).then(res => {
+      if (res.success) {
+        message(`您删除了名称为${transformI18n(row.title)}的菜单`, {
+          type: "success"
+        });
+        onSearch();
+      }
     });
-    onSearch();
   }
 
   onMounted(() => {
