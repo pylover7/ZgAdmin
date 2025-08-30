@@ -9,8 +9,12 @@ departRouter = APIRouter()
 
 @departRouter.post("/add", summary="添加部门")
 async def add_depart(session: SessionDep, data: DepartCreate):
-    result = await deptController.create(session, data)
-    return Success(msg="部门添加成功！", data=await result.to_dict())
+    try:
+        result = await deptController.create(session, data)
+        return Success(msg="部门添加成功！", data=await result.to_dict())
+    except Exception as e:
+        if "IntegrityError" in str(e.__class__.__name__):
+            return Success(success=False, msg="部门名称已存在，请更换后重试！")
 
 
 @departRouter.post("/delete", summary="删除部门")

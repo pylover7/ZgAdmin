@@ -129,7 +129,7 @@ export function useDept() {
         const FormRef = formRef.value.getRef();
         const curData = options.props.formInline as FormItemProps;
         function chores() {
-          message(`您${title}了部门名称为${curData.name}的这条数据`, {
+          message(`您${title}了名称为【${curData.name}】的部门`, {
             type: "success"
           });
           done(); // 关闭弹框
@@ -144,6 +144,8 @@ export function useDept() {
               addDept(curData).then(res => {
                 if (res.success) {
                   chores();
+                } else {
+                  message(res.msg, { type: "warning" });
                 }
               });
             } else {
