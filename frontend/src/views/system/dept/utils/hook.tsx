@@ -152,6 +152,8 @@ export function useDept() {
               updateDept(curData).then(res => {
                 if (res.success) {
                   chores();
+                } else {
+                  message(res.msg, { type: "warning" });
                 }
               });
             }
