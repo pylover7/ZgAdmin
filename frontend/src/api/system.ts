@@ -49,6 +49,21 @@ export const getRoleList = (data?: object) => {
   return http.request<ResultTable>("post", "/role", { data });
 };
 
+/** 新增菜单 */
+export const addMenu = (data?: object) => {
+  return http.request<Result>("post", munuUrl("/add"), { data });
+};
+
+/** 删除菜单 */
+export const deleteMenu = (data?: [string]) => {
+  return http.request<Result>("post", munuUrl("/delete"), { data });
+};
+
+/** 更新菜单信息 */
+export const updateMenu = (data?: object) => {
+  return http.request<Result>("post", munuUrl("/update"), { data });
+};
+
 /** 获取系统管理-菜单管理列表 */
 export const getMenuList = (data?: object) => {
   return http.request<Result>("get", munuUrl("/list"), { data });

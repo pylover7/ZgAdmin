@@ -1,7 +1,7 @@
 import editForm from "../form.vue";
 import { handleTree } from "@/utils/tree";
 import { message } from "@/utils/message";
-import { getMenuList } from "@/api/system";
+import { addMenu, getMenuList, updateMenu } from "@/api/system";
 import { transformI18n } from "@/plugins/i18n";
 import { addDialog } from "@/components/ReDialog";
 import { reactive, ref, onMounted, h } from "vue";
@@ -185,10 +185,18 @@ export function useMenu() {
             // 表单规则校验通过
             if (title === "新增") {
               // 实际开发先调用新增接口，再进行下面操作
-              chores();
+              addMenu(curData).then(res => {
+                if (res.success) {
+                  chores();
+                }
+              });
             } else {
               // 实际开发先调用修改接口，再进行下面操作
-              chores();
+              updateMenu(curData).then(res => {
+                if (res.success) {
+                  chores();
+                }
+              });
             }
           }
         });
@@ -197,7 +205,7 @@ export function useMenu() {
   }
 
   function handleDelete(row) {
-    message(`您删除了菜单名称为${transformI18n(row.title)}的这条数据`, {
+    message(`您删除了名称为${transformI18n(row.title)}的菜单`, {
       type: "success"
     });
     onSearch();
