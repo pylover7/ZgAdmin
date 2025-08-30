@@ -138,7 +138,7 @@ export function useMenu() {
         formInline: {
           menuType: row?.menuType ?? 0,
           higherMenuOptions: formatHigherMenuOptions(cloneDeep(dataList.value)),
-          parentId: row?.parentId ?? 0,
+          parentId: row?.parentId ?? null,
           title: row?.title ?? "",
           name: row?.name ?? "",
           path: row?.path ?? "",
@@ -147,6 +147,7 @@ export function useMenu() {
           redirect: row?.redirect ?? "",
           icon: row?.icon ?? "",
           extraIcon: row?.extraIcon ?? "",
+          transitionName: "",
           enterTransition: row?.enterTransition ?? "",
           leaveTransition: row?.leaveTransition ?? "",
           activePath: row?.activePath ?? "",
