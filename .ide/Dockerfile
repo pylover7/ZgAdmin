@@ -18,7 +18,7 @@ RUN curl -fsSL https://bun.sh/install | bash && . /root/.bashrc
 # 安装一些常用的工具
 RUN apt-get update && \
     apt-get install -y \
-    openssh-server curl wget git git-lfs vim tree axel unzip zsh aria2 nload && \
+    openssh-server curl wget git git-lfs vim tree axel unzip zsh aria2 nload sqlite3 && \
     apt-get -y autoremove
 
 # 安装Oh My Zsh
