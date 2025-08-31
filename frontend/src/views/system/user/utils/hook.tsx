@@ -117,7 +117,10 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
       label: "手机号码",
       prop: "phone",
       minWidth: 90,
-      formatter: ({ phone }) => hideTextAtIndex(phone, { start: 3, end: 6 })
+      formatter: ({ phone }) => {
+        if (!phone) return "-";
+        return hideTextAtIndex(phone, { start: 3, end: 6 });
+      }
     },
     {
       label: "状态",

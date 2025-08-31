@@ -20,12 +20,6 @@ class UserBase(BaseModel):
     password: str = Field(min_length=8, max_length=256, description="密码")
     status: int = Field(default=1, index=True, description="是否激活")
     is_superuser: bool = Field(default=False, description="是否为超级管理员")
-    phone: str = Field(
-        default=None,
-        max_length=20,
-        nullable=True,
-        unique=True,
-        description="电话")
 
 
 class User(UserBase, TimestampMixin, table=True):
@@ -39,6 +33,12 @@ class User(UserBase, TimestampMixin, table=True):
         max_length=255,
         nullable=True,
         description="头像文件名称")
+    phone: str = Field(
+        default=None,
+        max_length=20,
+        nullable=True,
+        unique=True,
+        description="电话")
     sex: int = Field(default=1, description="性别, 0: 女, 1: 男")
     last_login: datetime = Field(
         default=None,
