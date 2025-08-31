@@ -28,6 +28,21 @@ type ResultTable = {
   currentPage?: number;
 };
 
+/** 新增用户 */
+export const addUser = (data?: object) => {
+  return http.request<Result>("post", userUrl("/add"), { data });
+};
+
+/** 删除用户 */
+export const deleteUser = (data?: [string]) => {
+  return http.request<Result>("post", userUrl("/delete"), { data });
+};
+
+/** 更新用户信息 */
+export const updateUser = (data?: object) => {
+  return http.request<Result>("post", userUrl("/update"), { data });
+};
+
 /** 获取系统管理-用户管理列表 */
 export const getUserList = (
   username?: string,

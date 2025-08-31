@@ -23,6 +23,7 @@ export const formRules = reactive(<FormRules>{
     }
   ],
   email: [
+    { required: true, message: "请输入邮箱", trigger: "blur" },
     {
       validator: (rule, value, callback) => {
         if (value === "") {

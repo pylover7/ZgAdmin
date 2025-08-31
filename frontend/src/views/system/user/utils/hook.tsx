@@ -21,7 +21,8 @@ import {
   getRoleIds,
   getDeptList,
   getUserList,
-  getAllRoleList
+  getAllRoleList,
+  addUser
 } from "@/api/system";
 import {
   ElForm,
@@ -101,10 +102,10 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
       cellRenderer: ({ row, props }) => (
         <el-tag
           size={props.size}
-          type={row.sex === 1 ? "danger" : null}
+          type={row.sex === 0 ? "danger" : null}
           effect="plain"
         >
-          {row.sex === 1 ? "女" : "男"}
+          {row.sex === 0 ? "女" : "男"}
         </el-tag>
       )
     },
@@ -347,8 +348,11 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
             console.log("curData", curData);
             // 表单规则校验通过
             if (title === "新增") {
-              // 实际开发先调用新增接口，再进行下面操作
-              chores();
+              addUser(curData).then(res => {
+                if (res.success) {
+                  chores();
+                }
+              });
             } else {
               // 实际开发先调用修改接口，再进行下面操作
               chores();
