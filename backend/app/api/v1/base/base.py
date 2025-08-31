@@ -114,7 +114,9 @@ async def refresh_token(refreshToken: refreshTokenSchema):
 @router.get("/userinfo", summary="查看用户信息", dependencies=[DependAuth])
 async def get_userinfo(session: SessionDep):
     user_id = CTX_USER_ID.get()
-    user_obj = userController.get(session=session, id=user_id)
+    user_obj = await userController.get(session=session, id=UUID(user_id))
+    if not user_obj:
+        return FailAuth(msg="用户不存在或已被删除！")
     data = await user_obj.to_dict(exclude_fields=["password"])
     return Success(data=data)
 
@@ -122,10 +124,12 @@ async def get_userinfo(session: SessionDep):
 @router.get("/userMenu", summary="查看用户菜单", dependencies=[DependAuth])
 async def get_user_menu(session: SessionDep):
     user_id = CTX_USER_ID.get()
-    user_obj = await userController.get(session=session, id=user_id)
+    user_obj = await userController.get(session=session, id=UUID(user_id))
+    if not user_obj:
+        return FailAuth(msg="用户不存在或已被删除！")
     menus: list[Menu] = []
     if user_obj.is_superuser:
-        menus = session.exec(select(Menu)).all()
+        menus = list(session.exec(select(Menu)).all())
     else:
         role_objs: list[Role] = user_obj.roles
         for role_obj in role_objs:

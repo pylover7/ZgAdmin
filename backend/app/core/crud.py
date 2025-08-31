@@ -1,7 +1,7 @@
-from typing import Generic, NewType, Type, TypeVar, Optional, Union
+from typing import Generic, NewType, Type, TypeVar, Optional
 from uuid import UUID
 
-from click import Option
+from sqlalchemy import ColumnElement, UnaryExpression
 from sqlmodel import Session, SQLModel, Column, select, col, func
 
 
@@ -46,8 +46,8 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         session.refresh(db_obj)
         return db_obj
 
-    async def get(self, session: Session, id: str) -> ModelType | None:
-        return session.get(self.model, UUID(id))
+    async def get(self, session: Session, id: UUID) -> ModelType | None:
+        return session.get(self.model, id)
 
     async def get_latest(self, session: Session) -> ModelType | None:
         statement = select(self.model).order_by(col("id").desc())
@@ -61,8 +61,8 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             session: Session,
             currentPage: int = 1,
             pageSize: int = 15,
-            where: Column | None = None,
-            order: Column | str = "created_at"
+            where: ColumnElement[bool] | None = None,
+            order: UnaryExpression | str = "created_at"
     ) -> tuple[Total, list[ModelType]]:
         id_column = getattr(self.model, "id", None)
         if id_column is None:

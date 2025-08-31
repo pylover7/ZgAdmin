@@ -76,10 +76,10 @@ const {
             class="w-[180px]!"
           />
         </el-form-item>
-        <el-form-item label="手机号码：" prop="phone">
+        <el-form-item label="邮箱：" prop="email">
           <el-input
-            v-model="form.phone"
-            placeholder="请输入手机号码"
+            v-model="form.email"
+            placeholder="请输入邮箱"
             clearable
             class="w-[180px]!"
           />
@@ -110,11 +110,7 @@ const {
         </el-form-item>
       </el-form>
 
-      <PureTableBar
-        title="用户管理（仅演示，操作后不生效）"
-        :columns="columns"
-        @refresh="onSearch"
-      >
+      <PureTableBar title="用户管理" :columns="columns" @refresh="onSearch">
         <template #buttons>
           <el-button
             type="primary"

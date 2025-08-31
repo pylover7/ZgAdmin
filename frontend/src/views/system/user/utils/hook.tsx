@@ -30,23 +30,14 @@ import {
   ElProgress,
   ElMessageBox
 } from "element-plus";
-import {
-  type Ref,
-  h,
-  ref,
-  toRaw,
-  watch,
-  computed,
-  reactive,
-  onMounted
-} from "vue";
+import { type Ref, h, ref, watch, computed, reactive, onMounted } from "vue";
 
 export function useUser(tableRef: Ref, treeRef: Ref) {
   const form = reactive({
     // 左侧部门树的id
     deptId: "",
     username: "",
-    phone: "",
+    email: "",
     status: ""
   });
   const formRef = ref();
@@ -76,7 +67,7 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
     },
     {
       label: "用户编号",
-      prop: "id",
+      type: "index",
       width: 90
     },
     {
@@ -150,7 +141,7 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
     {
       label: "创建时间",
       minWidth: 90,
-      prop: "createTime",
+      prop: "created_at",
       formatter: ({ createTime }) =>
         dayjs(createTime).format("YYYY-MM-DD HH:mm:ss")
     },
@@ -272,11 +263,17 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
 
   async function onSearch() {
     loading.value = true;
-    const { data } = await getUserList(toRaw(form));
-    dataList.value = data.list;
-    pagination.total = data.total;
-    pagination.pageSize = data.pageSize;
-    pagination.currentPage = data.currentPage;
+    const { data, total, pageSize, currentPage } = await getUserList(
+      form.username,
+      form.email,
+      form.deptId,
+      pagination.pageSize,
+      pagination.currentPage
+    );
+    dataList.value = data;
+    pagination.total = total;
+    pagination.pageSize = pageSize;
+    pagination.currentPage = currentPage;
 
     setTimeout(() => {
       loading.value = false;

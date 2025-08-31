@@ -80,6 +80,7 @@ class SuccessExtra(JSONResponse):
     def __init__(
         self,
         code: int = 200,
+        success: bool = True,
         msg: Optional[str] = "OK",
         data: Optional[Any] = None,
         total: int = 0,
@@ -89,6 +90,7 @@ class SuccessExtra(JSONResponse):
     ):
         content = {
             "code": code,
+            "success": success,
             "msg": msg,
             "data": data,
             "total": total,

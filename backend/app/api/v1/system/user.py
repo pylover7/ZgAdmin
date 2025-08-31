@@ -1,5 +1,6 @@
 import time
 from pathlib import Path
+from uuid import UUID
 
 from fastapi import APIRouter, Query
 from fastapi.exceptions import HTTPException
@@ -55,9 +56,11 @@ async def delete_user(
 @userRouter.get("/get", summary="查看用户")
 async def get_user(
         session: SessionDep,
-        id: str = Query(..., description="用户ID"),
+        id: UUID = Query(..., description="用户ID"),
 ):
-    user_obj: User = await userController.get(session, id)
+    user_obj = await userController.get(session, id)
+    if not user_obj:
+        raise HTTPException(status_code=404, detail="用户不存在！")
     user_dict = await user_obj.to_dict(exclude_fields=["password"])
     return Success(data=user_dict)
 
@@ -74,8 +77,8 @@ async def list_user(
         where.append(User.username == data.username)
     if data.email:
         where.append(User.email == data.email)
-    if data.departId:
-        where.append(User.department_id == data.departId)
+    if data.deptId:
+        where.append(User.department_id == data.deptId)
     if len(where) > 0:
         where = and_(*where, )
     else:
@@ -88,14 +91,13 @@ async def list_user(
         where,
         order
     )
-    total: int
-    user_objs: list[User]
-    data = []
+    result = []
     for obj in user_objs:
         obj_dict = await obj.to_dict(exclude_fields=["password"])
         obj_dict["roleIds"] = [item.id.__str__() for item in obj.roles]
-        data.append(obj_dict)
-    return SuccessExtra(data=data, total=total,
+        obj_dict["dept"] = await obj.department.to_dict() if obj.department else None
+        result.append(obj_dict)
+    return SuccessExtra(data=result, total=total,
                         currentPage=currentPage, pageSize=pageSize)
 
 
@@ -105,6 +107,10 @@ async def update_user(
         data: UserUpdate,
 ):
     user = await userController.get_user_by_name(session, data.username)
+    if not user:
+        raise HTTPException(status_code=404, detail="用户不存在！")
+    if user.id != data.id:
+        raise HTTPException(status_code=400, detail="用户名已存在！")
     del data.username
     await userController.update(session, user.id, data)
     return Success(msg="用户信息更新成功！")
@@ -116,6 +122,8 @@ async def update_avatar(
         data: UserAvatar,
 ):
     user = await userController.get(session, data.id)
+    if not user:
+        raise HTTPException(status_code=404, detail="用户不存在！")
     avatar_name = f"{
         md5_encrypt(
             str(
@@ -141,9 +149,11 @@ async def update_roles(
     user = await userController.get(session, data.id)
     roleList = []
     for role_id in data.roleIds:
-        role = await roleController.get(session, role_id)
+        role = await roleController.get(session, UUID(role_id))
         roleList.append(role)
 
+    if not user:
+        raise HTTPException(status_code=404, detail="用户不存在！")
     user.roles = roleList
     session.add(user)
     session.commit()
@@ -153,6 +163,8 @@ async def update_roles(
 @userRouter.post("/updateStatus", summary="更新用户状态")
 async def update_status(session: SessionDep, data: UpdateStatus):
     user = await userController.get(session, data.id)
+    if not user:
+        raise HTTPException(status_code=404, detail="用户不存在！")
     user.status = data.status
     session.add(user)
     session.commit()
@@ -165,6 +177,8 @@ async def reset_pwd(
         data: UserResetPwd,
 ):
     user = await userController.get(session, data.id)
+    if not user:
+        raise HTTPException(status_code=404, detail="用户不存在！")
     user.password = get_password_hash(data.newPwd)
     session.add(user)
     session.commit()

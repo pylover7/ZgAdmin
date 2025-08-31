@@ -88,7 +88,7 @@ class UpdatePassword(SQLModel):
 class UserFiter(BaseModel):
     username: str | None
     email: str | None
-    departId: str | None
+    deptId: str | None
 
 
 class UserResetPwd(BaseModel):

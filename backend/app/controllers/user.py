@@ -36,7 +36,7 @@ class UserController(CRUDBase[User, UserCreate, UserUpdate]):
         session.refresh(db_obj)
         return db_obj
 
-    async def update(self, session: Session, id: str,
+    async def update(self, session: Session, id: UUID,
                      obj_in: UserUpdate) -> User | None:
         db_user = session.get(User, id)
         if db_user is None:

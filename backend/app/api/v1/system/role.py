@@ -1,5 +1,4 @@
-from fastapi import APIRouter
-from fastapi.params import Query
+from fastapi import APIRouter, Query
 from sqlalchemy import and_
 from sqlmodel import col
 
@@ -26,9 +25,9 @@ async def delete_role(session: SessionDep, data: list[str]):
 @roleRouter.post("/list", summary="获取角色列表")
 async def role_list(
         session: SessionDep,
+        data: RoleFilter,
         currentPage: int = Query(1, description="页码"),
         pageSize: int = Query(15, description="每页数量"),
-        data: RoleFilter | None = None
 ):
     where = []
     if data.name:

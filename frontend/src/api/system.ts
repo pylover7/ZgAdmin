@@ -5,6 +5,8 @@ import { apiV1 } from "./utils";
 const systemUrl = (url: string) => apiV1(`/system${url}`);
 const deptUrl = (url: string) => systemUrl(`/dept${url}`);
 const munuUrl = (url: string) => systemUrl(`/menu${url}`);
+const userUrl = (url: string) => systemUrl(`/user${url}`);
+const roleUrl = (url: string) => systemUrl(`/role${url}`);
 
 type Result = {
   code: number;
@@ -17,26 +19,35 @@ type ResultTable = {
   code: number;
   msg: string;
   success: boolean;
-  data?: {
-    /** 列表数据 */
-    list: Array<any>;
-    /** 总条目数 */
-    total?: number;
-    /** 每页显示条目个数 */
-    pageSize?: number;
-    /** 当前页数 */
-    currentPage?: number;
-  };
+  data?: Array<any>;
+  /** 总条目数 */
+  total?: number;
+  /** 每页显示条目个数 */
+  pageSize?: number;
+  /** 当前页数 */
+  currentPage?: number;
 };
 
 /** 获取系统管理-用户管理列表 */
-export const getUserList = (data?: object) => {
-  return http.request<ResultTable>("post", "/user", { data });
+export const getUserList = (
+  username?: string,
+  email?: string,
+  deptId?: string,
+  pageSize?: number,
+  currentPage?: number
+) => {
+  return http.request<ResultTable>("post", userUrl("/list"), {
+    data: { username, email, deptId },
+    params: {
+      pageSize: pageSize,
+      currentPage: currentPage
+    } // 忽略取消重复请求
+  });
 };
 
 /** 系统管理-用户管理-获取所有角色列表 */
 export const getAllRoleList = () => {
-  return http.request<Result>("get", "/list-all-role");
+  return http.request<Result>("get", roleUrl("/all"));
 };
 
 /** 系统管理-用户管理-根据userId，获取对应角色id列表（userId：用户id） */
