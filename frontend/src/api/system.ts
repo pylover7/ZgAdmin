@@ -43,6 +43,11 @@ export const updateUser = (data?: object) => {
   return http.request<Result>("post", userUrl("/update"), { data });
 };
 
+/** 更新用户状态 */
+export const updateUserStatus = (data?: object) => {
+  return http.request<Result>("post", userUrl("/updateStatus"), { data });
+};
+
 /** 获取系统管理-用户管理列表 */
 export const getUserList = (
   username?: string,

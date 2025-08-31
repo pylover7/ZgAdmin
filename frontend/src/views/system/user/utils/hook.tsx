@@ -23,7 +23,9 @@ import {
   getUserList,
   getAllRoleList,
   addUser,
-  deleteUser
+  deleteUser,
+  updateUser,
+  updateUserStatus
 } from "@/api/system";
 import {
   ElForm,
@@ -205,18 +207,25 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
             loading: true
           }
         );
-        setTimeout(() => {
-          switchLoadMap.value[index] = Object.assign(
-            {},
-            switchLoadMap.value[index],
-            {
-              loading: false
+        updateUserStatus({ id: row.id, status: row.status })
+          .then(res => {
+            if (res.success) {
+              message("已成功修改用户状态", {
+                type: "success"
+              });
+            } else {
+              row.status === 0 ? (row.status = 1) : (row.status = 0);
             }
-          );
-          message("已成功修改用户状态", {
-            type: "success"
+          })
+          .finally(() => {
+            switchLoadMap.value[index] = Object.assign(
+              {},
+              switchLoadMap.value[index],
+              {
+                loading: false
+              }
+            );
           });
-        }, 300);
       })
       .catch(() => {
         row.status === 0 ? (row.status = 1) : (row.status = 0);
@@ -320,14 +329,15 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
       props: {
         formInline: {
           title,
+          id: row?.id ?? "",
           higherDeptOptions: formatHigherDeptOptions(higherDeptOptions.value),
-          parentId: row?.dept.id ?? 0,
+          parentId: row?.dept?.id ?? 0,
           nickname: row?.nickname ?? "",
           username: row?.username ?? "",
           password: row?.password ?? "",
           phone: row?.phone ?? "",
           email: row?.email ?? "",
-          sex: row?.sex ?? "",
+          sex: row?.sex ?? 1,
           status: row?.status ?? 1,
           remark: row?.remark ?? ""
         }
@@ -356,11 +366,18 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
               addUser(curData).then(res => {
                 if (res.success) {
                   chores();
+                } else {
+                  message(res.msg, { type: "error" });
                 }
               });
             } else {
-              // 实际开发先调用修改接口，再进行下面操作
-              chores();
+              updateUser(curData).then(res => {
+                if (res.success) {
+                  chores();
+                } else {
+                  message(res.msg, { type: "error" });
+                }
+              });
             }
           }
         });
