@@ -1,4 +1,5 @@
 from typing import TYPE_CHECKING
+from uuid import UUID
 from sqlmodel import Field, Relationship, SQLModel
 
 from .base import BaseModel, TimestampMixin
@@ -38,7 +39,7 @@ class RoleUpdate(BaseModel):
     remark: str | None
 
 
-class UpdateRoleStatus(BaseModel):
+class UpdateRoleStatus(RoleUpdate):
     status: int
 
 
@@ -50,6 +51,6 @@ class RoleFilter(SQLModel):
 
 class UpdateRoleAuth(BaseModel):
     menuUpdate: bool
-    menuIds: list[str]
+    menuIds: list[UUID]
     apiUpdate: bool
-    apiIds: list[str]
+    apiIds: list[UUID]

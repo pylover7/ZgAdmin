@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, HTTPException, Query
 from sqlalchemy import and_
 from sqlmodel import col
 
@@ -74,6 +74,8 @@ async def update_role_status(session: SessionDep, data: UpdateRoleStatus):
 @roleRouter.post("/getRoleAuth", summary="获取角色对应菜单列表和api列表")
 async def get_role_auth(session: SessionDep, data: BaseModel):
     role_obj = await roleController.get(session, data.id)
+    if not role_obj:
+        return HTTPException(status_code=404, detail="角色不存在！")
     result = {
         "menus": [item.id.__str__() for item in role_obj.menus],
         "apis": [item.id.__str__() for item in role_obj.apis]

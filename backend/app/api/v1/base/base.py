@@ -158,11 +158,13 @@ async def get_user_menu(session: SessionDep):
 @router.get("/userApi", summary="查看用户API", dependencies=[DependAuth])
 async def get_user_api(session: SessionDep):
     user_id = CTX_USER_ID.get()
-    user_obj = await userController.get(session=session, id=user_id)
+    user_obj = await userController.get(session=session, id=UUID(user_id))
+    if not user_obj:
+        return FailAuth(msg="用户不存在或已被删除！")
     if user_obj.is_superuser:
         statement = select(Api)
         result = session.exec(statement)
-        api_objs = result.all()
+        api_objs = list(result.all())
         apis = [api.method.lower() + api.path for api in api_objs]
         return Success(data=apis)
     role_objs: list[Role] = user_obj.roles
@@ -177,7 +179,9 @@ async def get_user_api(session: SessionDep):
 @router.post("/updatePwd", summary="更新用户密码", dependencies=[DependAuth])
 async def update_user_password(session: SessionDep, req_in: UpdatePassword):
     user_id = CTX_USER_ID.get()
-    user = userController.get(session=session, id=user_id)
+    user = await userController.get(session=session, id=UUID(user_id))
+    if not user:
+        return FailAuth(msg="用户不存在或已被删除！")
     verified = verify_password(req_in.current_password, user.password)
     if not verified:
         return Fail(msg="旧密码验证错误！")
