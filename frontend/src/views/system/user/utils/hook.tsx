@@ -22,7 +22,8 @@ import {
   getDeptList,
   getUserList,
   getAllRoleList,
-  addUser
+  addUser,
+  deleteUser
 } from "@/api/system";
 import {
   ElForm,
@@ -227,8 +228,12 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
   }
 
   function handleDelete(row) {
-    message(`您删除了用户编号为${row.id}的这条数据`, { type: "success" });
-    onSearch();
+    deleteUser([row.id]).then(() => {
+      message(`您删除了用户名为【${row.username}】的这条数据`, {
+        type: "success"
+      });
+      onSearch();
+    });
   }
 
   function handleSizeChange(val: number) {

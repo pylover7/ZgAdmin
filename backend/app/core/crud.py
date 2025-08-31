@@ -23,9 +23,9 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         session.refresh(db_obj)
         return db_obj
 
-    async def delete(self, session: Session, idList: list[str]) -> bool:
+    async def delete(self, session: Session, idList: list[UUID]) -> bool:
         for item in idList:
-            db_obj = session.get(self.model, UUID(item))
+            db_obj = session.get(self.model, item)
             if db_obj is None:
                 continue
             session.delete(db_obj)

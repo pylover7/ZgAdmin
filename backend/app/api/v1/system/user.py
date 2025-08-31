@@ -39,14 +39,14 @@ async def create_user(
         raise HTTPException(status_code=400, detail="用户创建失败！")
 
 
-@userRouter.delete("/delete", summary="删除用户")
+@userRouter.post("/delete", summary="删除用户")
 async def delete_user(
         session: SessionDep,
-        data: list[str]
+        data: list[UUID]
 ):
     try:
         await userController.delete(session, data)
-        logger.warning(f"用户ID: {data} 已被删除")
+        logger.warning(f"用户ID: {str(data)} 已被删除")
         return Success(msg="Deleted Successfully")
     except Exception as e:
         logger.error(f"用户删除失败：{e}")
