@@ -335,7 +335,7 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
           nickname: row?.nickname ?? "",
           username: row?.username ?? "",
           password: row?.password ?? "",
-          phone: row?.phone ?? "",
+          phone: row?.phone ?? null,
           email: row?.email ?? "",
           sex: row?.sex ?? 1,
           status: row?.status ?? 1,
@@ -363,6 +363,7 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
             console.log("curData", curData);
             // 表单规则校验通过
             if (title === "新增") {
+              delete curData.id;
               addUser(curData).then(res => {
                 if (res.success) {
                   chores();

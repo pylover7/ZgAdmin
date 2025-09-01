@@ -13,7 +13,7 @@ const props = withDefaults(defineProps<FormProps>(), {
     nickname: "",
     username: "",
     password: "",
-    phone: "",
+    phone: null,
     email: "",
     sex: 1,
     status: 1,
