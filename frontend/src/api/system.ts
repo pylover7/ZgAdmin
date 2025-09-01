@@ -65,6 +65,21 @@ export const getUserList = (
   });
 };
 
+/** 新增角色 */
+export const addRole = (data?: object) => {
+  return http.request<Result>("post", roleUrl("/add"), { data });
+};
+
+/** 删除角色 */
+export const deleteRole = (data?: [string]) => {
+  return http.request<Result>("post", roleUrl("/delete"), { data });
+};
+
+/** 更新角色信息 */
+export const updateRole = (data?: object) => {
+  return http.request<Result>("post", roleUrl("/update"), { data });
+};
+
 /** 系统管理-用户管理-获取所有角色列表 */
 export const getAllRoleList = () => {
   return http.request<Result>("get", roleUrl("/all"));
@@ -76,8 +91,20 @@ export const getRoleIds = (data?: object) => {
 };
 
 /** 获取系统管理-角色管理列表 */
-export const getRoleList = (data?: object) => {
-  return http.request<ResultTable>("post", "/role", { data });
+export const getRoleList = (
+  name: string,
+  code: string,
+  status: string,
+  currentPage: number,
+  pageSize: number
+) => {
+  return http.request<ResultTable>("post", roleUrl("/list"), {
+    data: { name, code, status },
+    params: {
+      pageSize,
+      currentPage
+    }
+  });
 };
 
 /** 新增菜单 */
