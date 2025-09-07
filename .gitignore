@@ -24,6 +24,10 @@ npm-debug.log*
 tests/**/coverage/
 /**/static/
 
+# docs
+/**/.vitepress/cache
+/**/.vitepress/dist
+
 # Editor directories and files
 *.suo
 *.ntvs*
