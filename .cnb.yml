@@ -49,6 +49,7 @@ $:
             - ./backend/.venv:rw
             - ./backend/static:rw
             - ./frontend/node_modules:rw
+            - ./docs/node_modules:rw
       runner:
         cpus: 8
       services:
