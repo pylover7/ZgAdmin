@@ -19,6 +19,7 @@ import Menu from "~icons/ep/menu";
 import AddFill from "~icons/ri/add-circle-line";
 import Close from "~icons/ep/close";
 import Check from "~icons/ep/check";
+import { T } from "node_modules/@faker-js/faker/dist/airline-CLphikKp";
 
 defineOptions({
   name: "SystemRole"
@@ -57,7 +58,6 @@ const {
   dataList,
   treeData,
   treeProps,
-  isLinkage,
   pagination,
   isExpandAll,
   isSelectAll,
@@ -219,43 +219,6 @@ onMounted(() => {
               >
                 权限
               </el-button>
-              <!-- <el-dropdown>
-              <el-button
-                class="ml-3 mt-[2px]"
-                link
-                type="primary"
-                :size="size"
-                :icon="useRenderIcon(More)"
-              />
-              <template #dropdown>
-                <el-dropdown-menu>
-                  <el-dropdown-item>
-                    <el-button
-                      :class="buttonClass"
-                      link
-                      type="primary"
-                      :size="size"
-                      :icon="useRenderIcon(Menu)"
-                      @click="handleMenu"
-                    >
-                      菜单权限
-                    </el-button>
-                  </el-dropdown-item>
-                  <el-dropdown-item>
-                    <el-button
-                      :class="buttonClass"
-                      link
-                      type="primary"
-                      :size="size"
-                      :icon="useRenderIcon(Database)"
-                      @click="handleDatabase"
-                    >
-                      数据权限
-                    </el-button>
-                  </el-dropdown-item>
-                </el-dropdown-menu>
-              </template>
-            </el-dropdown> -->
             </template>
           </pure-table>
         </template>
@@ -307,7 +270,6 @@ onMounted(() => {
         <div class="flex flex-wrap">
           <el-checkbox v-model="isExpandAll" label="展开/折叠" />
           <el-checkbox v-model="isSelectAll" label="全选/全不选" />
-          <el-checkbox v-model="isLinkage" label="父子联动" />
         </div>
         <el-tree-v2
           ref="treeRef"
@@ -315,7 +277,6 @@ onMounted(() => {
           :data="treeData"
           :props="treeProps"
           :height="treeHeight"
-          :check-strictly="!isLinkage"
           :filter-method="filterMethod"
         >
           <template #default="{ node }">

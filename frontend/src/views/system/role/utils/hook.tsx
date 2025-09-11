@@ -9,7 +9,15 @@ import { addDialog } from "@/components/ReDialog";
 import type { FormItemProps } from "../utils/types";
 import type { PaginationProps } from "@pureadmin/table";
 import { getKeyList, deviceDetection } from "@pureadmin/utils";
-import { getRoleList, getRoleMenu, getRoleMenuIds } from "@/api/system";
+import {
+  addRole,
+  getMenuList,
+  getRoleList,
+  getRoleMenuIds,
+  updateRole,
+  updateRoleAuth,
+  updateRoleStatus
+} from "@/api/system";
 import { type Ref, reactive, ref, onMounted, h, watch } from "vue";
 
 export function useRole(treeRef: Ref) {
@@ -25,7 +33,6 @@ export function useRole(treeRef: Ref) {
   const treeData = ref([]);
   const isShow = ref(false);
   const loading = ref(true);
-  const isLinkage = ref(false);
   const treeSearchValue = ref();
   const switchLoadMap = ref({});
   const isExpandAll = ref(false);
@@ -45,7 +52,8 @@ export function useRole(treeRef: Ref) {
   const columns: TableColumnList = [
     {
       label: "角色编号",
-      prop: "id"
+      type: "index",
+      minWidth: 60
     },
     {
       label: "角色名称",
@@ -92,15 +100,6 @@ export function useRole(treeRef: Ref) {
       slot: "operation"
     }
   ];
-  // const buttonClass = computed(() => {
-  //   return [
-  //     "h-[20px]!",
-  //     "reset-margin",
-  //     "text-gray-500!",
-  //     "dark:text-white!",
-  //     "dark:hover:text-primary!"
-  //   ];
-  // });
 
   function onChange({ row, index }) {
     ElMessageBox.confirm(
@@ -126,18 +125,25 @@ export function useRole(treeRef: Ref) {
             loading: true
           }
         );
-        setTimeout(() => {
-          switchLoadMap.value[index] = Object.assign(
-            {},
-            switchLoadMap.value[index],
-            {
-              loading: false
+        updateRoleStatus({ id: row.id, status: row.status })
+          .then(res => {
+            if (res.success) {
+              message(`已启用角色【${row.name}】`, {
+                type: "success"
+              });
+            } else {
+              row.status === 0 ? (row.status = 1) : (row.status = 0);
             }
-          );
-          message(`已${row.status === 0 ? "停用" : "启用"}${row.name}`, {
-            type: "success"
+          })
+          .finally(() => {
+            switchLoadMap.value[index] = Object.assign(
+              {},
+              switchLoadMap.value[index],
+              {
+                loading: false
+              }
+            );
           });
-        }, 300);
       })
       .catch(() => {
         row.status === 0 ? (row.status = 1) : (row.status = 0);
@@ -217,11 +223,17 @@ export function useRole(treeRef: Ref) {
             console.log("curData", curData);
             // 表单规则校验通过
             if (title === "新增") {
-              // 实际开发先调用新增接口，再进行下面操作
-              chores();
+              addRole(curData).then(res => {
+                if (res.success) {
+                  chores();
+                }
+              });
             } else {
-              // 实际开发先调用修改接口，再进行下面操作
-              chores();
+              updateRole(curData).then(res => {
+                if (res.success) {
+                  chores();
+                }
+              });
             }
           }
         });
@@ -256,9 +268,15 @@ export function useRole(treeRef: Ref) {
     const { id, name } = curRow.value;
     // 根据用户 id 调用实际项目中菜单权限修改接口
     console.log(id, treeRef.value.getCheckedKeys());
-    message(`角色名称为${name}的菜单权限修改成功`, {
-      type: "success"
-    });
+    updateRoleAuth({ id, menuIds: treeRef.value.getCheckedKeys() }).then(
+      res => {
+        if (res.success) {
+          message(`角色名称为${name}的菜单权限修改成功`, {
+            type: "success"
+          });
+        }
+      }
+    );
   }
 
   /** 数据权限 可自行开发 */
@@ -274,7 +292,7 @@ export function useRole(treeRef: Ref) {
 
   onMounted(async () => {
     onSearch();
-    const { data } = await getRoleMenu();
+    const { data } = await getMenuList();
     treeIds.value = getKeyList(data, "id");
     treeData.value = handleTree(data);
   });
@@ -301,7 +319,6 @@ export function useRole(treeRef: Ref) {
     dataList,
     treeData,
     treeProps,
-    isLinkage,
     pagination,
     isExpandAll,
     isSelectAll,

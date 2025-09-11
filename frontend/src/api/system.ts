@@ -80,6 +80,11 @@ export const updateRole = (data?: object) => {
   return http.request<Result>("post", roleUrl("/update"), { data });
 };
 
+/** 更新角色状态 */
+export const updateRoleStatus = (data?: object) => {
+  return http.request<Result>("post", roleUrl("/updateStatus"), { data });
+};
+
 /** 系统管理-用户管理-获取所有角色列表 */
 export const getAllRoleList = () => {
   return http.request<Result>("get", roleUrl("/all"));
@@ -105,6 +110,16 @@ export const getRoleList = (
       currentPage
     }
   });
+};
+
+/** 获取角色管理-权限-菜单权限-根据角色 id 查对应菜单 */
+export const getRoleMenuIds = (data?: object) => {
+  return http.request<Result>("post", roleUrl("/getRoleAuth"), { data });
+};
+
+/** 更新角色菜单权限 */
+export const updateRoleAuth = (data?: object) => {
+  return http.request<Result>("post", roleUrl("/updateRoleAuth"), { data });
 };
 
 /** 新增菜单 */
@@ -170,14 +185,4 @@ export const getSystemLogsList = (data?: object) => {
 /** 获取系统监控-系统日志-根据 id 查日志详情 */
 export const getSystemLogsDetail = (data?: object) => {
   return http.request<Result>("post", "/system-logs-detail", { data });
-};
-
-/** 获取角色管理-权限-菜单权限 */
-export const getRoleMenu = (data?: object) => {
-  return http.request<Result>("post", "/role-menu", { data });
-};
-
-/** 获取角色管理-权限-菜单权限-根据角色 id 查对应菜单 */
-export const getRoleMenuIds = (data?: object) => {
-  return http.request<Result>("post", "/role-menu-ids", { data });
 };

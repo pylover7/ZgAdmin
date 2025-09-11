@@ -39,7 +39,7 @@ class RoleUpdate(BaseModel):
     remark: str | None
 
 
-class UpdateRoleStatus(RoleUpdate):
+class UpdateRoleStatus(BaseModel):
     status: int
 
 
