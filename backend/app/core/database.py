@@ -203,10 +203,13 @@ async def init_data(app: FastAPI) -> None:
             logger.info("创建管理员账户...")
             user_in = UserCreate(
                 username="admin",
+                nickname="管理员",
                 email=settings.FIRST_SUPERUSER,
                 password=password,
                 status=1,
                 is_superuser=True,
+                phone="13800138000",
+                remark="这是管理员"
             )
             admin = await userController.create(session=session, obj_in=user_in)
             logger.info(f"创建管理员账户成功，管理员用户名为：{admin.username}")
