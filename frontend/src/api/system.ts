@@ -15,10 +15,6 @@ type Result = {
   data?: Array<any>;
 };
 
-type ResultObj = Result & {
-  data?: object;
-};
-
 type ResultTable = Result & {
   /** 总条目数 */
   total?: number;
