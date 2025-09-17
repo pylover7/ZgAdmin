@@ -50,7 +50,4 @@ class RoleFilter(SQLModel):
 
 
 class UpdateRoleAuth(BaseModel):
-    menuUpdate: bool
     menuIds: list[UUID]
-    apiUpdate: bool
-    apiIds: list[UUID]

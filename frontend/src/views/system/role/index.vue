@@ -19,7 +19,6 @@ import Menu from "~icons/ep/menu";
 import AddFill from "~icons/ri/add-circle-line";
 import Close from "~icons/ep/close";
 import Check from "~icons/ep/check";
-import { T } from "node_modules/@faker-js/faker/dist/airline-CLphikKp";
 
 defineOptions({
   name: "SystemRole"

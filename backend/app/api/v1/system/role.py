@@ -76,17 +76,18 @@ async def get_role_auth(session: SessionDep, data: BaseModel):
     role_obj = await roleController.get(session, data.id)
     if not role_obj:
         return HTTPException(status_code=404, detail="角色不存在！")
-    result = {
-        "menus": [item.id.__str__() for item in role_obj.menus],
-        "apis": [item.id.__str__() for item in role_obj.apis]
-    }
+    # result = {
+    #     "menus": [item.id.__str__() for item in role_obj.menus],
+    #     "apis": [item.id.__str__() for item in role_obj.apis]
+    # }
+    result = [item.id.__str__() for item in role_obj.menus]
     return Success(msg="角色权限查询成功！", data=result)
 
 
 @roleRouter.post("/updateRoleAuth", summary="修改角色对应菜单列表和api列表")
 async def update_role_auth(session: SessionDep, data: UpdateRoleAuth):
-    if data.menuUpdate:
+    try:
         await roleController.updateMenus(session, data.id, data.menuIds)
-    elif data.apiUpdate:
-        await roleController.updateApis(session, data.id, data.apiIds)
-    return Success(msg="角色权限修改成功！")
+        return Success(msg="角色权限修改成功！")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))

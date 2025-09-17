@@ -15,11 +15,11 @@ type Result = {
   data?: Array<any>;
 };
 
-type ResultTable = {
-  code: number;
-  msg: string;
-  success: boolean;
-  data?: Array<any>;
+type ResultObj = Result & {
+  data?: object;
+};
+
+type ResultTable = Result & {
   /** 总条目数 */
   total?: number;
   /** 每页显示条目个数 */

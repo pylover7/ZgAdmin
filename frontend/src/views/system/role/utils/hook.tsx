@@ -105,9 +105,9 @@ export function useRole(treeRef: Ref) {
     ElMessageBox.confirm(
       `确认要<strong>${
         row.status === 0 ? "停用" : "启用"
-      }</strong><strong style='color:var(--el-color-primary)'>${
+      }【</strong><strong style='color:var(--el-color-primary)'>${
         row.name
-      }</strong>吗?`,
+      }</strong>】吗?`,
       "系统提示",
       {
         confirmButtonText: "确定",
@@ -128,9 +128,12 @@ export function useRole(treeRef: Ref) {
         updateRoleStatus({ id: row.id, status: row.status })
           .then(res => {
             if (res.success) {
-              message(`已启用角色【${row.name}】`, {
-                type: "success"
-              });
+              message(
+                `已${row.status === 0 ? "停用" : "启用"}角色【${row.name}】`,
+                {
+                  type: "success"
+                }
+              );
             } else {
               row.status === 0 ? (row.status = 1) : (row.status = 0);
             }
@@ -249,6 +252,8 @@ export function useRole(treeRef: Ref) {
       isShow.value = true;
       const { data } = await getRoleMenuIds({ id });
       treeRef.value.setCheckedKeys(data);
+      console.log("data", data);
+      console.log("treeRef.value", treeRef.value);
     } else {
       curRow.value = null;
       isShow.value = false;
@@ -267,11 +272,10 @@ export function useRole(treeRef: Ref) {
   function handleSave() {
     const { id, name } = curRow.value;
     // 根据用户 id 调用实际项目中菜单权限修改接口
-    console.log(id, treeRef.value.getCheckedKeys());
     updateRoleAuth({ id, menuIds: treeRef.value.getCheckedKeys() }).then(
       res => {
         if (res.success) {
-          message(`角色名称为${name}的菜单权限修改成功`, {
+          message(`角色名称为【${name}】的菜单权限修改成功`, {
             type: "success"
           });
         }
