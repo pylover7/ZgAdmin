@@ -1,3 +1,4 @@
+from uuid import UUID
 from fastapi import APIRouter
 
 from app.controllers.department import deptController
@@ -18,7 +19,7 @@ async def add_depart(session: SessionDep, data: DepartCreate):
 
 
 @departRouter.post("/delete", summary="删除部门")
-async def delete_depart(session: SessionDep, data: list[str]):
+async def delete_depart(session: SessionDep, data: list[UUID]):
     await deptController.delete(session, data)
     return Success(msg="部门删除成功！")
 
