@@ -42,7 +42,7 @@ class Logger(DatabaseSession):
             retention="10 days",
             compression="zip",
             format="<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | {extra[user]} | "
-                   "{extra[ip]} | {extra[ip_area]} | {extra[system]} | {extra[browser]} | <level>{message}</level>",
+                   "{extra[ip]} | {extra[address]} | {extra[system]} | {extra[browser]} | <level>{message}</level>",
             filter=lambda record: record["extra"].get("name") == "login"
         )
         self.logger.add(
@@ -86,7 +86,7 @@ class Logger(DatabaseSession):
     def success(self, msg):
         self.sysLogger.success(msg)
 
-    async def loginSuccess(self, user: str, ip: str, ip_area: str,
+    async def loginSuccess(self, username: str, ip: str, address: str,
                      system: str, browser: str, behavior: int):
         """
         登录成功日志
@@ -100,18 +100,18 @@ class Logger(DatabaseSession):
         """
         self.loginLogger.success(
             self.loginType(behavior),
-            user=user,
+            user=username,
             ip=ip,
-            ip_area=ip_area,
+            address=address,
             system=system,
             browser=browser)
 
         await loginLoginController.create(
             session=self.session, 
             obj_in=LoginLogCreate(
-                user=user,
+                username=username,
                 ip=ip,
-                ip_area=ip_area,
+                address=address,
                 system=system,
                 browser=browser,
                 behavior=self.loginType(behavior),
@@ -119,7 +119,7 @@ class Logger(DatabaseSession):
             )
         )
 
-    async def loginFail(self, user: str, ip: str, ip_area: str,
+    async def loginFail(self, username: str, ip: str, address: str,
                   system: str, browser: str, behavior: int):
         """
         登录失败日志
@@ -132,18 +132,18 @@ class Logger(DatabaseSession):
         """
         self.loginLogger.error(
             self.loginType(behavior),
-            user=user,
+            user=username,
             ip=ip,
-            ip_area=ip_area,
+            ip_area=address,
             system=system,
             browser=browser)
 
         await loginLoginController.create(
             session=self.session, 
             obj_in=LoginLogCreate(
-                user=user,
+                username=username,
                 ip=ip,
-                ip_area=ip_area,
+                address=address,
                 system=system,
                 browser=browser,
                 behavior=self.loginType(behavior),
@@ -167,9 +167,9 @@ if __name__ == '__main__':
     import asyncio
     logger.operationError("dayezi", "test")
     asyncio.run(logger.loginSuccess(
-        "dayezi",
+        username="dayezi",
         ip="xxx",
-        ip_area="xxx",
+        address="xxx",
         system="xxx",
         browser="xxx",
         behavior=0))

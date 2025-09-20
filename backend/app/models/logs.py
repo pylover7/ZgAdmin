@@ -10,13 +10,13 @@ class Log(BaseModel):
         default_factory=datetime.now, index=True, description="日志时间"
     )
 
-class LogLevel(BaseModel):
+class LogLevel(SQLModel):
     level: str = Field(index=True, description="日志级别")
 
 class LoginLogCreate(LogLevel):
-    user: str = Field(index=True, description="用户名")
+    username: str = Field(index=True, description="用户名")
     ip: str = Field(index=True, description="登录IP")
-    ip_area: str = Field(default="", description="IP归属地")
+    address: str = Field(default="", description="IP归属地")
     system: str = Field(default="", description="操作系统")
     browser: str = Field(default="", description="浏览器")
     behavior: str = Field(default="", description="登录行为")
@@ -27,8 +27,14 @@ class LoginLog(Log, LoginLogCreate, table=True):
 class LoginLogUpdate(LoginLogCreate):
     pass
 
+class LoginLogFilter(SQLModel):
+    username: str | None = Field(default=None, description="用户名")
+    level: str | None = Field(default=None, description="登录状态")
+    time_start: datetime | None = Field(default=None, description="开始时间")
+    time_end: datetime | None = Field(default=None, description="结束时间")
+
 class OperationLogCreate(LogLevel):
-    user: str = Field(index=True, description="用户名")
+    username: str = Field(index=True, description="用户名")
     message: str = Field(default="", description="操作描述")
 
 class OperationLog(Log, OperationLogCreate, table=True):

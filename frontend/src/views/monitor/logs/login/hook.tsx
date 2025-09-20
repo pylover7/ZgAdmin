@@ -32,8 +32,8 @@ export function useRole(tableRef: Ref) {
     },
     {
       label: "序号",
-      prop: "id",
-      minWidth: 90
+      minWidth: 90,
+      type: "index"
     },
     {
       label: "用户名",
@@ -62,11 +62,14 @@ export function useRole(tableRef: Ref) {
     },
     {
       label: "登录状态",
-      prop: "status",
+      prop: "level",
       minWidth: 100,
       cellRenderer: ({ row, props }) => (
-        <el-tag size={props.size} style={tagStyle.value(row.status)}>
-          {row.status === 1 ? "成功" : "失败"}
+        <el-tag
+          size={props.size}
+          style={tagStyle.value(row.level == "success" ? 1 : 0)}
+        >
+          {row.level === "success" ? "成功" : "失败"}
         </el-tag>
       )
     },
@@ -77,10 +80,9 @@ export function useRole(tableRef: Ref) {
     },
     {
       label: "登录时间",
-      prop: "loginTime",
+      prop: "time",
       minWidth: 180,
-      formatter: ({ loginTime }) =>
-        dayjs(loginTime).format("YYYY-MM-DD HH:mm:ss")
+      formatter: ({ time }) => dayjs(time).format("YYYY-MM-DD HH:mm:ss")
     }
   ];
 
