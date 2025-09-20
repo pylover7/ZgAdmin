@@ -55,6 +55,7 @@ function onFullscreen() {
           placeholder="请选择状态"
           clearable
           class="w-[180px]!"
+          @change="onSearch"
         >
           <el-option label="启用" :value="1" />
           <el-option label="停用" :value="0" />
