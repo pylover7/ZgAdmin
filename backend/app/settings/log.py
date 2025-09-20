@@ -2,6 +2,11 @@ import sys
 from pathlib import Path
 
 from loguru import logger as loguru_logger
+from sqlmodel import Session
+
+from app.controllers.logs import loginLoginController, operationLogController, systemLogController
+from app.models.logs import LoginLogCreate, OperationLogCreate, SystemLogCreate
+from app.core import engine, DatabaseSession
 
 loginLogs = Path(__file__).parent.parent.parent.joinpath("logs", "login.log")
 systemLogs = Path(__file__).parent.parent.parent.joinpath("logs", "system.log")
@@ -9,8 +14,9 @@ operationLogs = Path(__file__).parent.parent.parent.joinpath(
     "logs", "operation.log")
 
 
-class Logger:
+class Logger(DatabaseSession):
     def __init__(self):
+        super().__init__()
         self.logger = loguru_logger
         self.logger.remove()
         self.logger.add(
@@ -52,7 +58,7 @@ class Logger:
         self.loginLogger = self.logger.bind(name="login")
         self.operationLogger = self.logger.bind(name="operation")
 
-    def loginType(self, t: int):
+    def loginType(self, t: int) -> str:
         match t:
             case 0:
                 return "账号登录"
@@ -62,6 +68,8 @@ class Logger:
                 return "QQ登录"
             case 3:
                 return "手机号登录"
+            case _:
+                return "未知登录"
 
     def info(self, msg):
         self.sysLogger.info(msg)
@@ -78,7 +86,7 @@ class Logger:
     def success(self, msg):
         self.sysLogger.success(msg)
 
-    def loginSuccess(self, user: str, ip: str, ip_area: str,
+    async def loginSuccess(self, user: str, ip: str, ip_area: str,
                      system: str, browser: str, behavior: int):
         """
         登录成功日志
@@ -98,7 +106,20 @@ class Logger:
             system=system,
             browser=browser)
 
-    def loginFail(self, user: str, ip: str, ip_area: str,
+        await loginLoginController.create(
+            session=self.session, 
+            obj_in=LoginLogCreate(
+                user=user,
+                ip=ip,
+                ip_area=ip_area,
+                system=system,
+                browser=browser,
+                behavior=self.loginType(behavior),
+                level="success"
+            )
+        )
+
+    async def loginFail(self, user: str, ip: str, ip_area: str,
                   system: str, browser: str, behavior: int):
         """
         登录失败日志
@@ -117,6 +138,19 @@ class Logger:
             system=system,
             browser=browser)
 
+        await loginLoginController.create(
+            session=self.session, 
+            obj_in=LoginLogCreate(
+                user=user,
+                ip=ip,
+                ip_area=ip_area,
+                system=system,
+                browser=browser,
+                behavior=self.loginType(behavior),
+                level="fail"
+            )
+        )
+
     def operationInfo(self, user: str, msg: str):
         self.operationLogger.info(msg, user=user)
 
@@ -130,11 +164,12 @@ class Logger:
 logger = Logger()
 
 if __name__ == '__main__':
+    import asyncio
     logger.operationError("dayezi", "test")
-    logger.loginFail(
+    asyncio.run(logger.loginSuccess(
         "dayezi",
         ip="xxx",
         ip_area="xxx",
         system="xxx",
         browser="xxx",
-        behavior=0)
+        behavior=0))

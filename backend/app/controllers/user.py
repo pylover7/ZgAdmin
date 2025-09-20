@@ -86,7 +86,7 @@ class UserController(CRUDBase[User, UserCreate, UserUpdate]):
             if not result:
                 raise HTTPException(status_code=400, detail="密码错误!")
         except Exception:
-            logger.loginFail(
+            await logger.loginFail(
                 user=user.username,
                 ip=request.client.host if request.client else "unknown",
                 ip_area=ip_area,
@@ -96,7 +96,7 @@ class UserController(CRUDBase[User, UserCreate, UserUpdate]):
             )
             raise HTTPException(status_code=400, detail="密码错误!")
         if user.is_superuser:  # 超级管理员不验证状态
-            logger.loginSuccess(
+            await logger.loginSuccess(
                 user=user.username,
                 ip=request.client.host if request.client else "unknown",
                 ip_area=ip_area,
@@ -110,7 +110,7 @@ class UserController(CRUDBase[User, UserCreate, UserUpdate]):
         for item in user.roles:
             if not item.status:
                 raise HTTPException(status_code=400, detail="用户已被禁用")
-        logger.loginSuccess(
+        await logger.loginSuccess(
             user=user.username,
             ip=request.client.host if request.client else "unknown",
             ip_area=ip_area,

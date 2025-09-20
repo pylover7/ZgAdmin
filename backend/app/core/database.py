@@ -8,8 +8,8 @@ from app.models import *
 from app.settings.log import logger
 from app.utils.password import get_password_hash, md5_encrypt
 from app.utils.staticFileUtils import check_dir_exists
+from app.core import engine, DatabaseSession
 
-engine = create_engine(settings.SQLALCHEMY_DATABASE_URI)
 scheduler = AsyncIOScheduler()
 
 
@@ -192,7 +192,7 @@ async def init_data(app: FastAPI) -> None:
         settings.AVATAR_PATH,
         settings.GOODS_PATH,
     ])
-    with Session(engine) as session:
+    with DatabaseSession() as session:
         dept = await init_dept(session)
         admin = session.exec(
             select(User).where(User.email == settings.FIRST_SUPERUSER)
