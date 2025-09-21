@@ -5,6 +5,7 @@ from app.models import SuccessExtra
 from app.controllers.logs import loginLoginController
 from app.core.dependency import SessionDep
 from app.models.logs import LoginLogFilter, LoginLog
+from app.utils.localTime import convert_utc_to_local_time
 
 loginRouter = APIRouter()
 
@@ -21,10 +22,9 @@ async def get_login_logs(
           where.append(LoginLog.username == data.username)
       if data.level:
           where.append(LoginLog.level == data.level)
-      if data.time_start:
-          where.append(LoginLog.time >= data.time_start)
-      if data.time_end:
-          where.append(LoginLog.time <= data.time_end)
+      if data.loginTime and len(data.loginTime) == 2:
+          where.append(LoginLog.time >= data.loginTime[0])
+          where.append(LoginLog.time <= data.loginTime[1])
       if len(where) > 0:
         where = and_(*where, )
       else:

@@ -9,8 +9,8 @@ import { type Ref, reactive, ref, onMounted, toRaw } from "vue";
 export function useRole(tableRef: Ref) {
   const form = reactive({
     username: "",
-    status: "",
-    loginTime: ""
+    level: "",
+    loginTime: null
   });
   const dataList = ref([]);
   const loading = ref(true);

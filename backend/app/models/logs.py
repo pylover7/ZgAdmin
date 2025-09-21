@@ -30,8 +30,9 @@ class LoginLogUpdate(LoginLogCreate):
 class LoginLogFilter(SQLModel):
     username: str | None = Field(default=None, description="用户名")
     level: str | None = Field(default=None, description="登录状态")
-    time_start: datetime | None = Field(default=None, description="开始时间")
-    time_end: datetime | None = Field(default=None, description="结束时间")
+    loginTime: list[datetime] | None = Field(
+        default=None, description="登录时间范围"
+    )
 
 class OperationLogCreate(LogLevel):
     username: str = Field(index=True, description="用户名")

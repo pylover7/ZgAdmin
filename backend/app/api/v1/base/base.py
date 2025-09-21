@@ -35,6 +35,8 @@ async def login_access_token(
         credentials=credentials,
         request=request
     )
+    if not user:
+        return FailAuth(msg="用户名或密码错误！")
     await userController.update_last_login(session=session, id=user.id)
     roles = [item.code for item in user.roles]
     try:
