@@ -1,7 +1,8 @@
+from uuid import UUID
 from fastapi import APIRouter, Query
-from sqlmodel import Session, and_, col
+from sqlmodel import and_, col
 
-from app.models import SuccessExtra
+from app.models import SuccessExtra, Success
 from app.controllers.logs import loginLoginController
 from app.core.dependency import SessionDep
 from app.models.logs import LoginLogFilter, LoginLog
@@ -9,6 +10,15 @@ from app.utils.localTime import convert_utc_to_local_time
 
 loginRouter = APIRouter()
 
+@loginRouter.post("/delete")
+async def delete_login_logs(session: SessionDep, data: list[UUID]):
+    await loginLoginController.delete(session, data)
+    return Success(msg="登录日志删除成功！")
+
+@loginRouter.get("/clear")
+async def clear_login_logs(session: SessionDep):
+    await loginLoginController.delete_all(session)
+    return Success(msg="登录日志清空成功！")
 
 @loginRouter.post("/list")
 async def get_login_logs(

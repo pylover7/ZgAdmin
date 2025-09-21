@@ -169,6 +169,16 @@ export const getOnlineLogsList = (data?: object) => {
   return http.request<ResultTable>("post", "/online-logs", { data });
 };
 
+/** 删除登录日志 */
+export const deleteLoginLogs = (data?: string[]) => {
+  return http.request<Result>("post", loginLogsUrl("/delete"), { data });
+};
+
+/** 删除所有登录日志 */
+export const clearLoginLogs = () => {
+  return http.request<Result>("get", loginLogsUrl("/clear"));
+};
+
 /** 获取系统监控-登录日志列表 */
 export const getLoginLogsList = (data?: object) => {
   return http.request<ResultTable>("post", loginLogsUrl("/list"), { data });
