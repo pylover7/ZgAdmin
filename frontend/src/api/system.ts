@@ -180,13 +180,37 @@ export const clearLoginLogs = () => {
 };
 
 /** 获取系统监控-登录日志列表 */
-export const getLoginLogsList = (data?: object) => {
-  return http.request<ResultTable>("post", loginLogsUrl("/list"), { data });
+export const getLoginLogsList = (
+  username: string,
+  level: string,
+  loginTime: string[],
+  currentPage: number,
+  pageSize: number
+) => {
+  return http.request<ResultTable>("post", loginLogsUrl("/list"), {
+    data: { username, level, loginTime },
+    params: {
+      pageSize,
+      currentPage
+    }
+  });
 };
 
 /** 获取系统监控-操作日志列表 */
-export const getOperationLogsList = (data?: object) => {
-  return http.request<ResultTable>("post", operationLogsUrl("/list"), { data });
+export const getOperationLogsList = (
+  username: string,
+  level: string,
+  loginTime: string[],
+  currentPage: number,
+  pageSize: number
+) => {
+  return http.request<ResultTable>("post", operationLogsUrl("/list"), {
+    data: { username, level, loginTime },
+    params: {
+      pageSize,
+      currentPage
+    }
+  });
 };
 
 /** 获取系统监控-系统日志列表 */
