@@ -37,10 +37,14 @@ class SysBro(BaseModel):
 
 async def getReqSysBro(request: Request) -> SysBro:
     ua = request.headers.get("User-Agent")
-    system = re.findall(r"\(([^;]+)", ua)[0][0:] or "未知系统"
-    browser = re.findall(
-        r"(Chrome|Edg|Safari|Firefox|MSIE|Trident)/",
-        ua)[0] or "未知浏览器"
+    if ua:
+        system_match = re.findall(r"\(([^;]+)", ua)
+        system = system_match[0] if system_match else "未知系统"
+        browser_match = re.findall(r"(Chrome|Edg|Safari|Firefox|MSIE|Trident)/", ua)
+        browser = browser_match[0] if browser_match else "未知浏览器"
+    else:
+        system = "未知系统"
+        browser = "未知浏览器"
     return SysBro(system=system, browser=browser)
 
 if __name__ == '__main__':

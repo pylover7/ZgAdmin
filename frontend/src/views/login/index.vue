@@ -89,6 +89,10 @@ const onLogin = async (formEl: FormInstance | undefined) => {
             message(t("login.pureLoginFail"), { type: "error" });
           }
         })
+        .catch(err => {
+          console.log(err.response.data.msg);
+          message(err.response.data.msg, { type: "error" });
+        })
         .finally(() => (loading.value = false));
     }
   });

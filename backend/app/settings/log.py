@@ -93,7 +93,7 @@ class Logger(DatabaseSession):
 
         :param user: 用户
         :param ip: ip
-        :param ip_area: 登录地点
+        :param address: 登录地点
         :param system: 操作系统
         :param browser: 浏览器类型
         :param behavior: 登录行为：0：账号/1：微信/2：QQ/3：电话登录 等
@@ -125,7 +125,7 @@ class Logger(DatabaseSession):
         登录失败日志
         :param user: 用户
         :param ip: ip
-        :param ip_area: 登录地点
+        :param address: 登录地点
         :param system: 操作系统
         :param browser: 浏览器类型
         :param behavior: 登录行为：0：账号/1：微信/2：QQ/3：电话登录 等
@@ -134,7 +134,7 @@ class Logger(DatabaseSession):
             self.loginType(behavior),
             user=username,
             ip=ip,
-            ip_area=address,
+            address=address,
             system=system,
             browser=browser)
 
