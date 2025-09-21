@@ -8,7 +8,6 @@ import { message } from "@/utils/message";
 import userAvatar from "@/assets/user.jpg";
 import { usePublicHooks } from "../../hooks";
 import { addDialog } from "@/components/ReDialog";
-import type { PaginationProps } from "@pureadmin/table";
 import type { FormItemProps, RoleFormItemProps } from "../utils/types";
 import {
   getKeyList,
@@ -28,6 +27,8 @@ import {
 } from "@/api/system";
 import { ElMessageBox } from "element-plus";
 import { type Ref, h, ref, watch, computed, reactive, onMounted } from "vue";
+import { paginationConf } from "@/config";
+import type { PaginationProps } from "@pureadmin/table";
 
 export function useUser(tableRef: Ref, treeRef: Ref) {
   const form = reactive({
@@ -46,12 +47,7 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
   const treeData = ref([]);
   const treeLoading = ref(true);
   const selectedNum = ref(0);
-  const pagination = reactive<PaginationProps>({
-    total: 0,
-    pageSize: 10,
-    currentPage: 1,
-    background: true
-  });
+  const pagination = reactive<PaginationProps>({ ...paginationConf });
   const columns: TableColumnList = [
     {
       label: "勾选列", // 如果需要表格多选，此处label必须设置
@@ -229,11 +225,13 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
   }
 
   function handleSizeChange(val: number) {
-    console.log(`${val} items per page`);
+    pagination.pageSize = val;
+    onSearch();
   }
 
   function handleCurrentChange(val: number) {
-    console.log(`current page: ${val}`);
+    pagination.currentPage = val;
+    onSearch();
   }
 
   /** 当CheckBox选择项发生变化时会触发该事件 */

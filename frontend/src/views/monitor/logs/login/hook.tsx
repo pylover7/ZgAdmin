@@ -7,8 +7,9 @@ import {
   getLoginLogsList
 } from "@/api/system";
 import { usePublicHooks } from "@/views/system/hooks";
-import type { PaginationProps } from "@pureadmin/table";
 import { type Ref, reactive, ref, onMounted } from "vue";
+import { paginationConf } from "@/config";
+import type { PaginationProps } from "@pureadmin/table";
 
 export function useRole(tableRef: Ref) {
   const form = reactive({
@@ -21,12 +22,7 @@ export function useRole(tableRef: Ref) {
   const selectedNum = ref(0);
   const { tagStyle } = usePublicHooks();
 
-  const pagination = reactive<PaginationProps>({
-    total: 0,
-    pageSize: 10,
-    currentPage: 1,
-    background: true
-  });
+  const pagination = reactive<PaginationProps>({ ...paginationConf });
   const columns: TableColumnList = [
     {
       label: "勾选列", // 如果需要表格多选，此处label必须设置

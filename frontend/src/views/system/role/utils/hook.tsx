@@ -19,6 +19,7 @@ import {
   updateRoleStatus
 } from "@/api/system";
 import { type Ref, reactive, ref, onMounted, h, watch } from "vue";
+import { paginationConf } from "@/config";
 
 export function useRole(treeRef: Ref) {
   const form = reactive({
@@ -43,12 +44,7 @@ export function useRole(treeRef: Ref) {
     label: "title",
     children: "children"
   };
-  const pagination = reactive<PaginationProps>({
-    total: 0,
-    pageSize: 10,
-    currentPage: 1,
-    background: true
-  });
+  const pagination = reactive<PaginationProps>({ ...paginationConf });
   const columns: TableColumnList = [
     {
       label: "角色编号",
@@ -159,11 +155,13 @@ export function useRole(treeRef: Ref) {
   }
 
   function handleSizeChange(val: number) {
-    console.log(`${val} items per page`);
+    pagination.pageSize = val;
+    onSearch();
   }
 
   function handleCurrentChange(val: number) {
-    console.log(`current page: ${val}`);
+    pagination.currentPage = val;
+    onSearch();
   }
 
   function handleSelectionChange(val) {
