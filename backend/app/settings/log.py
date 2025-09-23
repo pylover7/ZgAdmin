@@ -151,14 +151,39 @@ class Logger(DatabaseSession):
             )
         )
 
-    def operationInfo(self, user: str, msg: str):
+    async def operationInfo(self, user: str, msg: str):
         self.operationLogger.info(msg, user=user)
+        await operationLogController.create(
+            session=self.session,
+            obj_in=OperationLogCreate(
+                username=user,
+                message=msg,
+                level="info"
+            )
+        )
+        
 
-    def operationWarning(self, user: str, msg: str):
+    async def operationWarning(self, user: str, msg: str):
         self.operationLogger.warning(msg, user=user)
+        await operationLogController.create(
+            session=self.session,
+            obj_in=OperationLogCreate(
+                username=user,
+                message=msg,
+                level="warning"
+            )
+        )
 
-    def operationError(self, user: str, msg: str):
+    async def operationError(self, user: str, msg: str):
         self.operationLogger.error(msg, user=user)
+        await operationLogController.create(
+            session=self.session,
+            obj_in=OperationLogCreate(
+                username=user,
+                message=msg,
+                level="error"
+            )
+        )
 
 
 logger = Logger()

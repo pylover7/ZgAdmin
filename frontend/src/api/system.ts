@@ -198,14 +198,13 @@ export const getLoginLogsList = (
 
 /** 获取系统监控-操作日志列表 */
 export const getOperationLogsList = (
-  username: string,
-  level: string,
-  loginTime: string[],
+  level: string[],
+  operationTime: string,
   currentPage: number,
   pageSize: number
 ) => {
   return http.request<ResultTable>("post", operationLogsUrl("/list"), {
-    data: { username, level, loginTime },
+    data: { level, operationTime },
     params: {
       pageSize,
       currentPage

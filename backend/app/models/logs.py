@@ -44,6 +44,12 @@ class OperationLog(Log, OperationLogCreate, table=True):
 class OperationLogUpdate(OperationLogCreate):
     pass
 
+class OperationLogFilter(SQLModel):
+    level: list[str] = Field(default=None, description="日志等级")
+    operationTime: list[datetime] | None = Field(
+        default=None, description="操作时间范围"
+    )
+
 class SystemLogCreate(LogLevel):
     message: str = Field(default="", description="日志内容")
 

@@ -2,27 +2,20 @@ import dayjs from "dayjs";
 import { message } from "@/utils/message";
 import { getKeyList } from "@pureadmin/utils";
 import { getOperationLogsList } from "@/api/system";
-import { usePublicHooks } from "@/views/system/hooks";
 import type { PaginationProps } from "@pureadmin/table";
-import { type Ref, reactive, ref, onMounted, toRaw } from "vue";
+import { type Ref, reactive, ref, onMounted } from "vue";
+import { paginationConf } from "@/config";
 
 export function useRole(tableRef: Ref) {
   const form = reactive({
-    module: "",
-    status: "",
-    operatingTime: ""
+    level: [],
+    operationTime: null
   });
   const dataList = ref([]);
   const loading = ref(true);
   const selectedNum = ref(0);
-  const { tagStyle } = usePublicHooks();
 
-  const pagination = reactive<PaginationProps>({
-    total: 0,
-    pageSize: 10,
-    currentPage: 1,
-    background: true
-  });
+  const pagination = reactive<PaginationProps>({ ...paginationConf });
   const columns: TableColumnList = [
     {
       label: "勾选列", // 如果需要表格多选，此处label必须设置
@@ -32,8 +25,13 @@ export function useRole(tableRef: Ref) {
     },
     {
       label: "序号",
-      prop: "id",
-      minWidth: 90
+      minWidth: 90,
+      type: "index"
+    },
+    {
+      label: "日志等级",
+      prop: "level",
+      minWidth: 100
     },
     {
       label: "操作人员",
@@ -41,48 +39,13 @@ export function useRole(tableRef: Ref) {
       minWidth: 100
     },
     {
-      label: "所属模块",
-      prop: "module",
-      minWidth: 140
-    },
-    {
       label: "操作概要",
-      prop: "summary",
+      prop: "message",
       minWidth: 140
-    },
-    {
-      label: "操作 IP",
-      prop: "ip",
-      minWidth: 100
-    },
-    {
-      label: "操作地点",
-      prop: "address",
-      minWidth: 140
-    },
-    {
-      label: "操作系统",
-      prop: "system",
-      minWidth: 100
-    },
-    {
-      label: "浏览器类型",
-      prop: "browser",
-      minWidth: 100
-    },
-    {
-      label: "操作状态",
-      prop: "status",
-      minWidth: 100,
-      cellRenderer: ({ row, props }) => (
-        <el-tag size={props.size} style={tagStyle.value(row.status)}>
-          {row.status === 1 ? "成功" : "失败"}
-        </el-tag>
-      )
     },
     {
       label: "操作时间",
-      prop: "operatingTime",
+      prop: "time",
       minWidth: 180,
       formatter: ({ operatingTime }) =>
         dayjs(operatingTime).format("YYYY-MM-DD HH:mm:ss")
@@ -134,11 +97,16 @@ export function useRole(tableRef: Ref) {
 
   async function onSearch() {
     loading.value = true;
-    const { data } = await getOperationLogsList(toRaw(form));
-    dataList.value = data.list;
-    pagination.total = data.total;
-    pagination.pageSize = data.pageSize;
-    pagination.currentPage = data.currentPage;
+    const { data, total, currentPage, pageSize } = await getOperationLogsList(
+      form.level,
+      form.operationTime,
+      pagination.currentPage,
+      pagination.pageSize
+    );
+    dataList.value = data;
+    pagination.total = total;
+    pagination.pageSize = pageSize;
+    pagination.currentPage = currentPage;
 
     setTimeout(() => {
       loading.value = false;
