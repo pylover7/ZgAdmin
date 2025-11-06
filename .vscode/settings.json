@@ -162,5 +162,6 @@
         "database": "${workspaceFolder:workspace}/backend/static/pytool.sqlite"
       }
     ],
-    "sqltools.useNodeRuntime": true
+    "sqltools.useNodeRuntime": true,
+    "chat.agent.enabled": false
 }
