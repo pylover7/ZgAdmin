@@ -18,7 +18,7 @@ async def get_operation_logs(
 ):
     where = []
     if len(data.level) > 0:
-        where.append(OperationLog.level.in_(data.level))
+        where.append(OperationLog.level.in_(data.level)) # type: ignore
     if data.operationTime and len(data.operationTime) == 2:
         where.append(OperationLog.time >= data.operationTime[0])
         where.append(OperationLog.time <= data.operationTime[1])

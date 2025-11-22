@@ -213,8 +213,19 @@ export const getOperationLogsList = (
 };
 
 /** 获取系统监控-系统日志列表 */
-export const getSystemLogsList = (data?: object) => {
-  return http.request<ResultTable>("post", systemLogsUrl("/list"), { data });
+export const getSystemLogsList = (
+  model: string,
+  operationTime: string,
+  currentPage: number,
+  pageSize: number
+) => {
+  return http.request<ResultTable>("post", systemLogsUrl("/list"), {
+    data: { model, operationTime },
+    params: {
+      pageSize,
+      currentPage
+    }
+  });
 };
 
 /** 获取系统监控-系统日志-根据 id 查日志详情 */

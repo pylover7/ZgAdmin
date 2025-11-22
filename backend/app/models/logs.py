@@ -51,6 +51,7 @@ class OperationLogFilter(SQLModel):
     )
 
 class SystemLogCreate(LogLevel):
+    module: str = Field(default="", description="所属模块")
     message: str = Field(default="", description="日志内容")
 
 
@@ -59,3 +60,9 @@ class SystemLog(Log, SystemLogCreate, table=True):
 
 class SystemLogUpdate(SystemLogCreate):
     pass
+
+class SystemLogFilter(SQLModel):
+    module: str | None = Field(default=None, description="模块名称")
+    oprationTime: list[datetime] | None = Field(
+        default=None, description="操作时间范围"
+    )

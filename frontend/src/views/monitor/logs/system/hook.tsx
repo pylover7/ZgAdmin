@@ -3,7 +3,7 @@ import Detail from "./detail.vue";
 import { message } from "@/utils/message";
 import { addDialog } from "@/components/ReDialog";
 import type { PaginationProps } from "@pureadmin/table";
-import { type Ref, reactive, ref, onMounted, toRaw } from "vue";
+import { type Ref, reactive, ref, onMounted } from "vue";
 import { getKeyList, useCopyToClipboard } from "@pureadmin/utils";
 import { getSystemLogsList, getSystemLogsDetail } from "@/api/system";
 import Info from "~icons/ri/question-line";
@@ -11,7 +11,7 @@ import Info from "~icons/ri/question-line";
 export function useRole(tableRef: Ref) {
   const form = reactive({
     module: "",
-    requestTime: ""
+    oprationTime: ""
   });
   const dataList = ref([]);
   const loading = ref(true);
@@ -204,11 +204,16 @@ export function useRole(tableRef: Ref) {
 
   async function onSearch() {
     loading.value = true;
-    const { data } = await getSystemLogsList(toRaw(form));
-    dataList.value = data.list;
-    pagination.total = data.total;
-    pagination.pageSize = data.pageSize;
-    pagination.currentPage = data.currentPage;
+    const { data, total, pageSize, currentPage } = await getSystemLogsList(
+      form.module,
+      form.oprationTime,
+      pagination.currentPage,
+      pagination.pageSize
+    );
+    dataList.value = data;
+    pagination.total = total;
+    pagination.pageSize = pageSize;
+    pagination.currentPage = currentPage;
 
     setTimeout(() => {
       loading.value = false;
