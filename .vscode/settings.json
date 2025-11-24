@@ -163,5 +163,9 @@
       }
     ],
     "sqltools.useNodeRuntime": true,
-    "chat.agent.enabled": false
+    "gitblame.inlineMessageEnabled": true,
+    "gitblame.inlineMessageFormat": "${author.name}, (${time.ago}) · ${commit.summary}",
+    "terminal.integrated.suggest.enabled": true,
+    "workbench.secondarySideBar.defaultVisibility": "hidden",
+    "terminal.integrated.shellIntegration.environmentReporting": true
 }
