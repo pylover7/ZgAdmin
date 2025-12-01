@@ -212,6 +212,11 @@ export const getOperationLogsList = (
   });
 };
 
+/** 删除系统日志 */
+export const deleteSystemLogs = (data?: string[]) => {
+  return http.request<Result>("post", systemLogsUrl("/delete"), { data });
+};
+
 /** 获取系统监控-系统日志列表 */
 export const getSystemLogsList = (
   model: string,
