@@ -5,7 +5,11 @@ import { addDialog } from "@/components/ReDialog";
 import type { PaginationProps } from "@pureadmin/table";
 import { type Ref, reactive, ref, onMounted } from "vue";
 import { getKeyList, useCopyToClipboard } from "@pureadmin/utils";
-import { getSystemLogsList, getSystemLogsDetail } from "@/api/system";
+import {
+  getSystemLogsList,
+  getSystemLogsDetail,
+  deleteSystemLogs
+} from "@/api/system";
 import Info from "~icons/ri/question-line";
 import { paginationConf } from "@/config";
 
@@ -123,11 +127,13 @@ export function useRole(tableRef: Ref) {
   ];
 
   function handleSizeChange(val: number) {
-    console.log(`${val} items per page`);
+    pagination.pageSize = val;
+    onSearch();
   }
 
   function handleCurrentChange(val: number) {
-    console.log(`current page: ${val}`);
+    pagination.currentPage = val;
+    onSearch();
   }
 
   /** 当CheckBox选择项发生变化时会触发该事件 */
@@ -157,12 +163,15 @@ export function useRole(tableRef: Ref) {
   function onbatchDel() {
     // 返回当前选中的行
     const curSelected = tableRef.value.getTableRef().getSelectionRows();
-    // 接下来根据实际业务，通过选中行的某项数据，比如下面的id，调用接口进行批量删除
-    message(`已删除序号为 ${getKeyList(curSelected, "id")} 的数据`, {
-      type: "success"
+    deleteSystemLogs(getKeyList(curSelected, "id")).then(() => {
+      message("已删除选中日志数据", {
+        type: "success"
+      });
+      selectedNum.value = 0;
+      // 用于多选表格，清空用户的选择
+      tableRef.value.getTableRef().clearSelection();
+      onSearch();
     });
-    tableRef.value.getTableRef().clearSelection();
-    onSearch();
   }
 
   /** 清空日志 */

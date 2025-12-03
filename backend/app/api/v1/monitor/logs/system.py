@@ -1,4 +1,5 @@
 from operator import and_
+import sys
 from unittest import result
 from uuid import UUID
 from fastapi import APIRouter, Query
@@ -7,7 +8,7 @@ from sqlmodel import col
 from app.core.dependency import SessionDep
 from app.models.logs import SystemLog, SystemLogFilter
 from app.controllers.logs import  systemLogController
-from app.models.base import SuccessExtra
+from app.models.base import Success, SuccessExtra
 
 systemRouter = APIRouter()
 
@@ -17,7 +18,14 @@ async def delete_system_logs(
   ids: list[UUID],
 ):
     await systemLogController.delete(session, ids)
-    return SuccessExtra(msg="系统日志删除成功！")
+    return Success(msg="系统日志删除成功！")
+
+@systemRouter.post("/clear")
+async def clear_system_logs(
+    session: SessionDep,
+    ):
+        await systemLogController.delete_all(session)
+        return Success(msg="系统日志清空成功！")
 
 
 @systemRouter.post("/list")
