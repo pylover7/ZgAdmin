@@ -23,6 +23,7 @@ const {
   dataList,
   pagination,
   selectedNum,
+  selectOpt,
   onSearch,
   onDetail,
   clearAll,
@@ -45,12 +46,19 @@ const {
       class="search-form bg-bg_color w-full pl-8 pt-[12px] overflow-auto"
     >
       <el-form-item label="所属模块" prop="module">
-        <el-input
+        <el-select
           v-model="form.module"
           placeholder="请输入所属模块"
           clearable
           class="w-[170px]!"
-        />
+        >
+          <el-option
+            v-for="item in selectOpt"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+          />
+        </el-select>
       </el-form-item>
       <el-form-item label="请求时间" prop="oprationTime">
         <el-date-picker

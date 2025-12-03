@@ -7,6 +7,7 @@ import { type Ref, reactive, ref, onMounted } from "vue";
 import { getKeyList, useCopyToClipboard } from "@pureadmin/utils";
 import { getSystemLogsList, getSystemLogsDetail } from "@/api/system";
 import Info from "~icons/ri/question-line";
+import { paginationConf } from "@/config";
 
 export function useRole(tableRef: Ref) {
   const form = reactive({
@@ -18,27 +19,14 @@ export function useRole(tableRef: Ref) {
   const selectedNum = ref(0);
   const { copied, update } = useCopyToClipboard();
 
-  const pagination = reactive<PaginationProps>({
-    total: 0,
-    pageSize: 10,
-    currentPage: 1,
-    background: true
-  });
+  const pagination = reactive<PaginationProps>({ ...paginationConf });
 
-  // const getLevelType = (type, text = false) => {
-  //   switch (type) {
-  //     case 0:
-  //       return text ? "debug" : "primary";
-  //     case 1:
-  //       return text ? "info" : "success";
-  //     case 2:
-  //       return text ? "warn" : "info";
-  //     case 3:
-  //       return text ? "error" : "warning";
-  //     case 4:
-  //       return text ? "fatal" : "danger";
-  //   }
-  // };
+  const selectOpt = [
+    { label: "用户模块", value: "用户模块" },
+    { label: "角色模块", value: "角色模块" },
+    { label: "菜单模块", value: "菜单模块" },
+    { label: "部门模块", value: "部门模块" }
+  ];
 
   const columns: TableColumnList = [
     {
@@ -237,6 +225,7 @@ export function useRole(tableRef: Ref) {
     dataList,
     pagination,
     selectedNum,
+    selectOpt,
     onSearch,
     onDetail,
     clearAll,
