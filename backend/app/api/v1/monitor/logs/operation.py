@@ -1,3 +1,4 @@
+from uuid import UUID
 from fastapi import APIRouter, Query
 from sqlmodel import and_, col
 
@@ -5,8 +6,24 @@ from app.core.dependency import SessionDep
 from app.models import SuccessExtra
 from app.models.logs import OperationLogFilter, OperationLog
 from app.controllers.logs import operationLogController
+from app.models.base import Success
 
 operationRouter = APIRouter()
+
+@operationRouter.post("/delete")
+async def delete_operation_logs(
+    session: SessionDep, # type: ignore
+    ids: list[UUID] = Query(..., description="日志ID列表"),
+):
+    await operationLogController.delete(session, ids)
+    return Success(msg="操作日志删除成功！")
+
+@operationRouter.post("/clear")
+async def clear_operation_logs(
+    session: SessionDep, # type: ignore
+):
+    await operationLogController.delete_all(session)
+    return Success(msg="操作日志清空成功！")
 
 
 @operationRouter.post("/list")
