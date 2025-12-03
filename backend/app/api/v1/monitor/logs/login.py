@@ -1,4 +1,3 @@
-from tkinter import N
 from uuid import UUID
 from fastapi import APIRouter, Query
 from sqlmodel import and_, col
