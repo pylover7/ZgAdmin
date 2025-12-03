@@ -48,9 +48,10 @@ const {
       <el-form-item label="所属模块" prop="module">
         <el-select
           v-model="form.module"
-          placeholder="请输入所属模块"
+          placeholder="请选择所属模块"
           clearable
           class="w-[170px]!"
+          @change="onSearch"
         >
           <el-option
             v-for="item in selectOpt"

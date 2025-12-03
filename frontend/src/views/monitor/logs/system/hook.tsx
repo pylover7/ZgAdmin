@@ -22,10 +22,8 @@ export function useRole(tableRef: Ref) {
   const pagination = reactive<PaginationProps>({ ...paginationConf });
 
   const selectOpt = [
-    { label: "用户模块", value: "用户模块" },
-    { label: "角色模块", value: "角色模块" },
-    { label: "菜单模块", value: "菜单模块" },
-    { label: "部门模块", value: "部门模块" }
+    { label: "系统管理", value: "systemManager" },
+    { label: "系统监控", value: "systemMonitor" }
   ];
 
   const columns: TableColumnList = [
