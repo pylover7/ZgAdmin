@@ -1,9 +1,6 @@
-from operator import and_
-import sys
-from unittest import result
 from uuid import UUID
 from fastapi import APIRouter, Query
-from sqlmodel import col
+from sqlmodel import col, and_
 
 from app.core.dependency import SessionDep
 from app.models.logs import SystemLog, SystemLogFilter
