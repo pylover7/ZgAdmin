@@ -1,55 +1,9 @@
 // 完整版菜单比较多，将 rank 抽离出来，在此方便维护
 
 const home = 0, // 平台规定只有 home 路由的 rank 才能为 0 ，所以后端在返回 rank 的时候需要从非 0 开始
-  components = 14,
-  able = 15,
-  table = 16,
-  form = 17,
-  list = 18,
-  result = 19,
   error = 110,
-  frame = 111,
-  nested = 112,
-  permission = 113,
   system = 114,
   monitor = 115,
-  tabs = 116,
-  about = 117,
-  codemirror = 118,
-  markdown = 119,
-  editor = 120,
-  flowchart = 121,
-  formdesign = 122,
-  board = 123,
-  ppt = 124,
-  mind = 125,
-  guide = 126,
-  menuoverflow = 127;
+  about = 117;
 
-export {
-  home,
-  components,
-  able,
-  table,
-  form,
-  list,
-  result,
-  error,
-  frame,
-  nested,
-  permission,
-  system,
-  monitor,
-  tabs,
-  about,
-  codemirror,
-  markdown,
-  editor,
-  flowchart,
-  formdesign,
-  board,
-  ppt,
-  mind,
-  guide,
-  menuoverflow
-};
+export { home, error, system, monitor, about };
