@@ -12,10 +12,10 @@ import type { FormInstance } from "element-plus";
 import { $t, transformI18n } from "@/plugins/i18n";
 import { operates } from "./utils/enums";
 import { useLayout } from "@/layout/hooks/useLayout";
-import LoginPhone from "./components/LoginPhone.vue";
 import LoginRegist from "./components/LoginRegist.vue";
 import LoginUpdate from "./components/LoginUpdate.vue";
-import LoginQrCode from "./components/LoginQrCode.vue";
+import LoginWeChat from "./components/LoginWeChat.vue";
+import LoginQQ from "./components/LoginQQ.vue";
 import { useUserStoreHook } from "@/store/modules/user";
 import { initRouter, getTopMenu } from "@/router/utils";
 import { bg, avatar, illustration } from "./utils/static";
@@ -306,14 +306,12 @@ watch(loginDay, value => {
             </Motion>
           </el-form>
 
-          <!-- 手机号登录 -->
-          <LoginPhone v-if="currentPage === 1" />
-          <!-- 二维码登录 -->
-          <LoginQrCode v-if="currentPage === 2" />
-          <!-- 注册 -->
-          <LoginRegist v-if="currentPage === 3" />
+          <!-- QQ登录 -->
+          <LoginQQ v-if="currentPage === 1" />
+          <!-- 微信登录 -->
+          <LoginWeChat v-if="currentPage === 2" />
           <!-- 忘记密码 -->
-          <LoginUpdate v-if="currentPage === 4" />
+          <LoginUpdate v-if="currentPage === 3" />
         </div>
       </div>
     </div>

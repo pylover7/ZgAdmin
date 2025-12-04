@@ -208,6 +208,8 @@ login:
   pureThirdLogin: 第三方登录
   purePhoneLogin: 手机登录
   pureQRCodeLogin: 二维码登录
+  WeChatLogin: 微信登录
+  QQLogin: QQ登录
   pureRegister: 注册
   pureWeChatLogin: 微信登录
   pureAlipayLogin: 支付宝登录
