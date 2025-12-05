@@ -4,7 +4,8 @@ import pytz
 
 
 def convert_utc_to_local_time(
-        utc_time_str: str, strip: str = "%Y-%m-%dT%H:%M:%S.%fZ", tz: str = "Asia/Shanghai") -> datetime:
+        utc_time_str: str, strip: str = "%Y-%m-%dT%H:%M:%S.%fZ", tz: str = "Asia/Shanghai"
+    ) -> datetime:
     """
     将 UTC 时间字符串转换为本地时间字符串
 
