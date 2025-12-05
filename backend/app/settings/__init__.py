@@ -79,7 +79,13 @@ class Settings(BaseSettings):
     @computed_field  # type: ignore[prop-decorator]
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> str:
-        return db_engine(self.DB_SCHEME, self.DB_USER, self.DB_PASSWORD, self.DB_SERVER, self.DB_PORT, self.DB_PATH)
+        return db_engine(
+            self.DB_SCHEME,
+            self.DB_USER,
+            self.DB_PASSWORD,
+            self.DB_SERVER,
+            self.DB_PORT,
+            self.DB_PATH)
 
     SMTP_TLS: bool = True
     SMTP_SSL: bool = False

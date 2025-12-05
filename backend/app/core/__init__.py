@@ -6,6 +6,7 @@ from app.settings import settings
 
 engine = create_engine(settings.SQLALCHEMY_DATABASE_URI)
 
+
 class DatabaseSession:
     def __init__(self):
         self.session = Session(engine)

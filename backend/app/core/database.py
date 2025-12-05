@@ -165,7 +165,8 @@ def init_menus(session: Session):
         session.add(operationLog)
         session.add(systemLog)
         session.commit()
-    
+
+
 async def init_dept(session: Session):
     """
     初始化部门
@@ -224,7 +225,7 @@ async def init_data(app: FastAPI) -> None:
         logger.info("初始化API...")
         init_api(app, session)
         logger.info("初始化菜单...")
-        init_menus(session)        
+        init_menus(session)
         logger.info("启动定时任务...")
         scheduler.add_job(
             update_expired_orders,

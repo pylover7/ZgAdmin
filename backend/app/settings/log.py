@@ -42,9 +42,8 @@ class Logger(DatabaseSession):
             retention="10 days",
             compression="zip",
             format="<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | {extra[user]} | "
-                   "{extra[ip]} | {extra[address]} | {extra[system]} | {extra[browser]} | <level>{message}</level>",
-            filter=lambda record: record["extra"].get("name") == "login"
-        )
+            "{extra[ip]} | {extra[address]} | {extra[system]} | {extra[browser]} | <level>{message}</level>",
+            filter=lambda record: record["extra"].get("name") == "login")
         self.logger.add(
             sink=operationLogs,
             level="INFO",
@@ -87,7 +86,7 @@ class Logger(DatabaseSession):
         self.sysLogger.success(msg)
 
     async def loginSuccess(self, username: str, ip: str, address: str,
-                     system: str, browser: str, behavior: int):
+                           system: str, browser: str, behavior: int):
         """
         登录成功日志
 
@@ -107,7 +106,7 @@ class Logger(DatabaseSession):
             browser=browser)
 
         await loginLoginController.create(
-            session=self.session, 
+            session=self.session,
             obj_in=LoginLogCreate(
                 username=username,
                 ip=ip,
@@ -120,7 +119,7 @@ class Logger(DatabaseSession):
         )
 
     async def loginFail(self, username: str, ip: str, address: str,
-                  system: str, browser: str, behavior: int):
+                        system: str, browser: str, behavior: int):
         """
         登录失败日志
         :param user: 用户
@@ -139,7 +138,7 @@ class Logger(DatabaseSession):
             browser=browser)
 
         await loginLoginController.create(
-            session=self.session, 
+            session=self.session,
             obj_in=LoginLogCreate(
                 username=username,
                 ip=ip,
@@ -161,7 +160,6 @@ class Logger(DatabaseSession):
                 level="info"
             )
         )
-        
 
     async def operationWarning(self, user: str, msg: str):
         self.operationLogger.warning(msg, user=user)
@@ -190,7 +188,6 @@ logger = Logger()
 
 if __name__ == '__main__':
     import asyncio
-    logger.operationError("dayezi", "test")
     asyncio.run(logger.loginSuccess(
         username="dayezi",
         ip="xxx",

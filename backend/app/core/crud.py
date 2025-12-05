@@ -2,7 +2,7 @@ from typing import Generic, NewType, Type, TypeVar, Optional
 from uuid import UUID
 
 from sqlalchemy import ColumnElement, UnaryExpression
-from sqlmodel import Session, SQLModel, select, col, func, delete
+from sqlmodel import Session, SQLModel, select, col, func
 
 
 Total = NewType("Total", int)
@@ -31,7 +31,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             session.delete(db_obj)
         session.commit()
         return True
-    
+
     async def delete_all(self, session: Session) -> int:
         result = session.exec(select(self.model)).all()
         for item in result:

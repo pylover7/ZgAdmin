@@ -1,4 +1,3 @@
-import datetime
 from typing import Optional
 from uuid import UUID
 from sqlmodel import Session, select
@@ -8,7 +7,7 @@ from fastapi import Request
 from app.settings.log import logger
 from app.utils.ip import getIpAddress, getReqSysBro
 from app.utils.password import get_password_hash, verify_password
-from app.models import User, UserCreate, UserUpdate, FailAuth
+from app.models import User, UserCreate, UserUpdate
 from app.models.login import CredentialsSchema
 from app.utils import now
 from app.core.crud import CRUDBase
@@ -76,7 +75,10 @@ class UserController(CRUDBase[User, UserCreate, UserUpdate]):
         credentials: CredentialsSchema,
         request: Request
     ) -> User:
-        user: User | None = await self.get_user_by_name(session=session, username=credentials.username)
+        user: User | None = await self.get_user_by_name(
+            session=session,
+            username=credentials.username
+        )
         sysBro = await getReqSysBro(request=request)
         ip_area = await getIpAddress(request.client.host if request.client else "unknown")
         if user is None:
@@ -122,7 +124,7 @@ class UserController(CRUDBase[User, UserCreate, UserUpdate]):
 
     async def update_last_login(self, session: Session, id: UUID):
         user = session.get(User, id)
-        user.last_login = now(0) # type: ignore
+        user.last_login = now(0)  # type: ignore
         session.add(user)
         session.commit()
         session.refresh(user)
