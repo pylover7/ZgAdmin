@@ -99,11 +99,16 @@ async def get_operation_logs(
             lines = newLines
         if data["operatingTime"] is not None and len(
                 data["operatingTime"]) > 1:
-            lines = [line for line in lines if
-                     convert_utc_to_local_time(
-                         data["operatingTime"][0], "%Y-%m-%dT%H:%M:%S.%fZ", "UTC")
-                     <= convert_utc_to_local_time(line.split("|")[0].strip(), "%Y-%m-%d %H:%M:%S.%f")
-                     <= convert_utc_to_local_time(data["operatingTime"][1], "%Y-%m-%dT%H:%M:%S.%fZ", "UTC")]
+            lines = [
+                line for line in lines if convert_utc_to_local_time(
+                    data["operatingTime"][0],
+                    "%Y-%m-%dT%H:%M:%S.%fZ",
+                    "UTC") <= convert_utc_to_local_time(
+                    line.split("|")[0].strip(),
+                    "%Y-%m-%d %H:%M:%S.%f") <= convert_utc_to_local_time(
+                    data["operatingTime"][1],
+                    "%Y-%m-%dT%H:%M:%S.%fZ",
+                    "UTC")]
         total = len(lines)
         if total == 0:
             return SuccessExtra(data=logList, total=total,

@@ -2,7 +2,7 @@ import dayjs from "dayjs";
 import editForm from "../form.vue";
 import { handleTree } from "@/utils/tree";
 import { message } from "@/utils/message";
-import { getDeptList } from "@/api/system";
+import { addDept, deleteDept, getDeptList, updateDept } from "@/api/system";
 import { usePublicHooks } from "../../hooks";
 import { addDialog } from "@/components/ReDialog";
 import { reactive, ref, onMounted, h } from "vue";
@@ -107,8 +107,9 @@ export function useDept() {
       title: `${title}部门`,
       props: {
         formInline: {
+          id: row?.id ?? null,
           higherDeptOptions: formatHigherDeptOptions(cloneDeep(dataList.value)),
-          parentId: row?.parentId ?? 0,
+          parentId: row?.parentId ?? null,
           name: row?.name ?? "",
           principal: row?.principal ?? "",
           phone: row?.phone ?? "",
@@ -128,7 +129,7 @@ export function useDept() {
         const FormRef = formRef.value.getRef();
         const curData = options.props.formInline as FormItemProps;
         function chores() {
-          message(`您${title}了部门名称为${curData.name}的这条数据`, {
+          message(`您${title}了名称为【${curData.name}】的部门`, {
             type: "success"
           });
           done(); // 关闭弹框
@@ -139,11 +140,22 @@ export function useDept() {
             console.log("curData", curData);
             // 表单规则校验通过
             if (title === "新增") {
-              // 实际开发先调用新增接口，再进行下面操作
-              chores();
+              delete curData.id;
+              addDept(curData).then(res => {
+                if (res.success) {
+                  chores();
+                } else {
+                  message(res.msg, { type: "warning" });
+                }
+              });
             } else {
-              // 实际开发先调用修改接口，再进行下面操作
-              chores();
+              updateDept(curData).then(res => {
+                if (res.success) {
+                  chores();
+                } else {
+                  message(res.msg, { type: "warning" });
+                }
+              });
             }
           }
         });
@@ -152,8 +164,12 @@ export function useDept() {
   }
 
   function handleDelete(row) {
-    message(`您删除了部门名称为${row.name}的这条数据`, { type: "success" });
-    onSearch();
+    deleteDept([row.id]).then(res => {
+      if (res.success) {
+        message(`您删除了部门名称为${row.name}的这条数据`, { type: "success" });
+        onSearch();
+      }
+    });
   }
 
   onMounted(() => {

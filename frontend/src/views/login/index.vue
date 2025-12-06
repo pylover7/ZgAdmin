@@ -10,12 +10,11 @@ import { useNav } from "@/layout/hooks/useNav";
 import { useEventListener } from "@vueuse/core";
 import type { FormInstance } from "element-plus";
 import { $t, transformI18n } from "@/plugins/i18n";
-import { operates, thirdParty } from "./utils/enums";
+import { operates } from "./utils/enums";
 import { useLayout } from "@/layout/hooks/useLayout";
-import LoginPhone from "./components/LoginPhone.vue";
-import LoginRegist from "./components/LoginRegist.vue";
 import LoginUpdate from "./components/LoginUpdate.vue";
-import LoginQrCode from "./components/LoginQrCode.vue";
+import LoginWeChat from "./components/LoginWeChat.vue";
+import LoginQQ from "./components/LoginQQ.vue";
 import { useUserStoreHook } from "@/store/modules/user";
 import { initRouter, getTopMenu } from "@/router/utils";
 import { bg, avatar, illustration } from "./utils/static";
@@ -59,7 +58,7 @@ const { locale, translationCh, translationEn } = useTranslationLang();
 
 const ruleForm = reactive({
   username: "admin",
-  password: "admin123",
+  password: "admin123456",
   verifyCode: ""
 });
 
@@ -88,6 +87,10 @@ const onLogin = async (formEl: FormInstance | undefined) => {
           } else {
             message(t("login.pureLoginFail"), { type: "error" });
           }
+        })
+        .catch(err => {
+          console.log(err.response.data.msg);
+          message(err.response.data.msg, { type: "error" });
         })
         .finally(() => (loading.value = false));
     }
@@ -291,6 +294,7 @@ watch(loginDay, value => {
                   <el-button
                     v-for="(item, index) in operates"
                     :key="index"
+                    :icon="useRenderIcon(item.icon)"
                     class="w-full mt-4!"
                     size="default"
                     @click="useUserStoreHook().SET_CURRENTPAGE(index + 1)"
@@ -302,36 +306,12 @@ watch(loginDay, value => {
             </Motion>
           </el-form>
 
-          <Motion v-if="currentPage === 0" :delay="350">
-            <el-form-item>
-              <el-divider>
-                <p class="text-gray-500 text-xs">
-                  {{ t("login.pureThirdLogin") }}
-                </p>
-              </el-divider>
-              <div class="w-full flex justify-evenly">
-                <span
-                  v-for="(item, index) in thirdParty"
-                  :key="index"
-                  :title="t(item.title)"
-                >
-                  <IconifyIconOnline
-                    :icon="`ri:${item.icon}-fill`"
-                    width="20"
-                    class="cursor-pointer text-gray-500 hover:text-blue-400"
-                  />
-                </span>
-              </div>
-            </el-form-item>
-          </Motion>
-          <!-- 手机号登录 -->
-          <LoginPhone v-if="currentPage === 1" />
-          <!-- 二维码登录 -->
-          <LoginQrCode v-if="currentPage === 2" />
-          <!-- 注册 -->
-          <LoginRegist v-if="currentPage === 3" />
+          <!-- QQ登录 -->
+          <LoginQQ v-if="currentPage === 1" />
+          <!-- 微信登录 -->
+          <LoginWeChat v-if="currentPage === 2" />
           <!-- 忘记密码 -->
-          <LoginUpdate v-if="currentPage === 4" />
+          <LoginUpdate v-if="currentPage === 3" />
         </div>
       </div>
     </div>
@@ -341,7 +321,7 @@ watch(loginDay, value => {
       Copyright © 2020-present
       <a
         class="hover:text-primary!"
-        href="https://github.com/pure-admin"
+        href="https://cnb.cool/pylover/PyTool"
         target="_blank"
       >
         &nbsp;{{ title }}

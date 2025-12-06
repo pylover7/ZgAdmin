@@ -5,3 +5,4 @@ from .menu import *
 from .department import *
 from .api import *
 from .login import *
+from .logs import *

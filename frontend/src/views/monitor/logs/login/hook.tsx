@@ -1,28 +1,28 @@
 import dayjs from "dayjs";
 import { message } from "@/utils/message";
 import { getKeyList } from "@pureadmin/utils";
-import { getLoginLogsList } from "@/api/system";
+import {
+  clearLoginLogs,
+  deleteLoginLogs,
+  getLoginLogsList
+} from "@/api/system";
 import { usePublicHooks } from "@/views/system/hooks";
+import { type Ref, reactive, ref, onMounted } from "vue";
+import { paginationConf } from "@/config";
 import type { PaginationProps } from "@pureadmin/table";
-import { type Ref, reactive, ref, onMounted, toRaw } from "vue";
 
 export function useRole(tableRef: Ref) {
   const form = reactive({
     username: "",
-    status: "",
-    loginTime: ""
+    level: "",
+    loginTime: null
   });
   const dataList = ref([]);
   const loading = ref(true);
   const selectedNum = ref(0);
   const { tagStyle } = usePublicHooks();
 
-  const pagination = reactive<PaginationProps>({
-    total: 0,
-    pageSize: 10,
-    currentPage: 1,
-    background: true
-  });
+  const pagination = reactive<PaginationProps>({ ...paginationConf });
   const columns: TableColumnList = [
     {
       label: "勾选列", // 如果需要表格多选，此处label必须设置
@@ -32,8 +32,8 @@ export function useRole(tableRef: Ref) {
     },
     {
       label: "序号",
-      prop: "id",
-      minWidth: 90
+      minWidth: 90,
+      type: "index"
     },
     {
       label: "用户名",
@@ -62,11 +62,14 @@ export function useRole(tableRef: Ref) {
     },
     {
       label: "登录状态",
-      prop: "status",
+      prop: "level",
       minWidth: 100,
       cellRenderer: ({ row, props }) => (
-        <el-tag size={props.size} style={tagStyle.value(row.status)}>
-          {row.status === 1 ? "成功" : "失败"}
+        <el-tag
+          size={props.size}
+          style={tagStyle.value(row.level == "success" ? 1 : 0)}
+        >
+          {row.level === "success" ? "成功" : "失败"}
         </el-tag>
       )
     },
@@ -77,19 +80,20 @@ export function useRole(tableRef: Ref) {
     },
     {
       label: "登录时间",
-      prop: "loginTime",
+      prop: "time",
       minWidth: 180,
-      formatter: ({ loginTime }) =>
-        dayjs(loginTime).format("YYYY-MM-DD HH:mm:ss")
+      formatter: ({ time }) => dayjs(time).format("YYYY-MM-DD HH:mm:ss")
     }
   ];
 
   function handleSizeChange(val: number) {
-    console.log(`${val} items per page`);
+    pagination.pageSize = val;
+    onSearch();
   }
 
   function handleCurrentChange(val: number) {
-    console.log(`current page: ${val}`);
+    pagination.currentPage = val;
+    onSearch();
   }
 
   /** 当CheckBox选择项发生变化时会触发该事件 */
@@ -110,30 +114,35 @@ export function useRole(tableRef: Ref) {
   function onbatchDel() {
     // 返回当前选中的行
     const curSelected = tableRef.value.getTableRef().getSelectionRows();
-    // 接下来根据实际业务，通过选中行的某项数据，比如下面的id，调用接口进行批量删除
-    message(`已删除序号为 ${getKeyList(curSelected, "id")} 的数据`, {
-      type: "success"
+    console.log("当前选中行：", getKeyList(curSelected, "id"));
+    deleteLoginLogs(getKeyList(curSelected, "id")).then(() => {
+      message("已批量删除部分日志", { type: "success" });
+      tableRef.value.getTableRef().clearSelection();
+      onSearch();
     });
-    tableRef.value.getTableRef().clearSelection();
-    onSearch();
   }
 
   /** 清空日志 */
   function clearAll() {
-    // 根据实际业务，调用接口删除所有日志数据
-    message("已删除所有日志数据", {
-      type: "success"
+    clearLoginLogs().then(() => {
+      message("已删除所有日志数据", { type: "success" });
+      onSearch();
     });
-    onSearch();
   }
 
   async function onSearch() {
     loading.value = true;
-    const { data } = await getLoginLogsList(toRaw(form));
-    dataList.value = data.list;
-    pagination.total = data.total;
-    pagination.pageSize = data.pageSize;
-    pagination.currentPage = data.currentPage;
+    const { data, total, pageSize, currentPage } = await getLoginLogsList(
+      form.username,
+      form.level,
+      form.loginTime,
+      pagination.currentPage,
+      pagination.pageSize
+    );
+    dataList.value = data;
+    pagination.total = total;
+    pagination.pageSize = pageSize;
+    pagination.currentPage = currentPage;
 
     setTimeout(() => {
       loading.value = false;

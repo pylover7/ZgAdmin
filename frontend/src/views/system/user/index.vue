@@ -40,8 +40,6 @@ const {
   onTreeSelect,
   handleUpdate,
   handleDelete,
-  handleUpload,
-  handleReset,
   handleRole,
   handleSizeChange,
   onSelectionCancel,
@@ -76,10 +74,10 @@ const {
             class="w-[180px]!"
           />
         </el-form-item>
-        <el-form-item label="手机号码：" prop="phone">
+        <el-form-item label="邮箱：" prop="email">
           <el-input
-            v-model="form.phone"
-            placeholder="请输入手机号码"
+            v-model="form.email"
+            placeholder="请输入邮箱"
             clearable
             class="w-[180px]!"
           />
@@ -110,11 +108,7 @@ const {
         </el-form-item>
       </el-form>
 
-      <PureTableBar
-        title="用户管理（仅演示，操作后不生效）"
-        :columns="columns"
-        @refresh="onSearch"
-      >
+      <PureTableBar title="用户管理" :columns="columns" @refresh="onSearch">
         <template #buttons>
           <el-button
             type="primary"
@@ -181,7 +175,7 @@ const {
                 修改
               </el-button>
               <el-popconfirm
-                :title="`是否确认删除用户编号为${row.id}的这条数据`"
+                :title="`是否确认删除用户名为【${row.username}】的这条数据`"
                 @confirm="handleDelete(row)"
               >
                 <template #reference>
@@ -207,30 +201,6 @@ const {
                 />
                 <template #dropdown>
                   <el-dropdown-menu>
-                    <el-dropdown-item>
-                      <el-button
-                        :class="buttonClass"
-                        link
-                        type="primary"
-                        :size="size"
-                        :icon="useRenderIcon(Upload)"
-                        @click="handleUpload(row)"
-                      >
-                        上传头像
-                      </el-button>
-                    </el-dropdown-item>
-                    <el-dropdown-item>
-                      <el-button
-                        :class="buttonClass"
-                        link
-                        type="primary"
-                        :size="size"
-                        :icon="useRenderIcon(Password)"
-                        @click="handleReset(row)"
-                      >
-                        重置密码
-                      </el-button>
-                    </el-dropdown-item>
                     <el-dropdown-item>
                       <el-button
                         :class="buttonClass"

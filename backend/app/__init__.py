@@ -9,6 +9,7 @@ from app.api import api_router
 from app.core.database import init_data
 from app.core.exceptions import SettingNotFound
 from app.core.init import make_middlewares, register_routers, register_exceptions
+from app.settings import settings
 
 try:
     from app.settings import settings
@@ -34,8 +35,7 @@ def create_app() -> FastAPI:
     )
     register_exceptions(app)
     register_routers(app, prefix="/api")
-    static_path = Path.joinpath(Path(__file__).parent, "static")
-    app.mount("/static", StaticFiles(directory=static_path), name="static")
+    app.mount("/static", StaticFiles(directory=settings.STATIC_PATH), name="static")
     return app
 
 

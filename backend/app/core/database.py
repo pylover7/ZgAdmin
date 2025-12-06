@@ -8,8 +8,8 @@ from app.models import *
 from app.settings.log import logger
 from app.utils.password import get_password_hash, md5_encrypt
 from app.utils.staticFileUtils import check_dir_exists
+from app.core import engine, DatabaseSession
 
-engine = create_engine(settings.SQLALCHEMY_DATABASE_URI)
 scheduler = AsyncIOScheduler()
 
 
@@ -66,137 +66,6 @@ def init_menus(session: Session):
     """
     menus = session.exec(select(Menu)).all()
     if len(menus) == 0:
-        goods = Menu(
-            menuType=0,
-            title="商品管理",
-            name="Goods",
-            path="/goods",
-            component="",
-            rank=1,
-            icon="ep:shop",
-        )
-        session.add(goods)
-        session.commit()
-        session.refresh(goods)
-
-        goodsCategory = Menu(
-            parentId=goods.id,
-            menuType=0,
-            title="商品分类",
-            name="GoodsCategory",
-            path="/goods/category",
-            component="goods/category/index",
-            icon="ri:dashboard-horizontal-fill",
-        )
-        goodsList = Menu(
-            parentId=goods.id,
-            menuType=0,
-            title="商品列表",
-            name="GoodsList",
-            path="/goods/list",
-            component="goods/list/index",
-            icon="ri:shopping-basket-line",
-        )
-        goodsCoupon = Menu(
-            parentId=goods.id,
-            menuType=0,
-            title="商品优惠券",
-            name="GoodsCoupon",
-            path="/goods/coupon",
-            component="goods/coupon/index",
-            icon="ri:coupon-line",
-        )
-        session.add(goodsCategory)
-        session.add(goodsList)
-        session.add(goodsCoupon)
-
-        card = Menu(
-            menuType=0,
-            title="卡密管理",
-            name="Card",
-            path="/card",
-            component="",
-            rank=2,
-            icon="ri:coupon-3-line",
-        )
-        session.add(card)
-        session.commit()
-        session.refresh(card)
-
-        cardList = Menu(
-            parentId=card.id,
-            menuType=0,
-            title="卡密列表",
-            name="CardList",
-            path="/card/list",
-            component="card/index",
-            rank=1,
-            icon="ri:coupon-3-line",
-        )
-        session.add(cardList)
-
-        order = Menu(
-            menuType=0,
-            title="订单管理",
-            name="Order",
-            path="/order",
-            component="",
-            rank=3,
-            icon="ri:list-check-3",
-        )
-        session.add(order)
-        session.commit()
-        session.refresh(order)
-
-        orderList = Menu(
-            parentId=order.id,
-            menuType=0,
-            title="订单管理",
-            name="OrderList",
-            path="/order/list",
-            component="order/index",
-            rank=1,
-            icon="ri:list-check-3",
-        )
-        session.add(orderList)
-
-        pay = Menu(
-            menuType=0,
-            title="支付管理",
-            name="Pay",
-            path="/pay",
-            component="",
-            rank=4,
-            icon="ri:secure-payment-fill",
-        )
-        session.add(pay)
-        session.commit()
-        session.refresh(pay)
-
-        paySetting = Menu(
-            parentId=pay.id,
-            menuType=0,
-            title="支付设置",
-            name="PaySetting",
-            path="/pay/base",
-            component="pay/base/index",
-            rank=1,
-            icon="ri:secure-payment-fill",
-        )
-        session.add(paySetting)
-
-        payWechat = Menu(
-            parentId=pay.id,
-            menuType=0,
-            title="微信支付",
-            name="PayWechat",
-            path="/pay/wechat",
-            component="pay/wechat/index",
-            rank=2,
-            icon="ri:wechat-pay-line",
-        )
-        session.add(payWechat)
-
         system = Menu(
             menuType=0,
             title="系统管理",
@@ -298,6 +167,24 @@ def init_menus(session: Session):
         session.commit()
 
 
+async def init_dept(session: Session):
+    """
+    初始化部门
+    :return:
+    """
+    depts = session.exec(select(Department)).all()
+    if len(depts) == 0:
+        dept = Department(
+            name="管理员",
+            status=1,
+            remark="管理员所属部门",
+        )
+        session.add(dept)
+        session.commit()
+        session.refresh(dept)
+        return dept
+
+
 async def init_data(app: FastAPI) -> None:
     logger.info("初始化数据库...")
     SQLModel.metadata.create_all(engine)
@@ -305,9 +192,9 @@ async def init_data(app: FastAPI) -> None:
     check_dir_exists([
         settings.AVATAR_PATH,
         settings.GOODS_PATH,
-        settings.CONFIG_PATH
     ])
-    with Session(engine) as session:
+    with DatabaseSession() as session:
+        dept = await init_dept(session)
         admin = session.exec(
             select(User).where(User.email == settings.FIRST_SUPERUSER)
         ).first()
@@ -317,13 +204,21 @@ async def init_data(app: FastAPI) -> None:
             logger.info("创建管理员账户...")
             user_in = UserCreate(
                 username="admin",
+                nickname="管理员",
                 email=settings.FIRST_SUPERUSER,
                 password=password,
                 status=1,
                 is_superuser=True,
+                phone="13800138000",
+                remark="这是管理员"
             )
-            admin = await userController.create(session=session, user_create=user_in)
+            admin = await userController.create(session=session, obj_in=user_in)
             logger.info(f"创建管理员账户成功，管理员用户名为：{admin.username}")
+            if dept is not None:
+                dept.users.append(admin)
+                session.add(dept)
+                session.commit()
+                session.refresh(admin)
         else:
             logger.info("管理员账户已存在，跳过管理员创建...")
 

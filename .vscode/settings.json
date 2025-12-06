@@ -67,7 +67,7 @@
             "path": "/bin/zsh",
             "args": [
                 "-c",
-                "nvitop && zsh"
+                "nvitop"
                 ],
                 "name": "Start nvitop",
                 "description": "Terminal profile that runs a command on startup"
@@ -76,7 +76,7 @@
             "path": "/bin/zsh",
             "args": [
                 "-c",
-                "nload -u M eth0 && zsh"
+                "nload -u M eth0"
                 ],
                 "name": "Start nvitop",
                 "description": "Terminal profile that runs a command on startup"
@@ -85,7 +85,7 @@
             "path": "/bin/zsh",
             "args": [
                 "-c",
-                "btop -u 1000 && zsh"
+                "btop -u 1000"
                 ],
                 "name": "Start btop",
                 "description": "Terminal profile that runs a command on startup"
@@ -94,7 +94,7 @@
             "path": "/bin/zsh",
             "args": [
                 "-c",
-                "zsh /workspace/build-env.sh && zsh"
+                "zsh /workspace/build-env.sh"
                 ],
                 "name": "Start build image",
                 "description": "Terminal profile that runs a command on startup"
@@ -138,6 +138,8 @@
     "python.analysis.autoImportCompletions": true,
     "python.linting.enabled": true,
     "python.linting.lintOnSave": true,
+    "python.languageServer": "Pylance",
+    "python.defaultInterpreterPath": "/workspace/backend/.venv/bin/python",
     "workbench.iconTheme": "vscode-icons",
     "codingcopilot.welcomeMessage": "never",
     "gitlens.showWelcomeOnInstall": false,
@@ -160,5 +162,10 @@
         "database": "${workspaceFolder:workspace}/backend/static/pytool.sqlite"
       }
     ],
-    "sqltools.useNodeRuntime": true
+    "sqltools.useNodeRuntime": true,
+    "gitblame.inlineMessageEnabled": true,
+    "gitblame.inlineMessageFormat": "${author.name}, (${time.ago}) · ${commit.summary}",
+    "terminal.integrated.suggest.enabled": true,
+    "workbench.secondarySideBar.defaultVisibility": "hidden",
+    "terminal.integrated.shellIntegration.environmentReporting": true
 }

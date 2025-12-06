@@ -1,5 +1,4 @@
-from fastapi import APIRouter
-from fastapi.params import Query
+from fastapi import APIRouter, HTTPException, Query
 from sqlalchemy import and_
 from sqlmodel import col
 
@@ -26,9 +25,9 @@ async def delete_role(session: SessionDep, data: list[str]):
 @roleRouter.post("/list", summary="获取角色列表")
 async def role_list(
         session: SessionDep,
+        data: RoleFilter,
         currentPage: int = Query(1, description="页码"),
         pageSize: int = Query(15, description="每页数量"),
-        data: RoleFilter | None = None
 ):
     where = []
     if data.name:
@@ -75,17 +74,20 @@ async def update_role_status(session: SessionDep, data: UpdateRoleStatus):
 @roleRouter.post("/getRoleAuth", summary="获取角色对应菜单列表和api列表")
 async def get_role_auth(session: SessionDep, data: BaseModel):
     role_obj = await roleController.get(session, data.id)
-    result = {
-        "menus": [item.id.__str__() for item in role_obj.menus],
-        "apis": [item.id.__str__() for item in role_obj.apis]
-    }
+    if not role_obj:
+        return HTTPException(status_code=404, detail="角色不存在！")
+    # result = {
+    #     "menus": [item.id.__str__() for item in role_obj.menus],
+    #     "apis": [item.id.__str__() for item in role_obj.apis]
+    # }
+    result = [item.id.__str__() for item in role_obj.menus]
     return Success(msg="角色权限查询成功！", data=result)
 
 
 @roleRouter.post("/updateRoleAuth", summary="修改角色对应菜单列表和api列表")
 async def update_role_auth(session: SessionDep, data: UpdateRoleAuth):
-    if data.menuUpdate:
+    try:
         await roleController.updateMenus(session, data.id, data.menuIds)
-    elif data.apiUpdate:
-        await roleController.updateApis(session, data.id, data.apiIds)
-    return Success(msg="角色权限修改成功！")
+        return Success(msg="角色权限修改成功！")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))

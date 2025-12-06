@@ -45,11 +45,11 @@ class Department(DepartmentBase, TimestampMixin, table=True):
 
 
 class DepartCreate(DepartmentBase):
-    user: list = None
+    user: list = []
 
 
 class DepartUpdate(SQLModel):
-    id: str
+    id: UUID
     name: str
     parentId: UUID | None = None
     sort: int | None = None

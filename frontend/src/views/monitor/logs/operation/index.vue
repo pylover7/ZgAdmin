@@ -41,28 +41,23 @@ const {
       :model="form"
       class="search-form bg-bg_color w-full pl-8 pt-[12px] overflow-auto"
     >
-      <el-form-item label="所属模块" prop="module">
-        <el-input
-          v-model="form.module"
-          placeholder="请输入所属模块"
-          clearable
-          class="w-[170px]!"
-        />
-      </el-form-item>
-      <el-form-item label="操作状态" prop="status">
+      <el-form-item label="日志等级" prop="level">
         <el-select
-          v-model="form.status"
+          v-model="form.level"
           placeholder="请选择"
           clearable
-          class="w-[150px]!"
+          multiple
+          class="w-[240px]!"
+          @change="onSearch"
         >
-          <el-option label="成功" value="1" />
-          <el-option label="失败" value="0" />
+          <el-option label="信息" value="info" />
+          <el-option label="警告" value="warning" />
+          <el-option label="重要" value="error" />
         </el-select>
       </el-form-item>
-      <el-form-item label="操作时间" prop="operatingTime">
+      <el-form-item label="操作时间" prop="operationTime">
         <el-date-picker
-          v-model="form.operatingTime"
+          v-model="form.operationTime"
           :shortcuts="getPickerShortcuts()"
           type="datetimerange"
           range-separator="至"
@@ -85,11 +80,7 @@ const {
       </el-form-item>
     </el-form>
 
-    <PureTableBar
-      title="操作日志（仅演示，操作后不生效）"
-      :columns="columns"
-      @refresh="onSearch"
-    >
+    <PureTableBar title="操作日志" :columns="columns" @refresh="onSearch">
       <template #buttons>
         <el-popconfirm title="确定要删除所有日志数据吗？" @confirm="clearAll">
           <template #reference>

@@ -18,7 +18,7 @@ RUN curl -fsSL https://bun.sh/install | bash && . /root/.bashrc
 # 安装一些常用的工具
 RUN apt-get update && \
     apt-get install -y \
-    openssh-server curl wget git git-lfs vim tree axel unzip zsh aria2 nload && \
+    openssh-server curl wget git git-lfs vim tree axel unzip zsh aria2 nload sqlite3 && \
     apt-get -y autoremove
 
 # 安装Oh My Zsh
@@ -56,8 +56,7 @@ RUN curl -fsSL https://code-server.dev/install.sh | sh \
     && code-server --install-extension Vue.volar \
     && code-server --install-extension redjue.git-commit-plugin \
     && code-server --install-extension aaron-bond.better-comments \
-    && code-server --install-extension mtxr.sqltools \
-    && code-server --install-extension mtxr.sqltools-driver-sqlite \
+    && code-server --install-extension cweijan.vscode-database-client2 \
     && echo done
 
 # 复制 vscode 自定义到容器中
@@ -68,6 +67,11 @@ COPY .vscode/settings.json /root/.local/share/code-server/Machine/settings.json
 RUN wget https://download.jetbrains.com/fonts/JetBrainsMono-2.304.zip -O /tmp/jetbrains-mono.zip && \
     unzip /tmp/jetbrains-mono.zip -d /usr/share/fonts/truetype/jetbrains-mono && \
     rm /tmp/jetbrains-mono.zip && fc-cache -fv
+
+# 安装 WebStorm
+RUN wget -O /tmp/webstorm.tar.gz https://download.jetbrains.com/webstorm/WebStorm-2025.1.4.1.tar.gz && \
+    mkdir -p /ide_cnb && \
+    tar -zxvf /tmp/webstorm.tar.gz -C /ide_cnb
 
 # 安装 btop
 RUN git clone https://github.com/aristocratos/btop.git /btop

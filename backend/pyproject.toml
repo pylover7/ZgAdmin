@@ -36,7 +36,7 @@ dev = [
 ]
 
 [tool.autopep8]
-max-line-length = 120
+max-line-length = 100
 aggressive = 2
 recursive = true
 in-place = true

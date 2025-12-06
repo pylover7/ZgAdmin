@@ -208,6 +208,8 @@ login:
   pureThirdLogin: Third Login
   purePhoneLogin: Phone Login
   pureQRCodeLogin: QRCode Login
+  WeChatLogin: WeChat Login
+  QQLogin: QQ Login
   pureRegister: Register
   pureWeChatLogin: WeChat Login
   pureAlipayLogin: Alipay Login

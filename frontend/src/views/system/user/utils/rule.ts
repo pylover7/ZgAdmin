@@ -20,9 +20,11 @@ export const formRules = reactive(<FormRules>{
       },
       trigger: "blur"
       // trigger: "click" // 如果想在点击确定按钮时触发这个校验，trigger 设置成 click 即可
-    }
+    },
+    { required: false, message: "请输入手机号", trigger: "blur" }
   ],
   email: [
+    { required: true, message: "请输入邮箱", trigger: "blur" },
     {
       validator: (rule, value, callback) => {
         if (value === "") {

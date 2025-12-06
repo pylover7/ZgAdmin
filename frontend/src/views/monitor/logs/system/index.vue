@@ -23,6 +23,7 @@ const {
   dataList,
   pagination,
   selectedNum,
+  selectOpt,
   onSearch,
   onDetail,
   clearAll,
@@ -45,16 +46,24 @@ const {
       class="search-form bg-bg_color w-full pl-8 pt-[12px] overflow-auto"
     >
       <el-form-item label="所属模块" prop="module">
-        <el-input
+        <el-select
           v-model="form.module"
-          placeholder="请输入所属模块"
+          placeholder="请选择所属模块"
           clearable
           class="w-[170px]!"
-        />
+          @change="onSearch"
+        >
+          <el-option
+            v-for="item in selectOpt"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+          />
+        </el-select>
       </el-form-item>
-      <el-form-item label="请求时间" prop="requestTime">
+      <el-form-item label="请求时间" prop="oprationTime">
         <el-date-picker
-          v-model="form.requestTime"
+          v-model="form.oprationTime"
           :shortcuts="getPickerShortcuts()"
           type="datetimerange"
           range-separator="至"
@@ -77,11 +86,7 @@ const {
       </el-form-item>
     </el-form>
 
-    <PureTableBar
-      title="系统日志（仅演示，操作后不生效）"
-      :columns="columns"
-      @refresh="onSearch"
-    >
+    <PureTableBar title="系统日志" :columns="columns" @refresh="onSearch">
       <template #buttons>
         <el-popconfirm title="确定要删除所有日志数据吗？" @confirm="clearAll">
           <template #reference>

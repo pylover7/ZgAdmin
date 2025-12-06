@@ -1,5 +1,6 @@
 # import json
 from datetime import timedelta, datetime
+from uuid import UUID
 # from uuid import uuid4
 
 from fastapi import APIRouter, Request
@@ -29,12 +30,14 @@ router = APIRouter()
 @router.post("/accessToken", summary="获取token")
 async def login_access_token(
         session: SessionDep, request: Request, credentials: CredentialsSchema):
-    user: User = await userController.authenticate(
+    user: User | None = await userController.authenticate(
         session=session,
         credentials=credentials,
         request=request
     )
-    await userController.update_last_login(session=session, id=str(user.id))
+    if not user:
+        return FailAuth(msg="用户名或密码错误！")
+    await userController.update_last_login(session=session, id=user.id)
     roles = [item.code for item in user.roles]
     try:
         depart = deptController.get_all_name(session, user)
@@ -55,7 +58,7 @@ async def login_access_token(
         roles=roles,
         accessToken=create_access_token(
             data=JWTPayload(
-                user_id=(user.id),
+                user_id=(str(user.id)),
                 username=user.username,
                 is_superuser=user.is_superuser,
                 exp=expire,
@@ -113,7 +116,9 @@ async def refresh_token(refreshToken: refreshTokenSchema):
 @router.get("/userinfo", summary="查看用户信息", dependencies=[DependAuth])
 async def get_userinfo(session: SessionDep):
     user_id = CTX_USER_ID.get()
-    user_obj = userController.get(session=session, id=user_id)
+    user_obj = await userController.get(session=session, id=UUID(user_id))
+    if not user_obj:
+        return FailAuth(msg="用户不存在或已被删除！")
     data = await user_obj.to_dict(exclude_fields=["password"])
     return Success(data=data)
 
@@ -121,10 +126,12 @@ async def get_userinfo(session: SessionDep):
 @router.get("/userMenu", summary="查看用户菜单", dependencies=[DependAuth])
 async def get_user_menu(session: SessionDep):
     user_id = CTX_USER_ID.get()
-    user_obj = await userController.get(session=session, id=user_id)
+    user_obj = await userController.get(session=session, id=UUID(user_id))
+    if not user_obj:
+        return FailAuth(msg="用户不存在或已被删除！")
     menus: list[Menu] = []
     if user_obj.is_superuser:
-        menus = session.exec(select(Menu)).all()
+        menus = list(session.exec(select(Menu)).all())
     else:
         role_objs: list[Role] = user_obj.roles
         for role_obj in role_objs:
@@ -153,11 +160,13 @@ async def get_user_menu(session: SessionDep):
 @router.get("/userApi", summary="查看用户API", dependencies=[DependAuth])
 async def get_user_api(session: SessionDep):
     user_id = CTX_USER_ID.get()
-    user_obj = await userController.get(session=session, id=user_id)
+    user_obj = await userController.get(session=session, id=UUID(user_id))
+    if not user_obj:
+        return FailAuth(msg="用户不存在或已被删除！")
     if user_obj.is_superuser:
         statement = select(Api)
         result = session.exec(statement)
-        api_objs = result.all()
+        api_objs = list(result.all())
         apis = [api.method.lower() + api.path for api in api_objs]
         return Success(data=apis)
     role_objs: list[Role] = user_obj.roles
@@ -172,7 +181,9 @@ async def get_user_api(session: SessionDep):
 @router.post("/updatePwd", summary="更新用户密码", dependencies=[DependAuth])
 async def update_user_password(session: SessionDep, req_in: UpdatePassword):
     user_id = CTX_USER_ID.get()
-    user = userController.get(session=session, id=user_id)
+    user = await userController.get(session=session, id=UUID(user_id))
+    if not user:
+        return FailAuth(msg="用户不存在或已被删除！")
     verified = verify_password(req_in.current_password, user.password)
     if not verified:
         return Fail(msg="旧密码验证错误！")
