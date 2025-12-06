@@ -1,5 +1,5 @@
 import { $t } from "@/plugins/i18n";
-import { errorRank } from "@/router/enums";
+import { ERROR } from "@/router/enums";
 
 export default {
   path: "/error",
@@ -8,7 +8,7 @@ export default {
     icon: "ri/information-line",
     // showLink: false,
     title: $t("menus.pureAbnormal"),
-    rank: errorRank
+    rank: ERROR
   },
   children: [
     {

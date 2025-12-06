@@ -1,5 +1,5 @@
 import { $t } from "@/plugins/i18n";
-import { aboutRank } from "@/router/enums";
+import { ABOUT } from "@/router/enums";
 
 export default {
   path: "/about",
@@ -7,7 +7,7 @@ export default {
   meta: {
     icon: "ri/file-info-line",
     title: $t("menus.pureAbout"),
-    rank: aboutRank
+    rank: ABOUT
   },
   children: [
     {
