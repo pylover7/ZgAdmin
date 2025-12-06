@@ -8,14 +8,14 @@ from pathlib import Path
 
 
 def db_engine(
-        scheme: str = "sqlite",
-        username: str = "",
-        password: str = "",
-        host: str = "",
-        port: int = 5432,
-        path: str = ""
-    ) -> str:
-    match scheme: 
+    scheme: str = "sqlite",
+    username: str = "",
+    password: str = "",
+    host: str = "",
+    port: int = 5432,
+    path: str = ""
+) -> str:
+    match scheme:
         case "postgresql":
             return MultiHostUrl.build(
                 scheme="postgresql+psycopg2",
