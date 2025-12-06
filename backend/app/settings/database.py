@@ -13,12 +13,9 @@ def db_engine(
         password: str = "",
         host: str = "",
         port: int = 5432,
-        path: str = "") -> str:
-    match scheme:
-        case "sqlite":
-            return f"sqlite:////{
-                Path(__file__).parent.parent.parent.joinpath(
-                    "static", "pytool.sqlite")}"
+        path: str = ""
+    ) -> str:
+    match scheme: 
         case "postgresql":
             return MultiHostUrl.build(
                 scheme="postgresql+psycopg2",
@@ -37,3 +34,7 @@ def db_engine(
                 port=port,
                 path=path
             ).__str__()
+        case _:
+            return f"sqlite: ////{
+                Path(__file__).parent.parent.parent.joinpath(
+                    "static", "pytool.sqlite")}"
