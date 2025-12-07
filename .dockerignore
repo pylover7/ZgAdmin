@@ -1,0 +1,17 @@
+# 忽略后端static文件夹
+backend/static/
+
+# 忽略常见的开发文件
+.git
+.gitignore
+README.md
+Dockerfile
+docker-compose.yml
+.env
+node_modules
+__pycache__
+*.pyc
+.pytest_cache
+.coverage
+.vscode
+.idea
