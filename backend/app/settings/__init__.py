@@ -7,7 +7,6 @@ from pydantic import (
     AnyUrl,
     BeforeValidator,
     HttpUrl,
-    PostgresDsn,
     computed_field,
     model_validator,
 )
@@ -120,7 +119,7 @@ class Settings(BaseSettings):
 
     EMAIL_TEST_USER: str = "test@example.com"
     FIRST_SUPERUSER: str = "admin"
-    FIRST_SUPERUSER_PASSWORD: str = "changethis"
+    FIRST_SUPERUSER_PASSWORD: str = "admin123456"
 
     def _check_default_secret(self, var_name: str, value: str | None) -> None:
         if value == "changethis":
