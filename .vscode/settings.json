@@ -90,7 +90,7 @@
                 "name": "Start btop",
                 "description": "Terminal profile that runs a command on startup"
         },
-        "build-env":{
+        "构建开发环境":{
             "path": "/bin/zsh",
             "args": [
                 "-c",
@@ -99,7 +99,7 @@
                 "name": "Start build env image",
                 "description": "Terminal profile that runs a command on startup"
         },
-        "build":{
+        "构建项目镜像":{
             "path": "/bin/zsh",
             "args": [
                 "-c",
@@ -120,7 +120,7 @@
         "zsh": {
             "path": "/bin/zsh"
         },
-        "lint": {
+        "代码风格检查": {
             "path": "/bin/zsh",
             "args": [
                 "-c",
@@ -140,6 +140,60 @@
             "-c",
             "cd /workspace/backend && uv run main.py"
           ]
+        },
+        "更新版本-补丁": {
+          "path": "/bin/zsh",
+          "args": [
+            "-c",
+            "cd /workspace && python scripts/update-version.py --patch"
+          ],
+          "name": "Update Patch Version",
+          "description": "更新补丁版本号 (x.y.z+1)"
+        },
+        "更新版本-次版本": {
+          "path": "/bin/zsh",
+          "args": [
+            "-c",
+            "cd /workspace && python scripts/update-version.py --minor"
+          ],
+          "name": "Update Minor Version",
+          "description": "更新次版本号 (x.y+1.0)"
+        },
+        "更新版本-主版本": {
+          "path": "/bin/zsh",
+          "args": [
+            "-c",
+            "cd /workspace && python scripts/update-version.py --major"
+          ],
+          "name": "Update Major Version",
+          "description": "更新主版本号 (x+1.0.0)"
+        },
+        "更新版本-自定义": {
+          "path": "/bin/zsh",
+          "args": [
+            "-c",
+            "read -p '请输入新版本号: ' version && cd /workspace && python scripts/update-version.py $version"
+          ],
+          "name": "Update Custom Version",
+          "description": "输入自定义版本号进行更新"
+        },
+        "同步版本信息": {
+          "path": "/bin/zsh",
+          "args": [
+            "-c",
+            "cd /workspace && python scripts/update-version.py"
+          ],
+          "name": "Sync Version Info",
+          "description": "同步所有文件的版本信息"
+        },
+        "查看当前版本": {
+          "path": "/bin/zsh",
+          "args": [
+            "-c",
+            "cd /workspace && python scripts/update-version.py --show"
+          ],
+          "name": "Show Current Version",
+          "description": "查看当前项目的版本信息"
         }
     },
     "gitblame.inlineMessageEnabled": true,

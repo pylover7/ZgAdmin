@@ -3,8 +3,14 @@
 # 记录脚本开始时间
 start_time=$(date +%s)
 
-# 确定镜像版本
-export IMAGE_VERSION="0.0.1.1"
+# 从 VERSION 文件读取版本号
+if [ -f "VERSION" ]; then
+    export IMAGE_VERSION=$(cat VERSION)
+    echo "从 VERSION 文件读取版本号: $IMAGE_VERSION"
+else
+    export IMAGE_VERSION="0.0.1.1"
+    echo "VERSION 文件不存在，使用默认版本号: $IMAGE_VERSION"
+fi
 
 # 显示开始时间（可选）
 echo "脚本开始执行时间: $(date -d @$start_time '+%Y-%m-%d %H:%M:%S')"

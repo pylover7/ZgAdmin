@@ -113,6 +113,30 @@ const { version } = await response.json()
 3. 后端启动时会动态读取 `VERSION` 文件
 4. 版本信息会显示在系统的各个角落，包括 API 响应、日志、错误页面等
 
+### VS Code 集成
+
+项目已配置了便捷的 VS Code 终端脚本，可以一键管理版本：
+
+#### 终端配置
+
+在 VS Code 中，按 `Ctrl+Shift+P` 打开命令面板，输入 "Terminal: Select Default Profile"，然后选择以下任意一个配置：
+
+#### 可用的终端脚本
+
+1. **更新版本-补丁** - 递增补丁版本号 (1.0.0 → 1.0.1)
+2. **更新版本-次版本** - 递增次版本号 (1.0.0 → 1.1.0)
+3. **更新版本-主版本** - 递增主版本号 (1.0.0 → 2.0.0)
+4. **更新版本-自定义** - 输入自定义版本号进行更新
+5. **同步版本信息** - 同步所有文件的版本信息
+6. **查看当前版本** - 显示当前项目的版本信息
+
+#### 使用方法
+
+1. 在 VS Code 中按 `Ctrl+Shift+` \` (反引号键) 打开终端
+2. 点击终端右上角的 `+` 号旁边的下拉箭头
+3. 选择对应的版本管理脚本
+4. 根据提示操作即可
+
 ### 自动化集成
 
 可以将版本管理集成到 CI/CD 流程中：
@@ -121,7 +145,7 @@ const { version } = await response.json()
 # 在 CI/CD 中自动更新版本
 NEW_VERSION=$(date +%Y.%m.%d)
 echo $NEW_VERSION > VERSION
-python scripts/update-version.py
+python scripts/update-version.py --no-build
 ```
 
 这样可以确保每次部署都有明确的版本标识，便于问题追踪和回滚。
