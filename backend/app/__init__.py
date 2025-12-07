@@ -1,11 +1,11 @@
 from pathlib import Path
+from contextlib import asynccontextmanager
 
 import sentry_sdk
 from fastapi import FastAPI
 from fastapi.routing import APIRoute
 from fastapi.staticfiles import StaticFiles
 
-from app.api import api_router
 from app.core.database import init_data
 from app.core.exceptions import SettingNotFound
 from app.core.init import make_middlewares, register_routers, register_exceptions
@@ -32,6 +32,7 @@ def create_app() -> FastAPI:
         version=settings.VERSION,
         openapi_url="/openapi.json",
         middleware=make_middlewares(),
+        lifespan=lifespan_context,
     )
     register_exceptions(app)
     register_routers(app, prefix="/api")
@@ -39,9 +40,12 @@ def create_app() -> FastAPI:
     return app
 
 
-app = create_app()
-
-
-@app.on_event("startup")
-async def startup_event():
+@asynccontextmanager
+async def lifespan_context(app: FastAPI):
+    # 启动时执行的逻辑
     await init_data(app)
+    yield
+    # 关闭时执行的逻辑（如果需要）
+
+
+app = create_app()

@@ -190,6 +190,7 @@ async def init_data(app: FastAPI) -> None:
     SQLModel.metadata.create_all(engine)
     logger.info("检查静态文件目录...")
     check_dir_exists([
+        settings.STATIC_PATH,
         settings.AVATAR_PATH,
         settings.GOODS_PATH,
     ])
