@@ -35,6 +35,6 @@ def db_engine(
                 path=path
             ).__str__()
         case _:
-            return f"sqlite: ////{
+            return f"sqlite:////{
                 Path(__file__).parent.parent.parent.joinpath(
                     "static", "pytool.sqlite")}"

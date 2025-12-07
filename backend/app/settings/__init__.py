@@ -85,7 +85,8 @@ class Settings(BaseSettings):
             self.DB_PASSWORD,
             self.DB_SERVER,
             self.DB_PORT,
-            self.DB_PATH)
+            self.DB_PATH
+        )
 
     SMTP_TLS: bool = True
     SMTP_SSL: bool = False

@@ -55,7 +55,7 @@ EXPOSE 7001
 # 最终阶段 - 组合前后端
 FROM python:3.13-slim
 
-# 安装nginx和其他必要工具
+# 安装nginx和其他必要工具和后端依赖
 RUN apt-get update && \
   apt-get install -y nginx && \
   pip install uv && \
@@ -70,6 +70,9 @@ COPY --from=frontend /usr/share/nginx/html /usr/share/nginx/html
 
 # 从后端阶段复制后端应用
 COPY --from=backend /app /backend
+# 安装后端依赖
+WORKDIR /backend
+RUN uv sync --frozen --no-dev
 
 # 创建启动脚本
 RUN echo '#!/bin/bash' > /start.sh && \

@@ -203,9 +203,9 @@ async def init_data(app: FastAPI) -> None:
         if not admin:
             logger.info("创建管理员账户...")
             user_in = UserCreate(
-                username="admin",
+                username=settings.FIRST_SUPERUSER,
                 nickname="管理员",
-                email=settings.FIRST_SUPERUSER,
+                email=settings.EMAIL_TEST_USER,
                 password=password,
                 status=1,
                 is_superuser=True,
