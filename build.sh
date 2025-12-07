@@ -3,14 +3,21 @@
 # 记录脚本开始时间
 start_time=$(date +%s)
 
+# 确定镜像版本
+export IMAGE_VERSION="0.0.1.1"
+
 # 显示开始时间（可选）
 echo "脚本开始执行时间: $(date -d @$start_time '+%Y-%m-%d %H:%M:%S')"
 
 # 执行Docker构建
-docker build -t ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:0.0.1.1 .
+docker build -t ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:${IMAGE_VERSION} .
+
+# 打 tag
+docker tag ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:${IMAGE_VERSION} ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:latest
 
 # 执行Docker推送
-docker push ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:0.0.1.1
+docker push ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:${IMAGE_VERSION}
+docker push ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:latest
 
 # 记录脚本结束时间
 end_time=$(date +%s)

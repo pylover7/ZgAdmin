@@ -1,0 +1,13 @@
+services:
+  pytool:
+    image: docker.cnb.cool/pylover/pytool
+    container_name: pytool-app
+    ports:
+      - "80:80"
+      - "7001:7001"
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+    # 如需数据持久化，取消下面的注释
+    # volumes:
+    #   - ./data:/app/data
