@@ -1,8 +1,7 @@
 import hashlib
-from passlib import pwd
-from passlib.context import CryptContext
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+import secrets
+import string
+import bcrypt
 
 
 def md5_encrypt(input_string) -> str:
@@ -16,12 +15,22 @@ def md5_encrypt(input_string) -> str:
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(md5_encrypt(plain_password), hashed_password)
+    """验证密码"""
+    try:
+        return bcrypt.checkpw(md5_encrypt(plain_password).encode('utf-8'), 
+                              hashed_password.encode('utf-8'))
+    except (ValueError, TypeError):
+        return False
 
 
 def get_password_hash(password: str) -> str:
-    return pwd_context.hash(password)
+    """生成密码哈希"""
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(md5_encrypt(password).encode('utf-8'), salt)
+    return hashed.decode('utf-8')
 
 
 def generate_password() -> str:
-    return pwd.genword()
+    """生成随机密码"""
+    alphabet = string.ascii_letters + string.digits + "!@#$%^&*"
+    return ''.join(secrets.choice(alphabet) for _ in range(12))
