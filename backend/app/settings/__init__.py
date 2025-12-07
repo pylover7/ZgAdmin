@@ -58,9 +58,9 @@ class Settings(BaseSettings):
             self.FRONTEND_HOST
         ]
 
-    PROJECT_NAME: str
-    PROJECT_DESCRIPTION: str
-    VERSION: str
+    PROJECT_NAME: str = "PyTool"
+    PROJECT_DESCRIPTION: str = "一个开源的在线工具箱"
+    VERSION: str = "0.1.0"
     STATIC_PATH: str = Path(
         __file__).parent.parent.parent.joinpath("static").__str__()
     AVATAR_PATH: str = Path(STATIC_PATH).joinpath("avatar").__str__()
@@ -110,8 +110,8 @@ class Settings(BaseSettings):
         return bool(self.SMTP_HOST and self.EMAILS_FROM_EMAIL)
 
     EMAIL_TEST_USER: str = "test@example.com"
-    FIRST_SUPERUSER: str
-    FIRST_SUPERUSER_PASSWORD: str
+    FIRST_SUPERUSER: str = "admin"
+    FIRST_SUPERUSER_PASSWORD: str = "changethis"
 
     def _check_default_secret(self, var_name: str, value: str | None) -> None:
         if value == "changethis":
