@@ -27,7 +27,7 @@ if settings.SENTRY_DSN and settings.ENVIRONMENT != "local":
 
 def create_app() -> FastAPI:
     Path(settings.STATIC_PATH).mkdir(parents=True, exist_ok=True)
-    
+
     app = FastAPI(
         title=settings.PROJECT_NAME,
         description=settings.PROJECT_DESCRIPTION,

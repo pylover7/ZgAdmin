@@ -59,6 +59,7 @@ class Settings(BaseSettings):
 
     PROJECT_NAME: str = "PyTool"
     PROJECT_DESCRIPTION: str = "一个开源的在线工具箱"
+
     @computed_field  # type: ignore[prop-decorator]
     @property
     def VERSION(self) -> str:
@@ -120,6 +121,11 @@ class Settings(BaseSettings):
     EMAIL_TEST_USER: str = "test@example.com"
     FIRST_SUPERUSER: str = "admin"
     FIRST_SUPERUSER_PASSWORD: str = "admin123456"
+
+    # QQ登录配置
+    QQ_APP_ID: str = ""
+    QQ_APP_KEY: str = ""
+    QQ_REDIRECT_URI: str = "http://localhost:7000/login/qq/callback"
 
     def _check_default_secret(self, var_name: str, value: str | None) -> None:
         if value == "changethis":

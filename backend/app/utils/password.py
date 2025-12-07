@@ -17,7 +17,7 @@ def md5_encrypt(input_string) -> str:
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """验证密码"""
     try:
-        return bcrypt.checkpw(md5_encrypt(plain_password).encode('utf-8'), 
+        return bcrypt.checkpw(md5_encrypt(plain_password).encode('utf-8'),
                               hashed_password.encode('utf-8'))
     except (ValueError, TypeError):
         return False

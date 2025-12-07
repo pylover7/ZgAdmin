@@ -48,5 +48,14 @@ export default [
       showLink: false,
       rank: 104
     }
+  },
+  {
+    path: "/login/qq/callback",
+    name: "QQCallback",
+    component: () => import("@/views/login/index.vue"),
+    meta: {
+      title: "QQ登录回调",
+      showLink: false
+    }
   }
 ] satisfies Array<RouteConfigsTable>;

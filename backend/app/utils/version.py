@@ -1,6 +1,7 @@
 """版本工具"""
 from pathlib import Path
 
+
 def get_version():
     """获取项目版本"""
     try:
