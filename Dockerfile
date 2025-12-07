@@ -41,7 +41,7 @@ WORKDIR /app
 RUN pip install uv
 
 # 复制后端依赖文件
-COPY backend/pyproject.toml backend/.python-version ./
+COPY backend/pyproject.toml backend/.python-version backend/uv.lock ./
 
 # 安装后端依赖
 RUN uv sync --frozen --no-dev

@@ -96,6 +96,15 @@
                 "-c",
                 "zsh /workspace/build-env.sh"
                 ],
+                "name": "Start build env image",
+                "description": "Terminal profile that runs a command on startup"
+        },
+        "build":{
+            "path": "/bin/zsh",
+            "args": [
+                "-c",
+                "zsh /workspace/build.sh"
+                ],
                 "name": "Start build image",
                 "description": "Terminal profile that runs a command on startup"
         },
