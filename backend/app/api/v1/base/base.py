@@ -13,14 +13,16 @@ from jwt.exceptions import ExpiredSignatureError
 from app.controllers.department import deptController
 from app.controllers.user import userController
 from app.settings.log import logger
-from app.models.login import CredentialsSchema, JWTPayload, JWTOut, refreshTokenSchema, JWTReOut, QQLoginSchema
+from app.models.login import CredentialsSchema, JWTPayload, JWTOut, refreshTokenSchema, \
+    JWTReOut, QQLoginSchema
 from app.core.ctx import CTX_USER_ID
 from app.core.dependency import DependAuth, SessionDep
 from app.models import Api, Menu, Role, User, UpdatePassword
 from app.models.base import Fail, Success, FailAuth
 from app.settings import settings
 from app.utils import menuTree
-from app.utils.jwtt import create_access_token, decode_access_token, get_qq_access_token, get_qq_userinfo, find_or_create_qq_user
+from app.utils.jwtt import create_access_token, decode_access_token, \
+    get_qq_access_token, get_qq_userinfo, find_or_create_qq_user
 from app.utils.password import get_password_hash, verify_password
 # from app.utils.pay import notify_url
 # from app.utils.pay.wechat import wxpay

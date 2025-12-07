@@ -1,7 +1,7 @@
 from datetime import datetime
+import urllib.parse
 import jwt
 import httpx
-import urllib.parse
 
 from fastapi import HTTPException
 from sqlmodel import select
