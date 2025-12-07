@@ -197,7 +197,7 @@ async def init_data(app: FastAPI) -> None:
     with DatabaseSession() as session:
         dept = await init_dept(session)
         admin = session.exec(
-            select(User).where(User.email == settings.FIRST_SUPERUSER)
+            select(User).where(User.email == settings.EMAIL_TEST_USER)
         ).first()
         password = get_password_hash(
             md5_encrypt(settings.FIRST_SUPERUSER_PASSWORD))

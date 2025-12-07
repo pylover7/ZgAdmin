@@ -72,19 +72,24 @@ class TestVerifyPassword:
     def test_verify_password_correct(self):
         """测试正确密码验证"""
         password = "test_password_123"
-        hashed = get_password_hash(password)
+        # 先进行MD5加密，然后传递给get_password_hash
+        md5_password = md5_encrypt(password)
+        hashed = get_password_hash(md5_password)
         assert verify_password(password, hashed) is True
     
     def test_verify_password_incorrect(self):
         """测试错误密码验证"""
         password = "test_password_123"
         wrong_password = "wrong_password_456"
-        hashed = get_password_hash(password)
+        # 先进行MD5加密，然后传递给get_password_hash
+        md5_password = md5_encrypt(password)
+        hashed = get_password_hash(md5_password)
         assert verify_password(wrong_password, hashed) is False
     
     def test_verify_password_empty_inputs(self):
         """测试空输入"""
-        hashed = get_password_hash("test")
+        md5_test = md5_encrypt("test")
+        hashed = get_password_hash(md5_test)
         assert verify_password("", hashed) is False
         assert verify_password("test", "") is False
         assert verify_password("", "") is False
@@ -104,7 +109,8 @@ class TestVerifyPassword:
     def test_verify_password_special_characters(self):
         """测试特殊字符密码"""
         password = "p@$$w0rd!@#$%^&*()"
-        hashed = get_password_hash(password)
+        md5_password = md5_encrypt(password)
+        hashed = get_password_hash(md5_password)
         assert verify_password(password, hashed) is True
         assert verify_password("p@$$w0rd", hashed) is False
 
@@ -148,8 +154,9 @@ class TestGetPasswordHash:
     def test_get_password_hash_uniqueness(self):
         """测试哈希值的唯一性（salt应该使每次结果不同）"""
         password = "test_password"
-        hashed1 = get_password_hash(password)
-        hashed2 = get_password_hash(password)
+        md5_password = md5_encrypt(password)
+        hashed1 = get_password_hash(md5_password)
+        hashed2 = get_password_hash(md5_password)
         assert hashed1 != hashed2  # 由于salt不同，哈希应该不同
         
         # 但两个哈希都应该能验证原密码
@@ -224,8 +231,9 @@ class TestIntegration:
         password = generate_password()
         assert len(password) == 12
         
-        # 2. 生成哈希
-        hashed = get_password_hash(password)
+        # 2. 生成哈希（先MD5再哈希）
+        md5_password = md5_encrypt(password)
+        hashed = get_password_hash(md5_password)
         assert hashed.startswith("$2b$")
         
         # 3. 验证正确密码
@@ -242,8 +250,9 @@ class TestIntegration:
         md5_hash = md5_encrypt(password)
         assert len(md5_hash) == 32
         
-        # 通过密码流程
-        hashed = get_password_hash(password)
+        # 通过密码流程（先MD5再哈希）
+        md5_password = md5_encrypt(password)
+        hashed = get_password_hash(md5_password)
         assert verify_password(password, hashed) is True
         
         # 验证MD5一致性

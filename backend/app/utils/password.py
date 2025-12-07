@@ -26,8 +26,12 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
         # 检查哈希格式是否正确（bcrypt哈希应该以$2b$开头且长度为60）
         if not isinstance(hashed_password, str) or not hashed_password.startswith('$2b$') or len(hashed_password) != 60:
             return False
-            
-        return bcrypt.checkpw(md5_encrypt(plain_password).encode('utf-8'),
+        
+        # 双重MD5：与创建过程保持一致
+        md5_once = md5_encrypt(plain_password)
+        md5_twice = md5_encrypt(md5_once)
+        
+        return bcrypt.checkpw(md5_twice.encode('utf-8'),
                               hashed_password.encode('utf-8'))
     except (ValueError, TypeError, AttributeError, Exception):
         return False
