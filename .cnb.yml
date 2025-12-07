@@ -12,12 +12,6 @@ main:
 
 "(main|dev/*)":
   pull_request:
-    - name: AI 代码审评
-      stages:
-      - name: 代码评审
-        image: cnbcool/ai-review:latest
-        settings:
-          type: code-review
     - name: TCA 后端代码审查
       stages:
       - image: tencentcom/tca-plugin:latest
