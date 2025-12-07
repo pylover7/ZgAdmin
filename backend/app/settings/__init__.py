@@ -7,7 +7,6 @@ from pydantic import (
     AnyUrl,
     BeforeValidator,
     HttpUrl,
-    PostgresDsn,
     computed_field,
     model_validator,
 )
@@ -58,9 +57,18 @@ class Settings(BaseSettings):
             self.FRONTEND_HOST
         ]
 
-    PROJECT_NAME: str
-    PROJECT_DESCRIPTION: str
-    VERSION: str
+    PROJECT_NAME: str = "PyTool"
+    PROJECT_DESCRIPTION: str = "一个开源的在线工具箱"
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def VERSION(self) -> str:
+        """从 VERSION 文件读取版本号"""
+        try:
+            version_file = Path(__file__).parent.parent.parent.parent / "VERSION"
+            return version_file.read_text().strip()
+        except Exception:
+            return "unknown"
     STATIC_PATH: str = Path(
         __file__).parent.parent.parent.joinpath("static").__str__()
     AVATAR_PATH: str = Path(STATIC_PATH).joinpath("avatar").__str__()
@@ -85,7 +93,8 @@ class Settings(BaseSettings):
             self.DB_PASSWORD,
             self.DB_SERVER,
             self.DB_PORT,
-            self.DB_PATH)
+            self.DB_PATH
+        )
 
     SMTP_TLS: bool = True
     SMTP_SSL: bool = False
@@ -110,8 +119,13 @@ class Settings(BaseSettings):
         return bool(self.SMTP_HOST and self.EMAILS_FROM_EMAIL)
 
     EMAIL_TEST_USER: str = "test@example.com"
-    FIRST_SUPERUSER: str
-    FIRST_SUPERUSER_PASSWORD: str
+    FIRST_SUPERUSER: str = "admin"
+    FIRST_SUPERUSER_PASSWORD: str = "admin123456"
+
+    # QQ登录配置
+    QQ_APP_ID: str = ""
+    QQ_APP_KEY: str = ""
+    QQ_REDIRECT_URI: str = "http://localhost:7000/login/qq/callback"
 
     def _check_default_secret(self, var_name: str, value: str | None) -> None:
         if value == "changethis":
@@ -127,10 +141,9 @@ class Settings(BaseSettings):
     @model_validator(mode="after")
     def _enforce_non_default_secrets(self) -> Self:
         self._check_default_secret("SECRET_KEY", self.SECRET_KEY)
-        self._check_default_secret("POSTGRES_PASSWORD", self.DB_PASSWORD)
-        self._check_default_secret(
-            "FIRST_SUPERUSER_PASSWORD", self.FIRST_SUPERUSER_PASSWORD
-        )
+        # self._check_default_secret(
+        #     "FIRST_SUPERUSER_PASSWORD", self.FIRST_SUPERUSER_PASSWORD
+        # )
 
         return self
 

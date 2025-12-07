@@ -190,6 +190,7 @@ async def init_data(app: FastAPI) -> None:
     SQLModel.metadata.create_all(engine)
     logger.info("检查静态文件目录...")
     check_dir_exists([
+        settings.STATIC_PATH,
         settings.AVATAR_PATH,
         settings.GOODS_PATH,
     ])
@@ -203,9 +204,9 @@ async def init_data(app: FastAPI) -> None:
         if not admin:
             logger.info("创建管理员账户...")
             user_in = UserCreate(
-                username="admin",
+                username=settings.FIRST_SUPERUSER,
                 nickname="管理员",
-                email=settings.FIRST_SUPERUSER,
+                email=settings.EMAIL_TEST_USER,
                 password=password,
                 status=1,
                 is_superuser=True,

@@ -1,9 +1,10 @@
 # import json
+import urllib.parse
 from datetime import timedelta, datetime
 from uuid import UUID
 # from uuid import uuid4
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, HTTPException
 # from fastapi.websockets import WebSocketState
 from sqlmodel import select
 from jwt.exceptions import ExpiredSignatureError
@@ -12,14 +13,16 @@ from jwt.exceptions import ExpiredSignatureError
 from app.controllers.department import deptController
 from app.controllers.user import userController
 from app.settings.log import logger
-from app.models.login import CredentialsSchema, JWTPayload, JWTOut, refreshTokenSchema, JWTReOut
+from app.models.login import CredentialsSchema, JWTPayload, JWTOut, refreshTokenSchema, \
+    JWTReOut, QQLoginSchema
 from app.core.ctx import CTX_USER_ID
 from app.core.dependency import DependAuth, SessionDep
 from app.models import Api, Menu, Role, User, UpdatePassword
 from app.models.base import Fail, Success, FailAuth
 from app.settings import settings
-from app.utils import menuTree, now
-from app.utils.jwtt import create_access_token, decode_access_token
+from app.utils import menuTree
+from app.utils.jwtt import create_access_token, decode_access_token, \
+    get_qq_access_token, get_qq_userinfo, find_or_create_qq_user
 from app.utils.password import get_password_hash, verify_password
 # from app.utils.pay import notify_url
 # from app.utils.pay.wechat import wxpay
@@ -191,6 +194,98 @@ async def update_user_password(session: SessionDep, req_in: UpdatePassword):
     session.add(user)
     session.commit()
     return Success(msg="修改成功")
+
+
+@router.get("/qq/auth-url", summary="获取QQ授权链接")
+async def get_qq_auth_url():
+    """获取QQ登录授权URL"""
+    app_id = settings.QQ_APP_ID
+    redirect_uri = settings.QQ_REDIRECT_URI
+    state = "qq_login_" + str(datetime.now().timestamp())
+
+    # URL编码确保参数安全
+    encoded_redirect_uri = urllib.parse.quote(redirect_uri, safe='')
+
+    auth_url = (
+        f"https://graph.qq.com/oauth2.0/authorize?"
+        f"response_type=code&"
+        f"client_id={app_id}&"
+        f"redirect_uri={encoded_redirect_uri}&"
+        f"state={state}&"
+        f"scope=get_user_info"
+    )
+
+    return Success(data={
+        "auth_url": auth_url,
+        "state": state
+    })
+
+
+@router.post("/qq/login", summary="QQ登录")
+async def qq_login(session: SessionDep, qq_login: QQLoginSchema):
+    """处理QQ登录回调"""
+    try:
+        # 验证输入参数
+        if not qq_login.code or not qq_login.state:
+            return FailAuth(msg="授权参数不完整")
+
+        # 1. 使用授权码获取access_token
+        token_data = await get_qq_access_token(qq_login.code)
+
+        # 2. 获取用户信息
+        user_info = await get_qq_userinfo(token_data.access_token, token_data.openid)
+
+        # 3. 查找或创建用户
+        user = await find_or_create_qq_user(session, user_info)
+
+        # 4. 生成JWT token
+        roles = [item.code for item in user.roles]
+        try:
+            depart = deptController.get_all_name(session, user)
+        except Exception as e:
+            logger.debug(f"获取部门名称失败: {str(e)}")
+            depart = ""
+
+        access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+        refresh_token_expires = timedelta(minutes=settings.REFRESH_TOKEN_EXPIRE_MINUTES)
+        expire = datetime.now() + access_token_expires
+        expire_refresh = datetime.now() + refresh_token_expires
+
+        data = JWTOut(
+            username=user.username,
+            avatar=user.avatar or user.qq_avatar or "",
+            depart=depart,
+            roles=roles,
+            accessToken=create_access_token(
+                data=JWTPayload(
+                    user_id=str(user.id),
+                    username=user.username,
+                    is_superuser=user.is_superuser,
+                    exp=expire,
+                )
+            ),
+            refreshToken=create_access_token(
+                data=JWTPayload(
+                    user_id=str(user.id),
+                    username=user.username,
+                    is_superuser=user.is_superuser,
+                    exp=expire_refresh,
+                )
+            ),
+            expires=expire.strftime("%Y-%m-%d %H:%M:%S")
+        )
+
+        # 更新最后登录时间
+        await userController.update_last_login(session=session, id=user.id)
+
+        return Success(data=data.model_dump())
+
+    except HTTPException:
+        # HTTP异常直接抛出，保持原有错误信息
+        raise
+    except Exception as e:
+        logger.error(f"QQ登录失败: {str(e)}")
+        return FailAuth(msg="QQ登录失败，请稍后重试")
 
 
 # @router.post("/notify/{name}", summary="支付回调")

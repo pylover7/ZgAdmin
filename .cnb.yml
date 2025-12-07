@@ -27,6 +27,14 @@ main:
           team_name: pytool
           scheme_id: 7844
           scan_dir: backend/app
+          total_fatal: 0
+          total_error: 0
+          total_warning: 5
+          total_info: 10
+          incr_fatal: 0
+          incr_error: 0
+          incr_warning: 2
+          incr_info: 3
         settingsFrom:
           - https://cnb.cool/pylover/key/-/blob/main/tca.yml
     - name: TCA 前端代码分析
@@ -38,6 +46,14 @@ main:
           team_name: pytool
           scheme_id: 7845
           scan_dir: frontend/src
+          total_fatal: 0
+          total_error: 0
+          total_warning: 5
+          total_info: 10
+          incr_fatal: 0
+          incr_error: 0
+          incr_warning: 2
+          incr_info: 3
         settingsFrom:
           - https://cnb.cool/pylover/key/-/blob/main/tca.yml
 

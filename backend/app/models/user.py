@@ -39,6 +39,29 @@ class UserBase(BaseModel):
         description="备注")
     department_id: uuid.UUID | None = Field(
         default=None, index=True, foreign_key="department.id")
+    # QQ登录相关字段
+    qq_openid: str | None = Field(
+        default=None,
+        max_length=100,
+        nullable=True,
+        unique=True,
+        description="QQ OpenID")
+    qq_unionid: str | None = Field(
+        default=None,
+        max_length=100,
+        nullable=True,
+        unique=True,
+        description="QQ UnionID")
+    qq_nickname: str | None = Field(
+        default=None,
+        max_length=100,
+        nullable=True,
+        description="QQ昵称")
+    qq_avatar: str | None = Field(
+        default=None,
+        max_length=500,
+        nullable=True,
+        description="QQ头像")
 
 
 class User(UserBase, TimestampMixin, table=True):

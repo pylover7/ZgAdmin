@@ -94,3 +94,16 @@ export const getMine = (data?: object) => {
 export const getMineLogs = (data?: object) => {
   return http.request<ResultTable>("get", "/mine-logs", { data });
 };
+
+/** 获取QQ授权链接 */
+export const getQQAuthUrl = () => {
+  return http.request<{ auth_url: string; state: string }>(
+    "get",
+    baseUrl("/qq/auth-url")
+  );
+};
+
+/** QQ登录 */
+export const qqLogin = (data: { code: string; state: string }) => {
+  return http.request<UserResult>("post", baseUrl("/qq/login"), { data });
+};
