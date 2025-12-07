@@ -3,7 +3,7 @@ services:
     image: docker.cnb.cool/pylover/pytool
     container_name: pytool-app
     ports:
-      - "80:80"
+      - "7000:80"
       - "7001:7001"
     restart: unless-stopped
     environment:
