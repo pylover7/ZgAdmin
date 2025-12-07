@@ -176,5 +176,6 @@
     "gitblame.inlineMessageFormat": "${author.name}, (${time.ago}) · ${commit.summary}",
     "terminal.integrated.suggest.enabled": true,
     "workbench.secondarySideBar.defaultVisibility": "hidden",
-    "terminal.integrated.shellIntegration.environmentReporting": true
+    "terminal.integrated.shellIntegration.environmentReporting": true,
+    "codingcopilot.autoRun": true
 }

@@ -60,7 +60,15 @@ class Settings(BaseSettings):
 
     PROJECT_NAME: str = "PyTool"
     PROJECT_DESCRIPTION: str = "一个开源的在线工具箱"
-    VERSION: str = "0.1.0"
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def VERSION(self) -> str:
+        """从 VERSION 文件读取版本号"""
+        try:
+            version_file = Path(__file__).parent.parent.parent.parent / "VERSION"
+            return version_file.read_text().strip()
+        except Exception:
+            return "0.1.0"
     STATIC_PATH: str = Path(
         __file__).parent.parent.parent.joinpath("static").__str__()
     AVATAR_PATH: str = Path(STATIC_PATH).joinpath("avatar").__str__()
