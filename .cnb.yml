@@ -80,4 +80,17 @@ $:
         - name: docker list
           script: docker images
         - name: docker push
-          script: docker push ${IMAGE_TAG}  
+          script: docker push ${IMAGE_TAG}
+
+  push:
+    - services:
+        - docker
+      docker:
+        volumes:
+          - /data/codewiki/${CNB_REPO_SLUG}:data
+      stages:
+        - name: generate codewiki
+          timeout: 10h
+          image: cnbcool/codewiki:latest
+          settings:
+            git_doc_dir: /data/codewiki/${CNB_REPO_SLUG}
