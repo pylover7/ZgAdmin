@@ -70,9 +70,12 @@ RUN wget -O /tmp/webstorm.tar.gz https://download.jetbrains.com/webstorm/WebStor
     tar -zxvf /tmp/webstorm.tar.gz -C /ide_cnb
 
 # 安装 btop
-RUN git clone https://github.com/aristocratos/btop.git /btop
-WORKDIR /btop
-RUN make && make install && rm -rf /btop
+RUN git clone https://github.com/aristocratos/btop.git /tmp/btop && \
+    cd /tmp/btop && \
+    git fetch --tags && git checkout v1.4.5 && \
+    make && \
+    make install && \
+    rm -rf /tmp/btop
 
 # 设置启动命令
 ENV CNB_WELCOME_EXECUTE_COMMAND="zsh"
