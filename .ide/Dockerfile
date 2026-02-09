@@ -59,10 +59,6 @@ RUN curl -fsSL https://code-server.dev/install.sh | sh \
     && code-server --install-extension cweijan.vscode-database-client2 \
     && echo done
 
-# 复制 vscode 自定义到容器中
-COPY .vscode/settings.json /root/.vscode-server/data/Machine/settings.json
-COPY .vscode/settings.json /root/.local/share/code-server/Machine/settings.json
-
 # 安装 JetBrains Mono
 RUN wget https://download.jetbrains.com/fonts/JetBrainsMono-2.304.zip -O /tmp/jetbrains-mono.zip && \
     unzip /tmp/jetbrains-mono.zip -d /usr/share/fonts/truetype/jetbrains-mono && \
