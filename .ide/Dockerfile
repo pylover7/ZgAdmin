@@ -13,7 +13,9 @@ RUN apt install -y gnupg && \
     apt update && apt install -y nodejs
 
 # 安装 bun
-RUN curl -fsSL https://bun.sh/install | bash && . /root/.bashrc
+RUN curl -fsSL https://bun.sh/install | bash
+ENV BUN_INSTALL="$HOME/.bun"
+ENV PATH="$BUN_INSTALL/bin:$PATH"
 
 # 安装一些常用的工具
 RUN apt-get update && \
