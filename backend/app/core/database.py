@@ -73,7 +73,7 @@ def init_menus(session: Session):
             path="/system",
             component="",
             rank=7,
-            icon="ri:settings-3-line",
+            icon="ri:virus-line",
         )
         session.add(system)
         session.commit()
@@ -164,6 +164,42 @@ def init_menus(session: Session):
         session.add(loginLog)
         session.add(operationLog)
         session.add(systemLog)
+        session.commit()
+
+        settings = Menu(
+            menuType=0,
+            title="系统设置",
+            name="settings",
+            path="/settings",
+            component="",
+            rank=9,
+            icon="ep:setting",
+        )
+        session.add(settings)
+        session.commit()
+        session.refresh(settings)
+        genSettings = Menu(
+            parentId=settings.id,
+            menuType=0,
+            title="通用设置",
+            name="GenSettings",
+            path="/settings/general",
+            component="settings/general/index",
+            icon="ri:code-line",
+            rank=1
+        )
+        loginSettings = Menu(
+            parentId=settings.id,
+            menuType=0,
+            title="登录设置",
+            name="LoginSettings",
+            path="/settings/login",
+            component="settings/login/index",
+            icon="ri:settings-2-line",
+            rank=2
+        )
+        session.add(genSettings)
+        session.add(loginSettings)
         session.commit()
 
 
