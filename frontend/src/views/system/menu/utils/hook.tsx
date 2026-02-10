@@ -136,6 +136,7 @@ export function useMenu() {
       title: `${title}菜单`,
       props: {
         formInline: {
+          id: row.id,
           menuType: row?.menuType ?? 0,
           higherMenuOptions: formatHigherMenuOptions(cloneDeep(dataList.value)),
           parentId: row?.parentId ?? null,
