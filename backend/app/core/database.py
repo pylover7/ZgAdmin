@@ -25,7 +25,8 @@ def init_api(app: FastAPI, session: Session):
     apis = app.openapi()["paths"]
     for path, value in apis.items():
         for method, value2 in value.items():
-            tag = ",".join(value2.get("tags"))
+            tags = value2.get("tags", [])
+            tag = ",".join(tags) if tags else ""
             summary = value2.get("summary")
             if len(apiOld) == 0:
                 api = Api(

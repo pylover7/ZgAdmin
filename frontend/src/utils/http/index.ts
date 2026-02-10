@@ -78,8 +78,17 @@ class PureHttp {
           return config;
         }
         /** 请求白名单，放置一些不需要`token`的接口（通过设置请求白名单，防止`token`过期后再请求造成的死循环问题） */
-        const whiteList = ["/refreshToken", "/login"];
-        return whiteList.some(url => config.url.endsWith(url))
+        const whiteList = [
+          "/refreshToken",
+          "/login",
+          "/settings/login/methods"
+        ];
+        // 使用精确路径匹配，避免误判（如 /settings/login 会被 /login 误匹配）
+        const isWhitelistUrl = whiteList.some(url => {
+          // 检查完整路径是否匹配白名单
+          return config.url === url;
+        });
+        return isWhitelistUrl
           ? config
           : new Promise(resolve => {
               const data = getToken();

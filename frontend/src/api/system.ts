@@ -1,5 +1,4 @@
 import { http } from "@/utils/http";
-
 import { apiV1 } from "./utils";
 
 const systemUrl = (url: string) => apiV1(`/system${url}`);
