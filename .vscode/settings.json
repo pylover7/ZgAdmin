@@ -131,7 +131,7 @@
           "path": "/bin/zsh",
           "args": [
             "-c",
-            "cd /workspace/frontend && bun i && bun dev"
+            "source ~/.zshrc && cd /workspace/frontend && bun i && bun dev"
           ]
         },
         "后端启动": {
