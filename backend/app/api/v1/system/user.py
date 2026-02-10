@@ -106,7 +106,7 @@ async def update_user(
         session: SessionDep,
         data: UserUpdate,
 ):
-    user = await userController.get_user_by_name(session, data.username)
+    user = await userController.get(session, data.id)
     if not user:
         raise HTTPException(status_code=404, detail="用户不存在！")
     if user.id != data.id:
