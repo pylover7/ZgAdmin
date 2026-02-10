@@ -82,8 +82,9 @@ RUN git clone https://github.com/aristocratos/btop.git /tmp/btop && \
 # 设置启动命令
 ENV CNB_WELCOME_EXECUTE_COMMAND="zsh"
 
-# 清除 uv 缓存和 pip 缓存
-RUN rm -rf ~/.cache/uv && rm -rf ~/.cache/pip
+# 复制 vscode 自定义到容器中
+COPY .vscode/settings.json /root/.vscode-server/data/Machine/settings.json
+COPY .vscode/settings.json /root/.local/share/code-server/Machine/settings.json
 
 # 指定字符集支持命令行输入中文（根据需要选择字符集）
 ENV LANG=C.UTF-8
