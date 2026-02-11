@@ -74,7 +74,7 @@ def init_menus(session: Session):
             path="/system",
             component="",
             rank=7,
-            icon="ri:virus-line",
+            icon="ep:operation",
         )
         session.add(system)
         session.commit()
