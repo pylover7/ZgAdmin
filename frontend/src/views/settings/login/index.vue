@@ -32,6 +32,9 @@ const loginForm = reactive<LoginConfig>({
   }
 });
 
+// 保存初始配置用于比较
+const initialForm = ref<LoginConfig | null>(null);
+
 const rules: LoginConfigRules = {
   qq: {
     app_id: [
@@ -98,9 +101,19 @@ const getRules = (path: string, field: string) => {
   return obj?.[field] || [];
 };
 
-// 判断是否有启用的登录方式
-const hasEnabledLogin = computed(() => {
-  return loginForm.qq.enabled || loginForm.wechat.enabled;
+// 判断表单是否有修改
+const hasChanges = computed(() => {
+  if (!initialForm.value) return false;
+
+  const current = JSON.stringify(loginForm);
+  const initial = JSON.stringify(initialForm.value);
+  return current !== initial;
+});
+
+// 判断是否可以保存（有启用的登录方式或表单有修改）
+const canSave = computed(() => {
+  const hasEnabled = loginForm.qq.enabled || loginForm.wechat.enabled;
+  return hasEnabled || hasChanges.value;
 });
 
 /** 获取登录配置 */
@@ -125,6 +138,8 @@ const fetchLoginConfig = async () => {
           enabled: data.wechat.enabled || false
         };
       }
+      // 保存初始配置
+      initialForm.value = JSON.parse(JSON.stringify(loginForm));
     }
   } catch (error) {
     console.error("获取登录配置失败:", error);
@@ -144,6 +159,8 @@ const handleSave = async () => {
     loading.value = true;
     await updateLoginConfig(loginForm);
     ElMessage.success("保存成功");
+    // 更新初始配置
+    initialForm.value = JSON.parse(JSON.stringify(loginForm));
   } catch (error) {
     if (error !== false) {
       ElMessage.error("保存失败");
@@ -182,11 +199,7 @@ onMounted(() => {
           <span class="title">登录配置</span>
           <div class="actions">
             <el-button @click="handleReset">重置</el-button>
-            <el-button
-              type="primary"
-              :disabled="!hasEnabledLogin"
-              @click="handleSave"
-            >
+            <el-button type="primary" :disabled="!canSave" @click="handleSave">
               保存
             </el-button>
           </div>
