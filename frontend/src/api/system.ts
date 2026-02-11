@@ -1,5 +1,6 @@
 import { http } from "@/utils/http";
 import { apiV1 } from "./utils";
+import type { Result, ResultTable } from "@/types";
 
 const systemUrl = (url: string) => apiV1(`/system${url}`);
 const deptUrl = (url: string) => systemUrl(`/dept${url}`);
@@ -12,22 +13,6 @@ const logsUrl = (url: string) => monitorUrl(`/logs${url}`);
 const loginLogsUrl = (url: string) => logsUrl(`/login${url}`);
 const operationLogsUrl = (url: string) => logsUrl(`/operation${url}`);
 const systemLogsUrl = (url: string) => logsUrl(`/system${url}`);
-
-type Result = {
-  code: number;
-  msg: string;
-  success: boolean;
-  data?: Array<any>;
-};
-
-type ResultTable = Result & {
-  /** 总条目数 */
-  total?: number;
-  /** 每页显示条目个数 */
-  pageSize?: number;
-  /** 当前页数 */
-  currentPage?: number;
-};
 
 /** 新增用户 */
 export const addUser = (data?: object) => {
