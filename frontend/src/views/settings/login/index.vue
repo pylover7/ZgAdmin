@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted } from "vue";
+import { ref, reactive, onMounted, computed } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import type { FormInstance, FormRules } from "element-plus";
 import { Connection, ChatDotRound } from "@element-plus/icons-vue";
@@ -98,6 +98,11 @@ const getRules = (path: string, field: string) => {
   return obj?.[field] || [];
 };
 
+// 判断是否有启用的登录方式
+const hasEnabledLogin = computed(() => {
+  return loginForm.qq.enabled || loginForm.wechat.enabled;
+});
+
 /** 获取登录配置 */
 const fetchLoginConfig = async () => {
   try {
@@ -177,7 +182,13 @@ onMounted(() => {
           <span class="title">登录配置</span>
           <div class="actions">
             <el-button @click="handleReset">重置</el-button>
-            <el-button type="primary" @click="handleSave">保存</el-button>
+            <el-button
+              type="primary"
+              :disabled="!hasEnabledLogin"
+              @click="handleSave"
+            >
+              保存
+            </el-button>
           </div>
         </div>
       </template>
