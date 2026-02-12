@@ -167,7 +167,7 @@ export const clearLoginLogs = () => {
 export const getLoginLogsList = (
   username: string,
   level: string,
-  loginTime: string[],
+  loginTime: [string, string] | null,
   currentPage: number,
   pageSize: number
 ) => {
@@ -193,7 +193,7 @@ export const clearOperationLogs = () => {
 /** 获取系统监控-操作日志列表 */
 export const getOperationLogsList = (
   level: string[],
-  operationTime: string,
+  operationTime: [string, string] | null,
   currentPage: number,
   pageSize: number
 ) => {
@@ -214,7 +214,7 @@ export const deleteSystemLogs = (data?: string[]) => {
 /** 获取系统监控-系统日志列表 */
 export const getSystemLogsList = (
   model: string,
-  operationTime: string,
+  operationTime: [string, string] | null,
   currentPage: number,
   pageSize: number
 ) => {

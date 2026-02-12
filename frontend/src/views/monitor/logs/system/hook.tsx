@@ -23,7 +23,7 @@ export function useRole(tableRef: Ref) {
 
   const form = reactive({
     module: "",
-    oprationTime: ""
+    oprationTime: null
   });
   const dataList = ref([]);
   const loading = ref(true);
