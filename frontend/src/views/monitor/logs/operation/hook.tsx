@@ -1,12 +1,66 @@
 import dayjs from "dayjs";
 import { message } from "@/utils/message";
 import { getKeyList } from "@pureadmin/utils";
-import { deleteSystemLogs, getOperationLogsList } from "@/api/system";
+import {
+  clearOperationLogs,
+  deleteOperationLogs,
+  getOperationLogsList
+} from "@/api/system";
 import type { PaginationProps } from "@pureadmin/table";
-import { type Ref, reactive, ref, onMounted } from "vue";
+import { type Ref, reactive, ref, onMounted, computed } from "vue";
+import { useDark } from "@pureadmin/utils";
 import { paginationConf } from "@/config";
 
 export function useRole(tableRef: Ref) {
+  const { isDark } = useDark();
+
+  const levelTagStyle = computed(() => {
+    return (level: string) => {
+      const styles: Record<string, Record<string, string>> = {
+        info: isDark.value
+          ? {
+              "--el-tag-text-color": "#409eff",
+              "--el-tag-bg-color": "#141414",
+              "--el-tag-border-color": "#1a3a5c"
+            }
+          : {
+              "--el-tag-text-color": "#1890ff",
+              "--el-tag-bg-color": "#e6f7ff",
+              "--el-tag-border-color": "#91d5ff"
+            },
+        warning: isDark.value
+          ? {
+              "--el-tag-text-color": "#faad14",
+              "--el-tag-bg-color": "#2b2111",
+              "--el-tag-border-color": "#594214"
+            }
+          : {
+              "--el-tag-text-color": "#d48806",
+              "--el-tag-bg-color": "#fffbe6",
+              "--el-tag-border-color": "#ffe58f"
+            },
+        error: isDark.value
+          ? {
+              "--el-tag-text-color": "#ff4d4f",
+              "--el-tag-bg-color": "#2b1316",
+              "--el-tag-border-color": "#58191c"
+            }
+          : {
+              "--el-tag-text-color": "#cf1322",
+              "--el-tag-bg-color": "#fff1f0",
+              "--el-tag-border-color": "#ffa39e"
+            }
+      };
+      return styles[level] || styles.info;
+    };
+  });
+
+  const levelTextMap: Record<string, string> = {
+    info: "信息",
+    warning: "警告",
+    error: "重要"
+  };
+
   const form = reactive({
     level: [],
     operationTime: null
@@ -31,7 +85,12 @@ export function useRole(tableRef: Ref) {
     {
       label: "日志等级",
       prop: "level",
-      minWidth: 100
+      minWidth: 100,
+      cellRenderer: ({ row, props }) => (
+        <el-tag size={props.size} style={levelTagStyle.value(row.level)}>
+          {levelTextMap[row.level] || row.level}
+        </el-tag>
+      )
     },
     {
       label: "操作人员",
@@ -80,7 +139,7 @@ export function useRole(tableRef: Ref) {
   function onbatchDel() {
     // 返回当前选中的行
     const curSelected = tableRef.value.getTableRef().getSelectionRows();
-    deleteSystemLogs(getKeyList(curSelected, "id")).then(() => {
+    deleteOperationLogs(getKeyList(curSelected, "id")).then(() => {
       message("删除成功", { type: "success" });
       tableRef.value.getTableRef().clearSelection();
       onSearch();
@@ -90,10 +149,10 @@ export function useRole(tableRef: Ref) {
   /** 清空日志 */
   function clearAll() {
     // 根据实际业务，调用接口删除所有日志数据
-    message("已删除所有日志数据", {
-      type: "success"
+    clearOperationLogs().then(() => {
+      message("已删除所有日志数据", { type: "success" });
+      onSearch();
     });
-    onSearch();
   }
 
   async function onSearch() {

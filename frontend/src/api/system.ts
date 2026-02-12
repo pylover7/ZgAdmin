@@ -180,6 +180,16 @@ export const getLoginLogsList = (
   });
 };
 
+/** 批量删除操作日志 */
+export const deleteOperationLogs = (data?: string[]) => {
+  return http.request<Result>("post", operationLogsUrl("/delete"), { data });
+};
+
+/** 删除全部操作日志 */
+export const clearOperationLogs = () => {
+  return http.request<Result>("get", operationLogsUrl("/clear"));
+};
+
 /** 获取系统监控-操作日志列表 */
 export const getOperationLogsList = (
   level: string[],

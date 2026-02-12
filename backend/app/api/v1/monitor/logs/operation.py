@@ -13,14 +13,14 @@ operationRouter = APIRouter()
 
 @operationRouter.post("/delete")
 async def delete_operation_logs(
-    session: SessionDep,  # type: ignore
-    ids: list[UUID] = Query(..., description="日志ID列表"),
+    session: SessionDep,
+    data: list[UUID],
 ):
-    await operationLogController.delete(session, ids)
+    await operationLogController.delete(session, data)
     return Success(msg="操作日志删除成功！")
 
 
-@operationRouter.post("/clear")
+@operationRouter.get("/clear")
 async def clear_operation_logs(
     session: SessionDep,  # type: ignore
 ):
