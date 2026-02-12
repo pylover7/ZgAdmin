@@ -6,12 +6,14 @@ import {
   deleteLoginLogs,
   getLoginLogsList
 } from "@/api/system";
-import { usePublicHooks } from "@/views/system/hooks";
+import { usePublicHooks, formatDateTimeRange } from "@/views/system/hooks";
 import { type Ref, reactive, ref, onMounted } from "vue";
 import { paginationConf } from "@/config";
 import type { PaginationProps } from "@pureadmin/table";
 
 export function useRole(tableRef: Ref) {
+  const { tagStyle } = usePublicHooks();
+
   const form = reactive({
     username: "",
     level: "",
@@ -20,7 +22,6 @@ export function useRole(tableRef: Ref) {
   const dataList = ref([]);
   const loading = ref(true);
   const selectedNum = ref(0);
-  const { tagStyle } = usePublicHooks();
 
   const pagination = reactive<PaginationProps>({ ...paginationConf });
   const columns: TableColumnList = [
@@ -135,7 +136,7 @@ export function useRole(tableRef: Ref) {
     const { data, total, pageSize, currentPage } = await getLoginLogsList(
       form.username,
       form.level,
-      form.loginTime,
+      formatDateTimeRange(form.loginTime),
       pagination.currentPage,
       pagination.pageSize
     );

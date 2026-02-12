@@ -10,10 +10,17 @@ import {
   getSystemLogsDetail,
   deleteSystemLogs
 } from "@/api/system";
+import {
+  usePublicHooks,
+  levelTextMap,
+  formatDateTimeRange
+} from "@/views/system/hooks";
 import Info from "~icons/ri/question-line";
 import { paginationConf } from "@/config";
 
 export function useRole(tableRef: Ref) {
+  const { levelTagStyle } = usePublicHooks();
+
   const form = reactive({
     module: "",
     oprationTime: ""
@@ -88,16 +95,16 @@ export function useRole(tableRef: Ref) {
       prop: "browser",
       minWidth: 100
     },
-    // {
-    //   label: "级别",
-    //   prop: "level",
-    //   minWidth: 90,
-    //   cellRenderer: ({ row, props }) => (
-    //     <el-tag size={props.size} type={getLevelType(row.level)} effect="plain">
-    //       {getLevelType(row.level, true)}
-    //     </el-tag>
-    //   )
-    // },
+    {
+      label: "级别",
+      prop: "level",
+      minWidth: 90,
+      cellRenderer: ({ row, props }) => (
+        <el-tag size={props.size} style={levelTagStyle.value(row.level)}>
+          {levelTextMap[row.level] || row.level}
+        </el-tag>
+      )
+    },
     {
       label: "请求耗时",
       prop: "takesTime",
@@ -201,7 +208,7 @@ export function useRole(tableRef: Ref) {
     loading.value = true;
     const { data, total, pageSize, currentPage } = await getSystemLogsList(
       form.module,
-      form.oprationTime,
+      formatDateTimeRange(form.oprationTime),
       pagination.currentPage,
       pagination.pageSize
     );

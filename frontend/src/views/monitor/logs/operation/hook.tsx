@@ -7,59 +7,16 @@ import {
   getOperationLogsList
 } from "@/api/system";
 import type { PaginationProps } from "@pureadmin/table";
-import { type Ref, reactive, ref, onMounted, computed } from "vue";
-import { useDark } from "@pureadmin/utils";
+import { type Ref, reactive, ref, onMounted } from "vue";
+import {
+  usePublicHooks,
+  levelTextMap,
+  formatDateTimeRange
+} from "@/views/system/hooks";
 import { paginationConf } from "@/config";
 
 export function useRole(tableRef: Ref) {
-  const { isDark } = useDark();
-
-  const levelTagStyle = computed(() => {
-    return (level: string) => {
-      const styles: Record<string, Record<string, string>> = {
-        info: isDark.value
-          ? {
-              "--el-tag-text-color": "#409eff",
-              "--el-tag-bg-color": "#141414",
-              "--el-tag-border-color": "#1a3a5c"
-            }
-          : {
-              "--el-tag-text-color": "#1890ff",
-              "--el-tag-bg-color": "#e6f7ff",
-              "--el-tag-border-color": "#91d5ff"
-            },
-        warning: isDark.value
-          ? {
-              "--el-tag-text-color": "#faad14",
-              "--el-tag-bg-color": "#2b2111",
-              "--el-tag-border-color": "#594214"
-            }
-          : {
-              "--el-tag-text-color": "#d48806",
-              "--el-tag-bg-color": "#fffbe6",
-              "--el-tag-border-color": "#ffe58f"
-            },
-        error: isDark.value
-          ? {
-              "--el-tag-text-color": "#ff4d4f",
-              "--el-tag-bg-color": "#2b1316",
-              "--el-tag-border-color": "#58191c"
-            }
-          : {
-              "--el-tag-text-color": "#cf1322",
-              "--el-tag-bg-color": "#fff1f0",
-              "--el-tag-border-color": "#ffa39e"
-            }
-      };
-      return styles[level] || styles.info;
-    };
-  });
-
-  const levelTextMap: Record<string, string> = {
-    info: "信息",
-    warning: "警告",
-    error: "重要"
-  };
+  const { levelTagStyle } = usePublicHooks();
 
   const form = reactive({
     level: [],
@@ -159,7 +116,7 @@ export function useRole(tableRef: Ref) {
     loading.value = true;
     const { data, total, currentPage, pageSize } = await getOperationLogsList(
       form.level,
-      form.operationTime,
+      formatDateTimeRange(form.operationTime),
       pagination.currentPage,
       pagination.pageSize
     );
