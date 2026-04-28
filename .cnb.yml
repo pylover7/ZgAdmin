@@ -54,7 +54,7 @@ main:
 $:
   vscode:
     - docker:
-        image: ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:env
+        image: docker.cnb.cool/pylover/tools/zgadmin:env
         volumes:
             - ./backend/.venv:rw
             - ./backend/static:rw
