@@ -94,7 +94,7 @@
             "path": "/bin/zsh",
             "args": [
                 "-c",
-                "zsh /workspace/build-env.sh"
+                "zsh /workspace/scripts/build-env.sh"
                 ],
                 "name": "Start build env image",
                 "description": "Terminal profile that runs a command on startup"
@@ -103,7 +103,7 @@
             "path": "/bin/zsh",
             "args": [
                 "-c",
-                "zsh /workspace/build.sh"
+                "zsh /workspace/scripts/build.sh"
                 ],
                 "name": "Start build image",
                 "description": "Terminal profile that runs a command on startup"
@@ -124,7 +124,7 @@
             "path": "/bin/zsh",
             "args": [
                 "-c",
-                "zsh /workspace/lint.sh && zsh"
+                "zsh /workspace/scripts/lint.sh && zsh"
                 ],
         }
     },
