@@ -65,6 +65,8 @@ $:
       services:
         - vscode
         - docker
+      imports:
+        - https://cnb.cool/pylover/key/-/blob/main/deepseek.yml
       stages:
         - name: ls
           script: ls -la
