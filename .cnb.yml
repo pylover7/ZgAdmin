@@ -67,6 +67,7 @@ $:
         - docker
       imports:
         - https://cnb.cool/pylover/key/-/blob/main/deepseek.yml
+        - https://cnb.cool/pylover/Tools/KeJi_Key/-/blob/main/tapd.yml
       stages:
         - name: ls
           script: ls -la
