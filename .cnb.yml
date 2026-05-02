@@ -10,57 +10,10 @@ main:
             username: ${GIT_USERNAME}
             password: ${GIT_ACCESS_TOKEN}
 
-"(main|dev/*)":
-  pull_request:
-    - name: AI 代码审评
-      stages:
-      - name: 代码评审
-        image: cnbcool/ai-review:latest
-        settings:
-          type: code-review
-    - name: TCA 后端代码审查
-      stages:
-      - image: tencentcom/tca-plugin:latest
-        settings:
-          mode: local
-          org_sid: DlV3t9YzRYP
-          team_name: pytool
-          scheme_id: 7844
-          scan_dir: backend/app
-          total_fatal: 0
-          total_error: 0
-          total_warning: 5
-          total_info: 10
-          incr_fatal: 0
-          incr_error: 0
-          incr_warning: 2
-          incr_info: 3
-        settingsFrom:
-          - https://cnb.cool/pylover/key/-/blob/main/tca.yml
-    - name: TCA 前端代码分析
-      stages:
-      - image: tencentcom/tca-plugin:latest
-        settings:
-          mode: local
-          org_sid: DlV3t9YzRYP
-          team_name: pytool
-          scheme_id: 7845
-          scan_dir: frontend/src
-          total_fatal: 0
-          total_error: 0
-          total_warning: 5
-          total_info: 10
-          incr_fatal: 0
-          incr_error: 0
-          incr_warning: 2
-          incr_info: 3
-        settingsFrom:
-          - https://cnb.cool/pylover/key/-/blob/main/tca.yml
-
 $:
   vscode:
     - docker:
-        image: ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:env
+        image: docker.cnb.cool/pylover/tools/zgadmin:env
         volumes:
             - ./backend/.venv:rw
             - ./backend/static:rw
@@ -71,6 +24,9 @@ $:
       services:
         - vscode
         - docker
+      imports:
+        - https://cnb.cool/pylover/key/-/blob/main/deepseek.yml
+        - https://cnb.cool/pylover/Tools/KeJi_Key/-/blob/main/tapd.yml
       stages:
         - name: ls
           script: ls -la
@@ -86,4 +42,17 @@ $:
         - name: docker list
           script: docker images
         - name: docker push
-          script: docker push ${IMAGE_TAG}  
+          script: docker push ${IMAGE_TAG}
+
+  tag_push:
+    - services:
+        - docker
+      docker:
+        volumes:
+          - /data/codewiki/${CNB_REPO_SLUG}:data
+      stages:
+        - name: generate codewiki
+          timeout: 10h
+          image: cnbcool/codewiki:latest
+          settings:
+            git_doc_dir: /data/codewiki/${CNB_REPO_SLUG}

@@ -5,7 +5,6 @@ import { getPickerShortcuts } from "../../utils";
 import { PureTableBar } from "@/components/RePureTableBar";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 
-import View from "~icons/ep/view";
 import Delete from "~icons/ep/delete";
 import Refresh from "~icons/ep/refresh";
 
@@ -25,13 +24,11 @@ const {
   selectedNum,
   selectOpt,
   onSearch,
-  onDetail,
   clearAll,
   resetForm,
   onbatchDel,
   handleSizeChange,
   onSelectionCancel,
-  handleCellDblclick,
   handleCurrentChange,
   handleSelectionChange
 } = useRole(tableRef);
@@ -61,7 +58,7 @@ const {
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="请求时间" prop="oprationTime">
+      <el-form-item label="时间范围" prop="oprationTime">
         <el-date-picker
           v-model="form.oprationTime"
           :shortcuts="getPickerShortcuts()"
@@ -138,19 +135,27 @@ const {
           @selection-change="handleSelectionChange"
           @page-size-change="handleSizeChange"
           @page-current-change="handleCurrentChange"
-          @cell-dblclick="handleCellDblclick"
         >
           <template #operation="{ row }">
-            <el-button
-              class="reset-margin outline-hidden!"
-              link
-              type="primary"
-              :size="size"
-              :icon="useRenderIcon(View)"
-              @click="onDetail(row)"
+            <el-popconfirm
+              title="确定要删除该条日志吗？"
+              @confirm="
+                onbatchDel();
+                tableRef.getTableRef().toggleRowSelection(row, false);
+              "
             >
-              详情
-            </el-button>
+              <template #reference>
+                <el-button
+                  class="reset-margin outline-hidden!"
+                  link
+                  type="danger"
+                  :size="size"
+                  :icon="useRenderIcon(Delete)"
+                >
+                  删除
+                </el-button>
+              </template>
+            </el-popconfirm>
           </template>
         </pure-table>
       </template>

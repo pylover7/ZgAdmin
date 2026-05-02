@@ -1,6 +1,6 @@
 import { http } from "@/utils/http";
-
 import { apiV1 } from "./utils";
+import type { Result, ResultTable } from "@/types";
 
 const systemUrl = (url: string) => apiV1(`/system${url}`);
 const deptUrl = (url: string) => systemUrl(`/dept${url}`);
@@ -13,22 +13,6 @@ const logsUrl = (url: string) => monitorUrl(`/logs${url}`);
 const loginLogsUrl = (url: string) => logsUrl(`/login${url}`);
 const operationLogsUrl = (url: string) => logsUrl(`/operation${url}`);
 const systemLogsUrl = (url: string) => logsUrl(`/system${url}`);
-
-type Result = {
-  code: number;
-  msg: string;
-  success: boolean;
-  data?: Array<any>;
-};
-
-type ResultTable = Result & {
-  /** 总条目数 */
-  total?: number;
-  /** 每页显示条目个数 */
-  pageSize?: number;
-  /** 当前页数 */
-  currentPage?: number;
-};
 
 /** 新增用户 */
 export const addUser = (data?: object) => {
@@ -183,7 +167,7 @@ export const clearLoginLogs = () => {
 export const getLoginLogsList = (
   username: string,
   level: string,
-  loginTime: string[],
+  loginTime: [string, string] | null,
   currentPage: number,
   pageSize: number
 ) => {
@@ -196,10 +180,20 @@ export const getLoginLogsList = (
   });
 };
 
+/** 批量删除操作日志 */
+export const deleteOperationLogs = (data?: string[]) => {
+  return http.request<Result>("post", operationLogsUrl("/delete"), { data });
+};
+
+/** 删除全部操作日志 */
+export const clearOperationLogs = () => {
+  return http.request<Result>("get", operationLogsUrl("/clear"));
+};
+
 /** 获取系统监控-操作日志列表 */
 export const getOperationLogsList = (
   level: string[],
-  operationTime: string,
+  operationTime: [string, string] | null,
   currentPage: number,
   pageSize: number
 ) => {
@@ -219,18 +213,23 @@ export const deleteSystemLogs = (data?: string[]) => {
 
 /** 获取系统监控-系统日志列表 */
 export const getSystemLogsList = (
-  model: string,
-  operationTime: string,
+  module: string,
+  oprationTime: [string, string] | null,
   currentPage: number,
   pageSize: number
 ) => {
   return http.request<ResultTable>("post", systemLogsUrl("/list"), {
-    data: { model, operationTime },
+    data: { module, oprationTime },
     params: {
       pageSize,
       currentPage
     }
   });
+};
+
+/** 删除全部系统日志 */
+export const clearSystemLogs = () => {
+  return http.request<Result>("post", systemLogsUrl("/clear"));
 };
 
 /** 获取系统监控-系统日志-根据 id 查日志详情 */

@@ -1,12 +1,23 @@
 import dayjs from "dayjs";
 import { message } from "@/utils/message";
 import { getKeyList } from "@pureadmin/utils";
-import { deleteSystemLogs, getOperationLogsList } from "@/api/system";
+import {
+  clearOperationLogs,
+  deleteOperationLogs,
+  getOperationLogsList
+} from "@/api/system";
 import type { PaginationProps } from "@pureadmin/table";
 import { type Ref, reactive, ref, onMounted } from "vue";
+import {
+  usePublicHooks,
+  levelTextMap,
+  formatDateTimeRange
+} from "@/views/system/hooks";
 import { paginationConf } from "@/config";
 
 export function useRole(tableRef: Ref) {
+  const { levelTagStyle } = usePublicHooks();
+
   const form = reactive({
     level: [],
     operationTime: null
@@ -31,7 +42,12 @@ export function useRole(tableRef: Ref) {
     {
       label: "日志等级",
       prop: "level",
-      minWidth: 100
+      minWidth: 100,
+      cellRenderer: ({ row, props }) => (
+        <el-tag size={props.size} style={levelTagStyle.value(row.level)}>
+          {levelTextMap[row.level] || row.level}
+        </el-tag>
+      )
     },
     {
       label: "操作人员",
@@ -80,7 +96,7 @@ export function useRole(tableRef: Ref) {
   function onbatchDel() {
     // 返回当前选中的行
     const curSelected = tableRef.value.getTableRef().getSelectionRows();
-    deleteSystemLogs(getKeyList(curSelected, "id")).then(() => {
+    deleteOperationLogs(getKeyList(curSelected, "id")).then(() => {
       message("删除成功", { type: "success" });
       tableRef.value.getTableRef().clearSelection();
       onSearch();
@@ -90,17 +106,17 @@ export function useRole(tableRef: Ref) {
   /** 清空日志 */
   function clearAll() {
     // 根据实际业务，调用接口删除所有日志数据
-    message("已删除所有日志数据", {
-      type: "success"
+    clearOperationLogs().then(() => {
+      message("已删除所有日志数据", { type: "success" });
+      onSearch();
     });
-    onSearch();
   }
 
   async function onSearch() {
     loading.value = true;
     const { data, total, currentPage, pageSize } = await getOperationLogsList(
       form.level,
-      form.operationTime,
+      formatDateTimeRange(form.operationTime),
       pagination.currentPage,
       pagination.pageSize
     );

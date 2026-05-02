@@ -1,6 +1,6 @@
 [project]
 name = "PyTool"
-version = "0.0.2"
+version = "0.0.3"
 description = "A tool made by Python"
 readme = "../README.md"
 requires-python = ">=3.13"
@@ -32,6 +32,9 @@ default = true
 dev = [
     "autopep8>=2.3.2",
     "pylint>=3.3.7",
+    "pytest>=8.0.0",
+    "pytest-cov>=4.0.0",
+    "pytest-asyncio>=0.23.0",
 ]
 
 [tool.autopep8]

@@ -25,7 +25,8 @@ def init_api(app: FastAPI, session: Session):
     apis = app.openapi()["paths"]
     for path, value in apis.items():
         for method, value2 in value.items():
-            tag = ",".join(value2.get("tags"))
+            tags = value2.get("tags", [])
+            tag = ",".join(tags) if tags else ""
             summary = value2.get("summary")
             if len(apiOld) == 0:
                 api = Api(
@@ -73,7 +74,7 @@ def init_menus(session: Session):
             path="/system",
             component="",
             rank=7,
-            icon="ri:settings-3-line",
+            icon="ep:operation",
         )
         session.add(system)
         session.commit()
@@ -166,6 +167,42 @@ def init_menus(session: Session):
         session.add(systemLog)
         session.commit()
 
+        settings = Menu(
+            menuType=0,
+            title="系统设置",
+            name="settings",
+            path="/settings",
+            component="",
+            rank=9,
+            icon="ep:setting",
+        )
+        session.add(settings)
+        session.commit()
+        session.refresh(settings)
+        genSettings = Menu(
+            parentId=settings.id,
+            menuType=0,
+            title="通用设置",
+            name="GenSettings",
+            path="/settings/general",
+            component="settings/general/index",
+            icon="ri:code-line",
+            rank=1
+        )
+        loginSettings = Menu(
+            parentId=settings.id,
+            menuType=0,
+            title="登录设置",
+            name="LoginSettings",
+            path="/settings/login",
+            component="settings/login/index",
+            icon="ri:settings-2-line",
+            rank=2
+        )
+        session.add(genSettings)
+        session.add(loginSettings)
+        session.commit()
+
 
 async def init_dept(session: Session):
     """
@@ -197,7 +234,11 @@ async def init_data(app: FastAPI) -> None:
     with DatabaseSession() as session:
         dept = await init_dept(session)
         admin = session.exec(
-            select(User).where(User.email == settings.FIRST_SUPERUSER)
+            select(User).where(
+                (User.email == settings.EMAIL_TEST_USER) | 
+                (User.username == settings.FIRST_SUPERUSER) |
+                (User.is_superuser == True)
+            )
         ).first()
         password = get_password_hash(
             md5_encrypt(settings.FIRST_SUPERUSER_PASSWORD))

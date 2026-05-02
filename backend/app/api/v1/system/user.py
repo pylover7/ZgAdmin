@@ -33,9 +33,10 @@ async def create_user(
         )
     try:
         await userController.create(session, data)
+        await logger.systemInfo("系统管理", f"创建用户: {data.username}")
         return Success(msg="用户创建成功！")
     except Exception as e:
-        logger.error(f"用户创建失败：{e}")
+        await logger.systemError("系统管理", f"用户创建失败 [{data.username}]: {e}")
         raise HTTPException(status_code=400, detail="用户创建失败！")
 
 
@@ -46,10 +47,10 @@ async def delete_user(
 ):
     try:
         await userController.delete(session, data)
-        logger.warning(f"用户ID: {str(data)} 已被删除")
+        await logger.systemInfo("系统管理", f"删除用户: {[str(d) for d in data]}")
         return Success(msg="Deleted Successfully")
     except Exception as e:
-        logger.error(f"用户删除失败：{e}")
+        await logger.systemError("系统管理", f"用户删除失败: {e}")
         raise HTTPException(status_code=400, detail="用户删除失败！")
 
 
@@ -106,13 +107,14 @@ async def update_user(
         session: SessionDep,
         data: UserUpdate,
 ):
-    user = await userController.get_user_by_name(session, data.username)
+    user = await userController.get(session, data.id)
     if not user:
         raise HTTPException(status_code=404, detail="用户不存在！")
     if user.id != data.id:
         raise HTTPException(status_code=400, detail="用户名已存在！")
     del data.username
     await userController.update(session, user.id, data)
+    await logger.systemInfo("系统管理", f"更新用户信息: {user.username}")
     return Success(msg="用户信息更新成功！")
 
 
@@ -157,6 +159,7 @@ async def update_roles(
     user.roles = roleList
     session.add(user)
     session.commit()
+    await logger.systemInfo("系统管理", f"更新用户角色: {user.username}")
     return Success(msg="用户角色信息更新成功！")
 
 
@@ -168,6 +171,7 @@ async def update_status(session: SessionDep, data: UpdateStatus):
     user.status = data.status
     session.add(user)
     session.commit()
+    await logger.systemInfo("系统管理", f"更新用户状态: {user.username} -> {data.status}")
     return Success(msg="用户状态更新成功！")
 
 
@@ -182,4 +186,5 @@ async def reset_pwd(
     user.password = get_password_hash(data.newPwd)
     session.add(user)
     session.commit()
+    await logger.systemInfo("系统管理", f"重置用户密码: {user.username}")
     return Success(msg="密码重置成功！")

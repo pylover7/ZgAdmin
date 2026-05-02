@@ -34,3 +34,6 @@ tests/**/coverage/
 *.njsproj
 *.sln
 tsconfig.tsbuildinfo
+
+.logs/
+.pids/

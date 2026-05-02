@@ -8,7 +8,7 @@ if [ -f "VERSION" ]; then
     export IMAGE_VERSION=$(cat VERSION)
     echo "从 VERSION 文件读取版本号: $IMAGE_VERSION"
 else
-    export IMAGE_VERSION="0.0.1.1"
+    export IMAGE_VERSION="1.0.0"
     echo "VERSION 文件不存在，使用默认版本号: $IMAGE_VERSION"
 fi
 

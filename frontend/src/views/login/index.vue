@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
 import Motion from "./utils/motion";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import { message } from "@/utils/message";
 import { loginRules } from "./utils/rule";
 import TypeIt from "@/components/ReTypeit";
@@ -19,10 +19,12 @@ import { useUserStoreHook } from "@/store/modules/user";
 import { initRouter, getTopMenu } from "@/router/utils";
 import { bg, avatar, illustration } from "./utils/static";
 import { ReImageVerify } from "@/components/ReImageVerify";
-import { ref, toRaw, reactive, watch, computed } from "vue";
+import { ref, toRaw, reactive, watch, computed, onMounted } from "vue";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 import { useTranslationLang } from "@/layout/hooks/useTranslationLang";
 import { useDataThemeChange } from "@/layout/hooks/useDataThemeChange";
+import { getLoginMethods } from "@/api/user";
+import type { loginType, loginResult } from "@/types/login";
 
 import dayIcon from "@/assets/svg/day.svg?component";
 import darkIcon from "@/assets/svg/dark.svg?component";
@@ -40,12 +42,31 @@ defineOptions({
 const imgCode = ref("");
 const loginDay = ref(7);
 const router = useRouter();
+const route = useRoute();
 const loading = ref(false);
 const checked = ref(false);
 const disabled = ref(false);
 const ruleFormRef = ref<FormInstance>();
 const currentPage = computed(() => {
   return useUserStoreHook().currentPage;
+});
+const loginMethods = ref<loginType>({
+  qq: { enabled: false },
+  wechat: { enabled: false }
+});
+
+// 计算可用的登录方式（根据配置过滤）
+const availableOperates = computed(() => {
+  return operates.filter((_, index) => {
+    // operates数组的index 0对应QQ登录 (currentPage=1)，index 1对应微信登录 (currentPage=2)
+    if (index === 0) {
+      return loginMethods.value.qq.enabled;
+    }
+    if (index === 1) {
+      return loginMethods.value.wechat.enabled;
+    }
+    return false;
+  });
 });
 
 const { t } = useI18n();
@@ -120,6 +141,22 @@ watch(checked, bool => {
 });
 watch(loginDay, value => {
   useUserStoreHook().SET_LOGINDAY(value);
+});
+
+// 获取登录方式配置
+onMounted(async () => {
+  // QQ 回调路由：自动切换到 QQ 登录面板
+  if (route.path === "/login/qq/callback") {
+    useUserStoreHook().SET_CURRENTPAGE(1);
+  }
+  try {
+    const res = await getLoginMethods();
+    if (res.success && res.data) {
+      loginMethods.value = res.data;
+    }
+  } catch (error) {
+    console.error("获取登录配置失败:", error);
+  }
 });
 </script>
 
@@ -288,11 +325,11 @@ watch(loginDay, value => {
               </el-form-item>
             </Motion>
 
-            <Motion :delay="300">
+            <Motion v-if="availableOperates.length > 0" :delay="300">
               <el-form-item>
                 <div class="w-full h-[20px] flex justify-between items-center">
                   <el-button
-                    v-for="(item, index) in operates"
+                    v-for="(item, index) in availableOperates"
                     :key="index"
                     :icon="useRenderIcon(item.icon)"
                     class="w-full mt-4!"
