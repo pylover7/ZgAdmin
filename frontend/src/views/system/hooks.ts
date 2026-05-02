@@ -7,7 +7,8 @@ import { useDark } from "@pureadmin/utils";
 export const levelTextMap: Record<string, string> = {
   info: "信息",
   warning: "警告",
-  error: "重要"
+  error: "重要",
+  debug: "调试"
 };
 
 /** 将日期时间范围转换为本地时间格式，避免时区偏移问题 */
