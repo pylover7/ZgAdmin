@@ -146,7 +146,7 @@ start_backend() {
     uv sync --no-dev --quiet 2>&1 | tail -3
 
     log_step "启动后端服务 (端口: $BACKEND_PORT)..."
-    nohup uv run python main.py > "$BACKEND_LOG" 2>&1 &
+    PYTHONUNBUFFERED=1 nohup uv run python main.py > "$BACKEND_LOG" 2>&1 &
     echo $! > "$BACKEND_PID_FILE"
 
     # 等待后端就绪
@@ -185,7 +185,7 @@ start_frontend() {
     bun install --silent 2>&1 | tail -3
 
     log_step "启动前端开发服务器 (端口: $FRONTEND_PORT)..."
-    nohup bun dev > "$FRONTEND_LOG" 2>&1 &
+    stdbuf -oL nohup bun dev > "$FRONTEND_LOG" 2>&1 &
     echo $! > "$FRONTEND_PID_FILE"
 
     # 等待前端就绪
