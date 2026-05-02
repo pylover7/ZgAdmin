@@ -1,6 +1,6 @@
-from wechatpayv3 import WeChatPay, WeChatPayType
+# from wechatpayv3 import WeChatPay, WeChatPayType
 
-from app.settings.config import pay_config
+# from app.settings.config import pay_config
 
 # with open(pay_config.get_config("wechat", "private_key"), "r") as f:
 #     private_key = f.read()

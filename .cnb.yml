@@ -1,16 +1,32 @@
+main:
+  push:
+    - stages:
+        - name: sync to github
+          imports: https://cnb.cool/pylover/key/-/blob/main/github.yml
+          image: tencentcom/git-sync
+          settings:
+            target_url: https://github.com/pylover7/PyTool.git
+            auth_type: https
+            username: ${GIT_USERNAME}
+            password: ${GIT_ACCESS_TOKEN}
+
 $:
   vscode:
     - docker:
-        image: ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:env
+        image: docker.cnb.cool/pylover/tools/zgadmin:env
         volumes:
             - ./backend/.venv:rw
-            - ./backend/app/static:rw
+            - ./backend/static:rw
             - ./frontend/node_modules:rw
+            - ./docs/node_modules:rw
       runner:
         cpus: 8
       services:
         - vscode
         - docker
+      imports:
+        - https://cnb.cool/pylover/key/-/blob/main/deepseek.yml
+        - https://cnb.cool/pylover/Tools/KeJi_Key/-/blob/main/tapd.yml
       stages:
         - name: ls
           script: ls -la
@@ -28,14 +44,15 @@ $:
         - name: docker push
           script: docker push ${IMAGE_TAG}
 
-main:
-  push:
-    - stages:
-        - name: sync to github
-          imports: https://cnb.cool/pylover/key/-/blob/main/github.yml
-          image: tencentcom/git-sync
+  tag_push:
+    - services:
+        - docker
+      docker:
+        volumes:
+          - /data/codewiki/${CNB_REPO_SLUG}:data
+      stages:
+        - name: generate codewiki
+          timeout: 10h
+          image: cnbcool/codewiki:latest
           settings:
-            target_url: https://github.com/pylover7/PyTool.git
-            auth_type: https
-            username: ${GIT_USERNAME}
-            password: ${GIT_ACCESS_TOKEN}
+            git_doc_dir: /data/codewiki/${CNB_REPO_SLUG}

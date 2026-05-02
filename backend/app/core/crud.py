@@ -1,6 +1,8 @@
-from typing import Generic, NewType, Type, TypeVar
+from typing import Generic, NewType, Type, TypeVar, Optional
+from uuid import UUID
 
-from sqlmodel import Session, SQLModel, Column, select, col, func
+from sqlalchemy import ColumnElement, UnaryExpression
+from sqlmodel import Session, SQLModel, select, col, func
 
 
 Total = NewType("Total", int)
@@ -21,7 +23,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         session.refresh(db_obj)
         return db_obj
 
-    async def delete(self, session: Session, idList: list[str]) -> bool:
+    async def delete(self, session: Session, idList: list[UUID]) -> bool:
         for item in idList:
             db_obj = session.get(self.model, item)
             if db_obj is None:
@@ -30,16 +32,28 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         session.commit()
         return True
 
-    async def update(self, session: Session, id: str,
-                     obj_in: UpdateSchemaType) -> ModelType:
-        db_obj: Type[ModelType] = session.get(self.model, id)
-        db_obj.sqlmodel_update(obj_in)
+    async def delete_all(self, session: Session) -> int:
+        result = session.exec(select(self.model)).all()
+        for item in result:
+            session.delete(item)
+        session.commit()
+        return result.__len__()
+
+    async def update(self, session: Session, id: UUID,
+                     obj_in: UpdateSchemaType) -> Optional[ModelType]:
+        db_obj: Optional[ModelType] = session.get(self.model, id)
+        if db_obj is None:
+            return None
+        # Update fields manually
+        update_data = obj_in.model_dump(exclude_unset=True)
+        for field, value in update_data.items():
+            setattr(db_obj, field, value)
         session.add(db_obj)
         session.commit()
         session.refresh(db_obj)
         return db_obj
 
-    async def get(self, session: Session, id: str) -> ModelType | None:
+    async def get(self, session: Session, id: UUID) -> ModelType | None:
         return session.get(self.model, id)
 
     async def get_latest(self, session: Session) -> ModelType | None:
@@ -47,21 +61,24 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         return session.exec(statement).first()
 
     async def all(self, session: Session) -> list[ModelType]:
-        return session.exec(select(self.model)).all()
+        return list(session.exec(select(self.model)).all())
 
     async def list(
             self,
             session: Session,
             currentPage: int = 1,
             pageSize: int = 15,
-            where: Column | None = None,
-            order: Column | str = "created_at"
-    ) -> (Total, list[ModelType]):
-        total = session.exec(select(func.count(self.model.id))).one()
+            where: ColumnElement[bool] | None = None,
+            order: UnaryExpression | str = "created_at"
+    ) -> tuple[Total, list[ModelType]]:
+        id_column = getattr(self.model, "id", None)
+        if id_column is None:
+            raise AttributeError(f"{self.model.__name__} does not have an 'id' attribute")
+        total = session.exec(select(func.count(id_column))).one()
         statement = select(
             self.model).order_by(order).offset(
             (currentPage - 1) * pageSize).limit(pageSize)
         if where is not None:
             statement = statement.where(where)
         result = session.exec(statement).all()
-        return total, result
+        return Total(total), list(result)

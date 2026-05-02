@@ -9,8 +9,17 @@ import { addDialog } from "@/components/ReDialog";
 import type { FormItemProps } from "../utils/types";
 import type { PaginationProps } from "@pureadmin/table";
 import { getKeyList, deviceDetection } from "@pureadmin/utils";
-import { getRoleList, getRoleMenu, getRoleMenuIds } from "@/api/system";
-import { type Ref, reactive, ref, onMounted, h, toRaw, watch } from "vue";
+import {
+  addRole,
+  getMenuList,
+  getRoleList,
+  getRoleMenuIds,
+  updateRole,
+  updateRoleAuth,
+  updateRoleStatus
+} from "@/api/system";
+import { type Ref, reactive, ref, onMounted, h, watch } from "vue";
+import { paginationConf } from "@/config";
 
 export function useRole(treeRef: Ref) {
   const form = reactive({
@@ -25,7 +34,6 @@ export function useRole(treeRef: Ref) {
   const treeData = ref([]);
   const isShow = ref(false);
   const loading = ref(true);
-  const isLinkage = ref(false);
   const treeSearchValue = ref();
   const switchLoadMap = ref({});
   const isExpandAll = ref(false);
@@ -36,16 +44,12 @@ export function useRole(treeRef: Ref) {
     label: "title",
     children: "children"
   };
-  const pagination = reactive<PaginationProps>({
-    total: 0,
-    pageSize: 10,
-    currentPage: 1,
-    background: true
-  });
+  const pagination = reactive<PaginationProps>({ ...paginationConf });
   const columns: TableColumnList = [
     {
       label: "角色编号",
-      prop: "id"
+      type: "index",
+      minWidth: 60
     },
     {
       label: "角色名称",
@@ -92,23 +96,14 @@ export function useRole(treeRef: Ref) {
       slot: "operation"
     }
   ];
-  // const buttonClass = computed(() => {
-  //   return [
-  //     "h-[20px]!",
-  //     "reset-margin",
-  //     "text-gray-500!",
-  //     "dark:text-white!",
-  //     "dark:hover:text-primary!"
-  //   ];
-  // });
 
   function onChange({ row, index }) {
     ElMessageBox.confirm(
       `确认要<strong>${
         row.status === 0 ? "停用" : "启用"
-      }</strong><strong style='color:var(--el-color-primary)'>${
+      }【</strong><strong style='color:var(--el-color-primary)'>${
         row.name
-      }</strong>吗?`,
+      }</strong>】吗?`,
       "系统提示",
       {
         confirmButtonText: "确定",
@@ -126,18 +121,28 @@ export function useRole(treeRef: Ref) {
             loading: true
           }
         );
-        setTimeout(() => {
-          switchLoadMap.value[index] = Object.assign(
-            {},
-            switchLoadMap.value[index],
-            {
-              loading: false
+        updateRoleStatus({ id: row.id, status: row.status })
+          .then(res => {
+            if (res.success) {
+              message(
+                `已${row.status === 0 ? "停用" : "启用"}角色【${row.name}】`,
+                {
+                  type: "success"
+                }
+              );
+            } else {
+              row.status === 0 ? (row.status = 1) : (row.status = 0);
             }
-          );
-          message(`已${row.status === 0 ? "停用" : "启用"}${row.name}`, {
-            type: "success"
+          })
+          .finally(() => {
+            switchLoadMap.value[index] = Object.assign(
+              {},
+              switchLoadMap.value[index],
+              {
+                loading: false
+              }
+            );
           });
-        }, 300);
       })
       .catch(() => {
         row.status === 0 ? (row.status = 1) : (row.status = 0);
@@ -150,11 +155,13 @@ export function useRole(treeRef: Ref) {
   }
 
   function handleSizeChange(val: number) {
-    console.log(`${val} items per page`);
+    pagination.pageSize = val;
+    onSearch();
   }
 
   function handleCurrentChange(val: number) {
-    console.log(`current page: ${val}`);
+    pagination.currentPage = val;
+    onSearch();
   }
 
   function handleSelectionChange(val) {
@@ -163,11 +170,17 @@ export function useRole(treeRef: Ref) {
 
   async function onSearch() {
     loading.value = true;
-    const { data } = await getRoleList(toRaw(form));
-    dataList.value = data.list;
-    pagination.total = data.total;
-    pagination.pageSize = data.pageSize;
-    pagination.currentPage = data.currentPage;
+    const { data, total, pageSize, currentPage } = await getRoleList(
+      form.name,
+      form.code,
+      form.status,
+      pagination.currentPage,
+      pagination.pageSize
+    );
+    dataList.value = data;
+    pagination.total = total;
+    pagination.pageSize = pageSize;
+    pagination.currentPage = currentPage;
 
     setTimeout(() => {
       loading.value = false;
@@ -211,11 +224,17 @@ export function useRole(treeRef: Ref) {
             console.log("curData", curData);
             // 表单规则校验通过
             if (title === "新增") {
-              // 实际开发先调用新增接口，再进行下面操作
-              chores();
+              addRole(curData).then(res => {
+                if (res.success) {
+                  chores();
+                }
+              });
             } else {
-              // 实际开发先调用修改接口，再进行下面操作
-              chores();
+              updateRole(curData).then(res => {
+                if (res.success) {
+                  chores();
+                }
+              });
             }
           }
         });
@@ -231,6 +250,8 @@ export function useRole(treeRef: Ref) {
       isShow.value = true;
       const { data } = await getRoleMenuIds({ id });
       treeRef.value.setCheckedKeys(data);
+      console.log("data", data);
+      console.log("treeRef.value", treeRef.value);
     } else {
       curRow.value = null;
       isShow.value = false;
@@ -249,10 +270,15 @@ export function useRole(treeRef: Ref) {
   function handleSave() {
     const { id, name } = curRow.value;
     // 根据用户 id 调用实际项目中菜单权限修改接口
-    console.log(id, treeRef.value.getCheckedKeys());
-    message(`角色名称为${name}的菜单权限修改成功`, {
-      type: "success"
-    });
+    updateRoleAuth({ id, menuIds: treeRef.value.getCheckedKeys() }).then(
+      res => {
+        if (res.success) {
+          message(`角色名称为【${name}】的菜单权限修改成功`, {
+            type: "success"
+          });
+        }
+      }
+    );
   }
 
   /** 数据权限 可自行开发 */
@@ -268,7 +294,7 @@ export function useRole(treeRef: Ref) {
 
   onMounted(async () => {
     onSearch();
-    const { data } = await getRoleMenu();
+    const { data } = await getMenuList();
     treeIds.value = getKeyList(data, "id");
     treeData.value = handleTree(data);
   });
@@ -295,7 +321,6 @@ export function useRole(treeRef: Ref) {
     dataList,
     treeData,
     treeProps,
-    isLinkage,
     pagination,
     isExpandAll,
     isSelectAll,

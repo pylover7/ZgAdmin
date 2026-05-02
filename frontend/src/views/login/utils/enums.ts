@@ -1,34 +1,16 @@
 import { $t } from "@/plugins/i18n";
+import QQ from "~icons/ri/qq-fill";
+import WeChat from "~icons/ri/wechat-fill";
 
 const operates = [
   {
-    title: $t("login.purePhoneLogin")
+    title: $t("login.QQLogin"),
+    icon: QQ
   },
   {
-    title: $t("login.pureQRCodeLogin")
-  },
-  {
-    title: $t("login.pureRegister")
+    title: $t("login.WeChatLogin"),
+    icon: WeChat
   }
 ];
 
-const thirdParty = [
-  {
-    title: $t("login.pureWeChatLogin"),
-    icon: "wechat"
-  },
-  {
-    title: $t("login.pureAlipayLogin"),
-    icon: "alipay"
-  },
-  {
-    title: $t("login.pureQQLogin"),
-    icon: "qq"
-  },
-  {
-    title: $t("login.pureWeiBoLogin"),
-    icon: "weibo"
-  }
-];
-
-export { operates, thirdParty };
+export { operates };

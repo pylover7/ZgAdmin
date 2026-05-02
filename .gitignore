@@ -24,10 +24,16 @@ npm-debug.log*
 tests/**/coverage/
 /**/static/
 
+# docs
+/**/.vitepress/cache
+/**/.vitepress/dist
+
 # Editor directories and files
-.idea
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 tsconfig.tsbuildinfo
+
+.logs/
+.pids/

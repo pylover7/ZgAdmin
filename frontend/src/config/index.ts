@@ -52,4 +52,12 @@ export const getPlatformConfig = async (app: App): Promise<undefined> => {
 /** 本地响应式存储的命名空间 */
 const responsiveStorageNameSpace = () => getConfig().ResponsiveStorageNameSpace;
 
-export { getConfig, setConfig, responsiveStorageNameSpace };
+const paginationConf = {
+  total: 0,
+  pageSize: 15,
+  currentPage: 1,
+  pageSizes: [5, 15, 30, 50, 100],
+  background: true
+};
+
+export { getConfig, setConfig, responsiveStorageNameSpace, paginationConf };

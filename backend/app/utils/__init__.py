@@ -5,6 +5,7 @@ import time
 import uuid
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
+from typing import Optional, Union
 
 import emails
 import jwt
@@ -81,7 +82,7 @@ def generate_uuid(name: str) -> uuid.UUID:
     return uuid.uuid5(uuid.NAMESPACE_DNS, name)
 
 
-def now(s: int = 1) -> str | datetime | float:
+def now(s: int = 1) -> Union[str, datetime, float]:
     """
     获取当前时间，形参取值
         - 0: datatime格式
@@ -102,6 +103,8 @@ def now(s: int = 1) -> str | datetime | float:
             return today.timestamp()
         case 3:
             return today.strftime("%Y%m%d%H%M%S")
+        case _:
+            return today.strftime("%Y-%m-%d %H:%M:%S")
 
 
 async def menuTree(p_menu: dict, menus: list[Menu]) -> dict:

@@ -15,43 +15,65 @@ if TYPE_CHECKING:
 
 
 class UserBase(BaseModel):
-    username: str = Field(max_length=20, unique=True, description="用户名称")
-    email: EmailStr = Field(unique=True, index=True, max_length=255)
-    password: str = Field(min_length=8, max_length=256, description="密码")
-    status: int = Field(default=1, index=True, description="是否激活")
-    is_superuser: bool = Field(default=False, description="是否为超级管理员")
-
-
-class User(UserBase, TimestampMixin, table=True):
     nickname: str = Field(
         default=None,
         max_length=30,
         nullable=True,
         description="用户昵称")
-    avatar: str = Field(
-        default=None,
-        max_length=255,
-        nullable=True,
-        description="头像文件名称")
-    sex: int = Field(default=1, description="性别, 0: 女, 1: 男")
+    username: str = Field(max_length=20, unique=True, description="用户名称")
+    email: EmailStr = Field(unique=True, index=True, max_length=255)
+    password: str = Field(min_length=8, max_length=256, description="密码")
     phone: str = Field(
         default=None,
         max_length=20,
         nullable=True,
         unique=True,
         description="电话")
-    last_login: datetime = Field(
-        default=None,
-        nullable=True,
-        description="最后登录时间")
+    status: int = Field(default=1, index=True, description="是否激活")
+    is_superuser: bool = Field(default=False, description="是否为超级管理员")
+    sex: int = Field(default=1, description="性别, 0: 女, 1: 男")
     remark: str = Field(
         default=None,
         max_length=500,
         nullable=True,
         description="备注")
-
     department_id: uuid.UUID | None = Field(
         default=None, index=True, foreign_key="department.id")
+    # QQ登录相关字段
+    qq_openid: str | None = Field(
+        default=None,
+        max_length=100,
+        nullable=True,
+        unique=True,
+        description="QQ OpenID")
+    qq_unionid: str | None = Field(
+        default=None,
+        max_length=100,
+        nullable=True,
+        unique=True,
+        description="QQ UnionID")
+    qq_nickname: str | None = Field(
+        default=None,
+        max_length=100,
+        nullable=True,
+        description="QQ昵称")
+    qq_avatar: str | None = Field(
+        default=None,
+        max_length=500,
+        nullable=True,
+        description="QQ头像")
+
+
+class User(UserBase, TimestampMixin, table=True):
+    avatar: str = Field(
+        default=None,
+        max_length=255,
+        nullable=True,
+        description="头像文件名称")
+    last_login: datetime = Field(
+        default=None,
+        nullable=True,
+        description="最后登录时间")
     department: Department | None = Relationship(back_populates="users")
 
     roles: list["Role"] = Relationship(
@@ -88,7 +110,7 @@ class UpdatePassword(SQLModel):
 class UserFiter(BaseModel):
     username: str | None
     email: str | None
-    departId: str | None
+    deptId: str | None
 
 
 class UserResetPwd(BaseModel):

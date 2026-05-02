@@ -1,7 +1,6 @@
 from typing import TYPE_CHECKING
 from uuid import UUID
 
-from pydantic import EmailStr
 from sqlmodel import Field, Relationship, SQLModel
 
 from .base import BaseModel, TimestampMixin
@@ -46,11 +45,11 @@ class Department(DepartmentBase, TimestampMixin, table=True):
 
 
 class DepartCreate(DepartmentBase):
-    user: list = None
+    user: list = []
 
 
 class DepartUpdate(SQLModel):
-    id: str
+    id: UUID
     name: str
     parentId: UUID | None = None
     sort: int | None = None

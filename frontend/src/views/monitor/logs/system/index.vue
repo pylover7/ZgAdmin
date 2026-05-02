@@ -5,7 +5,6 @@ import { getPickerShortcuts } from "../../utils";
 import { PureTableBar } from "@/components/RePureTableBar";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 
-import View from "~icons/ep/view";
 import Delete from "~icons/ep/delete";
 import Refresh from "~icons/ep/refresh";
 
@@ -23,14 +22,13 @@ const {
   dataList,
   pagination,
   selectedNum,
+  selectOpt,
   onSearch,
-  onDetail,
   clearAll,
   resetForm,
   onbatchDel,
   handleSizeChange,
   onSelectionCancel,
-  handleCellDblclick,
   handleCurrentChange,
   handleSelectionChange
 } = useRole(tableRef);
@@ -45,16 +43,24 @@ const {
       class="search-form bg-bg_color w-full pl-8 pt-[12px] overflow-auto"
     >
       <el-form-item label="所属模块" prop="module">
-        <el-input
+        <el-select
           v-model="form.module"
-          placeholder="请输入所属模块"
+          placeholder="请选择所属模块"
           clearable
           class="w-[170px]!"
-        />
+          @change="onSearch"
+        >
+          <el-option
+            v-for="item in selectOpt"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+          />
+        </el-select>
       </el-form-item>
-      <el-form-item label="请求时间" prop="requestTime">
+      <el-form-item label="时间范围" prop="oprationTime">
         <el-date-picker
-          v-model="form.requestTime"
+          v-model="form.oprationTime"
           :shortcuts="getPickerShortcuts()"
           type="datetimerange"
           range-separator="至"
@@ -77,11 +83,7 @@ const {
       </el-form-item>
     </el-form>
 
-    <PureTableBar
-      title="系统日志（仅演示，操作后不生效）"
-      :columns="columns"
-      @refresh="onSearch"
-    >
+    <PureTableBar title="系统日志" :columns="columns" @refresh="onSearch">
       <template #buttons>
         <el-popconfirm title="确定要删除所有日志数据吗？" @confirm="clearAll">
           <template #reference>
@@ -133,19 +135,27 @@ const {
           @selection-change="handleSelectionChange"
           @page-size-change="handleSizeChange"
           @page-current-change="handleCurrentChange"
-          @cell-dblclick="handleCellDblclick"
         >
           <template #operation="{ row }">
-            <el-button
-              class="reset-margin outline-hidden!"
-              link
-              type="primary"
-              :size="size"
-              :icon="useRenderIcon(View)"
-              @click="onDetail(row)"
+            <el-popconfirm
+              title="确定要删除该条日志吗？"
+              @confirm="
+                onbatchDel();
+                tableRef.getTableRef().toggleRowSelection(row, false);
+              "
             >
-              详情
-            </el-button>
+              <template #reference>
+                <el-button
+                  class="reset-margin outline-hidden!"
+                  link
+                  type="danger"
+                  :size="size"
+                  :icon="useRenderIcon(Delete)"
+                >
+                  删除
+                </el-button>
+              </template>
+            </el-popconfirm>
           </template>
         </pure-table>
       </template>

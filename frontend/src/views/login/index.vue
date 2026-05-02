@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
 import Motion from "./utils/motion";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import { message } from "@/utils/message";
 import { loginRules } from "./utils/rule";
 import TypeIt from "@/components/ReTypeit";
@@ -10,20 +10,21 @@ import { useNav } from "@/layout/hooks/useNav";
 import { useEventListener } from "@vueuse/core";
 import type { FormInstance } from "element-plus";
 import { $t, transformI18n } from "@/plugins/i18n";
-import { operates, thirdParty } from "./utils/enums";
+import { operates } from "./utils/enums";
 import { useLayout } from "@/layout/hooks/useLayout";
-import LoginPhone from "./components/LoginPhone.vue";
-import LoginRegist from "./components/LoginRegist.vue";
 import LoginUpdate from "./components/LoginUpdate.vue";
-import LoginQrCode from "./components/LoginQrCode.vue";
+import LoginWeChat from "./components/LoginWeChat.vue";
+import LoginQQ from "./components/LoginQQ.vue";
 import { useUserStoreHook } from "@/store/modules/user";
 import { initRouter, getTopMenu } from "@/router/utils";
 import { bg, avatar, illustration } from "./utils/static";
 import { ReImageVerify } from "@/components/ReImageVerify";
-import { ref, toRaw, reactive, watch, computed } from "vue";
+import { ref, toRaw, reactive, watch, computed, onMounted } from "vue";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 import { useTranslationLang } from "@/layout/hooks/useTranslationLang";
 import { useDataThemeChange } from "@/layout/hooks/useDataThemeChange";
+import { getLoginMethods } from "@/api/user";
+import type { loginType, loginResult } from "@/types/login";
 
 import dayIcon from "@/assets/svg/day.svg?component";
 import darkIcon from "@/assets/svg/dark.svg?component";
@@ -41,12 +42,31 @@ defineOptions({
 const imgCode = ref("");
 const loginDay = ref(7);
 const router = useRouter();
+const route = useRoute();
 const loading = ref(false);
 const checked = ref(false);
 const disabled = ref(false);
 const ruleFormRef = ref<FormInstance>();
 const currentPage = computed(() => {
   return useUserStoreHook().currentPage;
+});
+const loginMethods = ref<loginType>({
+  qq: { enabled: false },
+  wechat: { enabled: false }
+});
+
+// 计算可用的登录方式（根据配置过滤）
+const availableOperates = computed(() => {
+  return operates.filter((_, index) => {
+    // operates数组的index 0对应QQ登录 (currentPage=1)，index 1对应微信登录 (currentPage=2)
+    if (index === 0) {
+      return loginMethods.value.qq.enabled;
+    }
+    if (index === 1) {
+      return loginMethods.value.wechat.enabled;
+    }
+    return false;
+  });
 });
 
 const { t } = useI18n();
@@ -59,7 +79,7 @@ const { locale, translationCh, translationEn } = useTranslationLang();
 
 const ruleForm = reactive({
   username: "admin",
-  password: "admin123",
+  password: "admin123456",
   verifyCode: ""
 });
 
@@ -89,6 +109,10 @@ const onLogin = async (formEl: FormInstance | undefined) => {
             message(t("login.pureLoginFail"), { type: "error" });
           }
         })
+        .catch(err => {
+          console.log(err.response.data.msg);
+          message(err.response.data.msg, { type: "error" });
+        })
         .finally(() => (loading.value = false));
     }
   });
@@ -117,6 +141,22 @@ watch(checked, bool => {
 });
 watch(loginDay, value => {
   useUserStoreHook().SET_LOGINDAY(value);
+});
+
+// 获取登录方式配置
+onMounted(async () => {
+  // QQ 回调路由：自动切换到 QQ 登录面板
+  if (route.path === "/login/qq/callback") {
+    useUserStoreHook().SET_CURRENTPAGE(1);
+  }
+  try {
+    const res = await getLoginMethods();
+    if (res.success && res.data) {
+      loginMethods.value = res.data;
+    }
+  } catch (error) {
+    console.error("获取登录配置失败:", error);
+  }
 });
 </script>
 
@@ -285,12 +325,13 @@ watch(loginDay, value => {
               </el-form-item>
             </Motion>
 
-            <Motion :delay="300">
+            <Motion v-if="availableOperates.length > 0" :delay="300">
               <el-form-item>
                 <div class="w-full h-[20px] flex justify-between items-center">
                   <el-button
-                    v-for="(item, index) in operates"
+                    v-for="(item, index) in availableOperates"
                     :key="index"
+                    :icon="useRenderIcon(item.icon)"
                     class="w-full mt-4!"
                     size="default"
                     @click="useUserStoreHook().SET_CURRENTPAGE(index + 1)"
@@ -302,36 +343,12 @@ watch(loginDay, value => {
             </Motion>
           </el-form>
 
-          <Motion v-if="currentPage === 0" :delay="350">
-            <el-form-item>
-              <el-divider>
-                <p class="text-gray-500 text-xs">
-                  {{ t("login.pureThirdLogin") }}
-                </p>
-              </el-divider>
-              <div class="w-full flex justify-evenly">
-                <span
-                  v-for="(item, index) in thirdParty"
-                  :key="index"
-                  :title="t(item.title)"
-                >
-                  <IconifyIconOnline
-                    :icon="`ri:${item.icon}-fill`"
-                    width="20"
-                    class="cursor-pointer text-gray-500 hover:text-blue-400"
-                  />
-                </span>
-              </div>
-            </el-form-item>
-          </Motion>
-          <!-- 手机号登录 -->
-          <LoginPhone v-if="currentPage === 1" />
-          <!-- 二维码登录 -->
-          <LoginQrCode v-if="currentPage === 2" />
-          <!-- 注册 -->
-          <LoginRegist v-if="currentPage === 3" />
+          <!-- QQ登录 -->
+          <LoginQQ v-if="currentPage === 1" />
+          <!-- 微信登录 -->
+          <LoginWeChat v-if="currentPage === 2" />
           <!-- 忘记密码 -->
-          <LoginUpdate v-if="currentPage === 4" />
+          <LoginUpdate v-if="currentPage === 3" />
         </div>
       </div>
     </div>
@@ -341,7 +358,7 @@ watch(loginDay, value => {
       Copyright © 2020-present
       <a
         class="hover:text-primary!"
-        href="https://github.com/pure-admin"
+        href="https://cnb.cool/pylover/PyTool"
         target="_blank"
       >
         &nbsp;{{ title }}

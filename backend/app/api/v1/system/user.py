@@ -1,5 +1,6 @@
 import time
 from pathlib import Path
+from uuid import UUID
 
 from fastapi import APIRouter, Query
 from fastapi.exceptions import HTTPException
@@ -32,32 +33,35 @@ async def create_user(
         )
     try:
         await userController.create(session, data)
+        await logger.systemInfo("系统管理", f"创建用户: {data.username}")
         return Success(msg="用户创建成功！")
     except Exception as e:
-        logger.error(f"用户创建失败：{e}")
+        await logger.systemError("系统管理", f"用户创建失败 [{data.username}]: {e}")
         raise HTTPException(status_code=400, detail="用户创建失败！")
 
 
-@userRouter.delete("/delete", summary="删除用户")
+@userRouter.post("/delete", summary="删除用户")
 async def delete_user(
         session: SessionDep,
-        data: list[str]
+        data: list[UUID]
 ):
     try:
         await userController.delete(session, data)
-        logger.warning(f"用户ID: {data} 已被删除")
+        await logger.systemInfo("系统管理", f"删除用户: {[str(d) for d in data]}")
         return Success(msg="Deleted Successfully")
     except Exception as e:
-        logger.error(f"用户删除失败：{e}")
+        await logger.systemError("系统管理", f"用户删除失败: {e}")
         raise HTTPException(status_code=400, detail="用户删除失败！")
 
 
 @userRouter.get("/get", summary="查看用户")
 async def get_user(
         session: SessionDep,
-        id: str = Query(..., description="用户ID"),
+        id: UUID = Query(..., description="用户ID"),
 ):
-    user_obj: User = await userController.get(session, id)
+    user_obj = await userController.get(session, id)
+    if not user_obj:
+        raise HTTPException(status_code=404, detail="用户不存在！")
     user_dict = await user_obj.to_dict(exclude_fields=["password"])
     return Success(data=user_dict)
 
@@ -74,8 +78,8 @@ async def list_user(
         where.append(User.username == data.username)
     if data.email:
         where.append(User.email == data.email)
-    if data.departId:
-        where.append(User.department_id == data.departId)
+    if data.deptId:
+        where.append(User.department_id == data.deptId)
     if len(where) > 0:
         where = and_(*where, )
     else:
@@ -88,14 +92,13 @@ async def list_user(
         where,
         order
     )
-    total: int
-    user_objs: list[User]
-    data = []
+    result = []
     for obj in user_objs:
         obj_dict = await obj.to_dict(exclude_fields=["password"])
         obj_dict["roleIds"] = [item.id.__str__() for item in obj.roles]
-        data.append(obj_dict)
-    return SuccessExtra(data=data, total=total,
+        obj_dict["dept"] = await obj.department.to_dict() if obj.department else None
+        result.append(obj_dict)
+    return SuccessExtra(data=result, total=total,
                         currentPage=currentPage, pageSize=pageSize)
 
 
@@ -104,9 +107,14 @@ async def update_user(
         session: SessionDep,
         data: UserUpdate,
 ):
-    user = await userController.get_user_by_name(session, data.username)
+    user = await userController.get(session, data.id)
+    if not user:
+        raise HTTPException(status_code=404, detail="用户不存在！")
+    if user.id != data.id:
+        raise HTTPException(status_code=400, detail="用户名已存在！")
     del data.username
     await userController.update(session, user.id, data)
+    await logger.systemInfo("系统管理", f"更新用户信息: {user.username}")
     return Success(msg="用户信息更新成功！")
 
 
@@ -116,6 +124,8 @@ async def update_avatar(
         data: UserAvatar,
 ):
     user = await userController.get(session, data.id)
+    if not user:
+        raise HTTPException(status_code=404, detail="用户不存在！")
     avatar_name = f"{
         md5_encrypt(
             str(
@@ -141,21 +151,27 @@ async def update_roles(
     user = await userController.get(session, data.id)
     roleList = []
     for role_id in data.roleIds:
-        role = await roleController.get(session, role_id)
+        role = await roleController.get(session, UUID(role_id))
         roleList.append(role)
 
+    if not user:
+        raise HTTPException(status_code=404, detail="用户不存在！")
     user.roles = roleList
     session.add(user)
     session.commit()
+    await logger.systemInfo("系统管理", f"更新用户角色: {user.username}")
     return Success(msg="用户角色信息更新成功！")
 
 
 @userRouter.post("/updateStatus", summary="更新用户状态")
 async def update_status(session: SessionDep, data: UpdateStatus):
     user = await userController.get(session, data.id)
+    if not user:
+        raise HTTPException(status_code=404, detail="用户不存在！")
     user.status = data.status
     session.add(user)
     session.commit()
+    await logger.systemInfo("系统管理", f"更新用户状态: {user.username} -> {data.status}")
     return Success(msg="用户状态更新成功！")
 
 
@@ -165,7 +181,10 @@ async def reset_pwd(
         data: UserResetPwd,
 ):
     user = await userController.get(session, data.id)
+    if not user:
+        raise HTTPException(status_code=404, detail="用户不存在！")
     user.password = get_password_hash(data.newPwd)
     session.add(user)
     session.commit()
+    await logger.systemInfo("系统管理", f"重置用户密码: {user.username}")
     return Success(msg="密码重置成功！")

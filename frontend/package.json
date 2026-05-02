@@ -1,6 +1,6 @@
 {
   "name": "vue-pure-admin",
-  "version": "6.0.0",
+  "version": "0.0.3",
   "private": true,
   "type": "module",
   "scripts": {
@@ -63,6 +63,8 @@
     "@zxcvbn-ts/core": "^3.0.4",
     "animate.css": "^4.1.1",
     "axios": "^1.10.0",
+    "baseline-browser-mapping": "^2.9.19",
+    "caniuse-lite": "^1.0.30001769",
     "china-area-data": "^5.0.1",
     "codemirror": "^5.65.19",
     "codemirror-editor-vue3": "^2.8.0",
@@ -91,6 +93,7 @@
     "sortablejs": "^1.15.6",
     "swiper": "^11.2.10",
     "typeit": "^8.8.7",
+    "update-browserslist-db": "^1.2.3",
     "v-contextmenu": "^3.2.0",
     "v3-infinite-loading": "^1.3.2",
     "vditor": "^3.11.1",
@@ -118,7 +121,7 @@
     "@commitlint/types": "^19.8.1",
     "@eslint/js": "^9.30.1",
     "@faker-js/faker": "^9.9.0",
-    "@iconify/json": "^2.2.355",
+    "@iconify/json": "^2.2.409",
     "@iconify/vue": "4.2.0",
     "@intlify/unplugin-vue-i18n": "^6.0.8",
     "@tailwindcss/vite": "^4.1.11",

@@ -1,7 +1,7 @@
 from pathlib import Path
 
 
-def check_dir_exists(filePath: [str]):
+def check_dir_exists(filePath: list[str]):
     """
     检查目录是否存在，如果不存在则创建
 

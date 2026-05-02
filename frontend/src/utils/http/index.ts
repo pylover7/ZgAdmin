@@ -11,8 +11,10 @@ import type {
 } from "./types.d";
 import { stringify } from "qs";
 import NProgress from "../progress";
-import { getToken, formatToken } from "@/utils/auth";
+import { getToken, formatToken, removeToken } from "@/utils/auth";
 import { useUserStoreHook } from "@/store/modules/user";
+import { router, resetRouter } from "@/router";
+import { message } from "@/utils/message";
 
 // 相关配置请参考：www.axios-js.com/zh-cn/docs/#axios-request-config-1
 const defaultConfig: AxiosRequestConfig = {
@@ -34,6 +36,9 @@ class PureHttp {
     this.httpInterceptorsRequest();
     this.httpInterceptorsResponse();
   }
+
+  /** 重复请求次数 */
+  private static requestCount = 5;
 
   /** `token`过期后，暂存待执行的请求 */
   private static requests = [];
@@ -73,8 +78,17 @@ class PureHttp {
           return config;
         }
         /** 请求白名单，放置一些不需要`token`的接口（通过设置请求白名单，防止`token`过期后再请求造成的死循环问题） */
-        const whiteList = ["/refresh-token", "/login"];
-        return whiteList.some(url => config.url.endsWith(url))
+        const whiteList = [
+          "/refreshToken",
+          "/login",
+          "/settings/login/methods"
+        ];
+        // 使用精确路径匹配，避免误判（如 /settings/login 会被 /login 误匹配）
+        const isWhitelistUrl = whiteList.some(url => {
+          // 检查完整路径是否匹配白名单
+          return config.url === url;
+        });
+        return isWhitelistUrl
           ? config
           : new Promise(resolve => {
               const data = getToken();
@@ -134,12 +148,39 @@ class PureHttp {
         }
         return response.data;
       },
-      (error: PureHttpError) => {
+      async (error: PureHttpError) => {
         const $error = error;
         $error.isCancelRequest = Axios.isCancel($error);
         // 关闭进度条动画
         NProgress.done();
         // 所有的响应异常 区分来源为取消请求/非取消请求
+        if (error.response == null || error.response.status == 500) {
+          const config = error.config;
+          // 判断是否重复发起请求
+          if (Boolean(PureHttp.requestCount)) {
+            PureHttp.requestCount--;
+            console.log(`第${5 - PureHttp.requestCount}次重试`);
+            // 延时发起请求
+            await new Promise(resolve => {
+              setTimeout(resolve, 1000);
+            });
+            // 重新发起请求
+            return instance(config);
+          } else {
+            message("服务器异常，请刷新~", { type: "error" });
+          }
+        } else if (error.response.status == 403) {
+          resetRouter();
+          router.push("/403").then(() => {
+            message("无权访问！", { type: "warning" });
+          });
+        } else if (error.response.status == 401) {
+          removeToken();
+          resetRouter();
+          router.push("/login").then(() => {
+            message("请重新登录！", { type: "warning" });
+          });
+        }
         return Promise.reject($error);
       }
     );

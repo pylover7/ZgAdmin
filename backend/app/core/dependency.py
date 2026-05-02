@@ -1,3 +1,4 @@
+from uuid import UUID
 import jwt
 from collections.abc import Generator
 from sqlmodel import Session
@@ -32,7 +33,7 @@ class AuthControl:
                 algorithms=settings.JWT_ALGORITHM)
             user_id: str = decode_data.get("user_id")
             CTX_USER_ID.set(user_id)
-            user = await userController.get(session, user_id)
+            user = await userController.get(session, UUID(user_id))
             if not user:
                 raise HTTPException(status_code=401, detail="验证失败！！！")
             if user.is_superuser:  # 超级管理员不验证状态
