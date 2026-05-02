@@ -20,6 +20,7 @@ from app.core.dependency import DependAuth, SessionDep
 from app.models import Api, Menu, Role, User, UpdatePassword
 from app.models.base import Fail, Success, FailAuth
 from app.settings import settings
+from app.settings.config import base_config
 from app.utils import menuTree
 from app.utils.jwtt import create_access_token, decode_access_token, \
     get_qq_access_token, get_qq_userinfo, find_or_create_qq_user
@@ -199,11 +200,20 @@ async def update_user_password(session: SessionDep, req_in: UpdatePassword):
 @router.get("/qq/auth-url", summary="获取QQ授权链接")
 async def get_qq_auth_url():
     """获取QQ登录授权URL"""
-    app_id = settings.QQ_APP_ID
-    redirect_uri = settings.QQ_REDIRECT_URI
-    state = "qq_login_" + str(datetime.now().timestamp())
+    # 优先读取运行时配置（管理后台设置），否则回退到 settings 默认值
+    app_id = base_config.get_config("login", "qq_app_id") or settings.QQ_APP_ID
+    redirect_uri = base_config.get_config("login", "qq_redirect_uri") or settings.QQ_REDIRECT_URI
+    qq_enabled = base_config.get_config("login", "qq_enabled", fallback="false").lower() == "true"
 
-    # URL编码确保参数安全
+    if not qq_enabled:
+        from app.models.base import Fail
+        return Fail(msg="QQ登录未启用")
+
+    if not app_id:
+        from app.models.base import Fail
+        return Fail(msg="QQ登录未配置")
+
+    state = "qq_login_" + str(datetime.now().timestamp())
     encoded_redirect_uri = urllib.parse.quote(redirect_uri, safe='')
 
     auth_url = (

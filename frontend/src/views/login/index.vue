@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
 import Motion from "./utils/motion";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import { message } from "@/utils/message";
 import { loginRules } from "./utils/rule";
 import TypeIt from "@/components/ReTypeit";
@@ -42,6 +42,7 @@ defineOptions({
 const imgCode = ref("");
 const loginDay = ref(7);
 const router = useRouter();
+const route = useRoute();
 const loading = ref(false);
 const checked = ref(false);
 const disabled = ref(false);
@@ -144,6 +145,10 @@ watch(loginDay, value => {
 
 // 获取登录方式配置
 onMounted(async () => {
+  // QQ 回调路由：自动切换到 QQ 登录面板
+  if (route.path === "/login/qq/callback") {
+    useUserStoreHook().SET_CURRENTPAGE(1);
+  }
   try {
     const res = await getLoginMethods();
     if (res.success && res.data) {
