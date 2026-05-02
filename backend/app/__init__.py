@@ -10,6 +10,7 @@ from app.core.database import init_data
 from app.core.exceptions import SettingNotFound
 from app.core.init import make_middlewares, register_routers, register_exceptions
 from app.settings import settings
+from app.settings.log import logger
 
 try:
     from app.settings import settings
@@ -45,9 +46,12 @@ def create_app() -> FastAPI:
 @asynccontextmanager
 async def lifespan_context(app: FastAPI):
     # 启动时执行的逻辑
+    await logger.systemInfo("System", f"应用启动 - {settings.PROJECT_NAME} v{settings.VERSION}")
     await init_data(app)
+    await logger.systemInfo("System", "数据库初始化完成")
     yield
     # 关闭时执行的逻辑（如果需要）
+    await logger.systemInfo("System", "应用关闭")
 
 
 app = create_app()

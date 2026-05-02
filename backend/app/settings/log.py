@@ -85,6 +85,38 @@ class Logger(DatabaseSession):
     def success(self, msg):
         self.sysLogger.success(msg)
 
+    async def systemInfo(self, module: str, msg: str):
+        """系统信息日志 - 同时写入文件和数据库"""
+        self.sysLogger.info(msg)
+        await systemLogController.create(
+            session=self.session,
+            obj_in=SystemLogCreate(module=module, message=msg, level="info")
+        )
+
+    async def systemWarning(self, module: str, msg: str):
+        """系统警告日志 - 同时写入文件和数据库"""
+        self.sysLogger.warning(msg)
+        await systemLogController.create(
+            session=self.session,
+            obj_in=SystemLogCreate(module=module, message=msg, level="warning")
+        )
+
+    async def systemError(self, module: str, msg: str):
+        """系统错误日志 - 同时写入文件和数据库"""
+        self.sysLogger.error(msg)
+        await systemLogController.create(
+            session=self.session,
+            obj_in=SystemLogCreate(module=module, message=msg, level="error")
+        )
+
+    async def systemDebug(self, module: str, msg: str):
+        """系统调试日志 - 同时写入文件和数据库"""
+        self.sysLogger.debug(msg)
+        await systemLogController.create(
+            session=self.session,
+            obj_in=SystemLogCreate(module=module, message=msg, level="debug")
+        )
+
     async def loginSuccess(self, username: str, ip: str, address: str,
                            system: str, browser: str, behavior: int):
         """

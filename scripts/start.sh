@@ -323,8 +323,14 @@ main() {
             echo -e "  停止服务: ./start.sh stop"
             echo -e "  查看状态: ./start.sh status"
             echo ""
+            # 实时日志输出（带标签前缀）
+            tail -n +1 -f "$BACKEND_LOG" 2>/dev/null | awk -v p="${BLUE}后端:${NC} " '{print p $0; fflush()}' &
+            local tail_backend_pid=$!
+            tail -n +1 -f "$FRONTEND_LOG" 2>/dev/null | awk -v p="${GREEN}前端:${NC} " '{print p $0; fflush()}' &
+            local tail_frontend_pid=$!
+
             # 前台等待，Ctrl+C 时优雅退出
-            trap 'stop_all; exit 0' SIGINT SIGTERM
+            trap 'kill $tail_backend_pid $tail_frontend_pid 2>/dev/null; stop_all; exit 0' SIGINT SIGTERM
             log_info "按 Ctrl+C 停止所有服务..."
             while true; do
                 sleep 1
@@ -338,6 +344,7 @@ main() {
                     break
                 fi
             done
+            kill $tail_backend_pid $tail_frontend_pid 2>/dev/null || true
             ;;
         backend)
             load_env

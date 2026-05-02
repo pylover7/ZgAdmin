@@ -8,7 +8,8 @@ import { getKeyList, useCopyToClipboard } from "@pureadmin/utils";
 import {
   getSystemLogsList,
   getSystemLogsDetail,
-  deleteSystemLogs
+  deleteSystemLogs,
+  clearSystemLogs
 } from "@/api/system";
 import {
   usePublicHooks,
@@ -183,11 +184,12 @@ export function useRole(tableRef: Ref) {
 
   /** 清空日志 */
   function clearAll() {
-    // 根据实际业务，调用接口删除所有日志数据
-    message("已删除所有日志数据", {
-      type: "success"
+    clearSystemLogs().then(() => {
+      message("已删除所有日志数据", {
+        type: "success"
+      });
+      onSearch();
     });
-    onSearch();
   }
 
   function onDetail(row) {

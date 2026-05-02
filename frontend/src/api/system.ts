@@ -213,18 +213,23 @@ export const deleteSystemLogs = (data?: string[]) => {
 
 /** 获取系统监控-系统日志列表 */
 export const getSystemLogsList = (
-  model: string,
-  operationTime: [string, string] | null,
+  module: string,
+  oprationTime: [string, string] | null,
   currentPage: number,
   pageSize: number
 ) => {
   return http.request<ResultTable>("post", systemLogsUrl("/list"), {
-    data: { model, operationTime },
+    data: { module, oprationTime },
     params: {
       pageSize,
       currentPage
     }
   });
+};
+
+/** 删除全部系统日志 */
+export const clearSystemLogs = () => {
+  return http.request<Result>("post", systemLogsUrl("/clear"));
 };
 
 /** 获取系统监控-系统日志-根据 id 查日志详情 */
