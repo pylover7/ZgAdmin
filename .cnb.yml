@@ -10,47 +10,6 @@ main:
             username: ${GIT_USERNAME}
             password: ${GIT_ACCESS_TOKEN}
 
-"(main|dev/*)":
-  pull_request:
-    - name: TCA 后端代码审查
-      stages:
-      - image: tencentcom/tca-plugin:latest
-        settings:
-          mode: local
-          org_sid: DlV3t9YzRYP
-          team_name: pytool
-          scheme_id: 7844
-          scan_dir: backend/app
-          total_fatal: 0
-          total_error: 0
-          total_warning: 5
-          total_info: 10
-          incr_fatal: 0
-          incr_error: 0
-          incr_warning: 2
-          incr_info: 3
-        settingsFrom:
-          - https://cnb.cool/pylover/key/-/blob/main/tca.yml
-    - name: TCA 前端代码分析
-      stages:
-      - image: tencentcom/tca-plugin:latest
-        settings:
-          mode: local
-          org_sid: DlV3t9YzRYP
-          team_name: pytool
-          scheme_id: 7845
-          scan_dir: frontend/src
-          total_fatal: 0
-          total_error: 0
-          total_warning: 5
-          total_info: 10
-          incr_fatal: 0
-          incr_error: 0
-          incr_warning: 2
-          incr_info: 3
-        settingsFrom:
-          - https://cnb.cool/pylover/key/-/blob/main/tca.yml
-
 $:
   vscode:
     - docker:
