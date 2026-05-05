@@ -6,7 +6,8 @@ from uuid import UUID
 
 from fastapi import APIRouter, Request, HTTPException
 # from fastapi.websockets import WebSocketState
-from sqlmodel import select
+from sqlalchemy.orm import selectinload
+from sqlmodel import select, col
 from jwt.exceptions import ExpiredSignatureError
 # from wechatpayv3 import WeChatPayType
 
@@ -130,17 +131,20 @@ async def get_userinfo(session: SessionDep):
 @router.get("/userMenu", summary="查看用户菜单", dependencies=[DependAuth])
 async def get_user_menu(session: SessionDep):
     user_id = CTX_USER_ID.get()
-    user_obj = await userController.get(session=session, id=UUID(user_id))
+    statement = select(User).where(
+        col(User.id) == user_id
+    ).options(
+        selectinload(User.roles).selectinload(Role.menus)
+    )
+    user_obj = session.exec(statement).first()
     if not user_obj:
         return FailAuth(msg="用户不存在或已被删除！")
     menus: list[Menu] = []
     if user_obj.is_superuser:
         menus = list(session.exec(select(Menu)).all())
     else:
-        role_objs: list[Role] = user_obj.roles
-        for role_obj in role_objs:
-            menu = role_obj.menus
-            menus.extend(menu)
+        for role_obj in user_obj.roles:
+            menus.extend(role_obj.menus)
     parent_menus: list[Menu] = []
     for menu in menus:
         if menu.parentId is None:
@@ -164,7 +168,12 @@ async def get_user_menu(session: SessionDep):
 @router.get("/userApi", summary="查看用户API", dependencies=[DependAuth])
 async def get_user_api(session: SessionDep):
     user_id = CTX_USER_ID.get()
-    user_obj = await userController.get(session=session, id=UUID(user_id))
+    statement = select(User).where(
+        col(User.id) == user_id
+    ).options(
+        selectinload(User.roles).selectinload(Role.apis)
+    )
+    user_obj = session.exec(statement).first()
     if not user_obj:
         return FailAuth(msg="用户不存在或已被删除！")
     if user_obj.is_superuser:
@@ -173,11 +182,9 @@ async def get_user_api(session: SessionDep):
         api_objs = list(result.all())
         apis = [api.method.lower() + api.path for api in api_objs]
         return Success(data=apis)
-    role_objs: list[Role] = user_obj.roles
     apis = []
-    for role_obj in role_objs:
-        api_objs: list[Api] = role_obj.apis
-        apis.extend([api.method.lower() + api.path for api in api_objs])
+    for role_obj in user_obj.roles:
+        apis.extend([api.method.lower() + api.path for api in role_obj.apis])
     apis = list(set(apis))
     return Success(data=apis)
 

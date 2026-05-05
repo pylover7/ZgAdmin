@@ -1,4 +1,4 @@
-from typing import Generic, NewType, Type, TypeVar, Optional
+from typing import Any, Generic, NewType, Type, TypeVar, Optional
 from uuid import UUID
 
 from sqlalchemy import ColumnElement, UnaryExpression
@@ -69,7 +69,8 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             currentPage: int = 1,
             pageSize: int = 15,
             where: ColumnElement[bool] | None = None,
-            order: UnaryExpression | str = "created_at"
+            order: UnaryExpression | str = "created_at",
+            options: list[Any] | None = None,
     ) -> tuple[Total, list[ModelType]]:
         id_column = getattr(self.model, "id", None)
         if id_column is None:
@@ -78,8 +79,10 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         if where is not None:
             count_stmt = count_stmt.where(where)
         total = session.exec(count_stmt).one()
-        statement = select(
-            self.model).order_by(order).offset(
+        statement = select(self.model)
+        if options:
+            statement = statement.options(*options)
+        statement = statement.order_by(order).offset(
             (currentPage - 1) * pageSize).limit(pageSize)
         if where is not None:
             statement = statement.where(where)
