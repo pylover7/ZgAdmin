@@ -74,7 +74,10 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         id_column = getattr(self.model, "id", None)
         if id_column is None:
             raise AttributeError(f"{self.model.__name__} does not have an 'id' attribute")
-        total = session.exec(select(func.count(id_column))).one()
+        count_stmt = select(func.count(id_column))
+        if where is not None:
+            count_stmt = count_stmt.where(where)
+        total = session.exec(count_stmt).one()
         statement = select(
             self.model).order_by(order).offset(
             (currentPage - 1) * pageSize).limit(pageSize)

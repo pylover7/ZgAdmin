@@ -37,3 +37,4 @@ tsconfig.tsbuildinfo
 
 .logs/
 .pids/
+.sisyphus/
