@@ -82,3 +82,5 @@ class PermissionControl:
 
 DependAuth = Depends(AuthControl.is_authed)
 DependPermission = Depends(PermissionControl.has_permission)
+# 类型注解辅助：直接注入当前用户对象（替代不可靠的 ContextVar）
+DependUser = Annotated[User, DependAuth]

@@ -1,8 +1,6 @@
 from fastapi import APIRouter, Query
 
-from app.controllers.user import userController
-from app.core.ctx import CTX_USER_ID
-from app.core.dependency import SessionDep
+from app.core.dependency import DependUser, SessionDep
 from app.models import Success, SuccessExtra
 from app.settings.log import loginLogs, operationLogs, systemLogs, logger
 from app.utils.localTime import convert_utc_to_local_time
@@ -66,11 +64,10 @@ async def get_login_logs(
 
 
 @monitorRouter.get("/clearLoginLogs", summary="清除登录日志")
-async def clear_login_logs(session: SessionDep):
-    user = await userController.get(session, CTX_USER_ID.get())
+async def clear_login_logs(session: SessionDep, current_user: DependUser):
     with open(loginLogs, "w", encoding="utf-8") as f:
         f.write("")
-    logger.operationError(user.username, "清除登录日志")
+    await logger.operationError(current_user.username, "清除登录日志")
     return Success(msg="清除成功！")
 
 
@@ -142,11 +139,10 @@ async def get_operation_logs(
 
 
 @monitorRouter.get("/clearOperationLogs", summary="清除操作日志")
-async def clear_operation_logs(session: SessionDep):
-    user = await userController.get(session, CTX_USER_ID.get())
+async def clear_operation_logs(session: SessionDep, current_user: DependUser):
     with open(operationLogs, "w", encoding="utf-8") as f:
         f.write("")
-    logger.operationError(user.username, "清除操作日志")
+    await logger.operationError(current_user.username, "清除操作日志")
     return Success(msg="清除成功！")
 
 
@@ -214,9 +210,8 @@ async def get_system_logs(
 
 
 @monitorRouter.get("/clearSystemLogs", summary="清除系统日志")
-async def clear_system_logs(session: SessionDep):
-    user = await userController.get(session, CTX_USER_ID.get())
+async def clear_system_logs(session: SessionDep, current_user: DependUser):
     with open(systemLogs, "w", encoding="utf-8") as f:
         f.write("")
-    logger.operationError(user.username, "清除系统日志")
+    await logger.operationError(current_user.username, "清除系统日志")
     return Success(msg="清除成功！")

@@ -1,7 +1,6 @@
 # import json
 import urllib.parse
 from datetime import timedelta, datetime
-from uuid import UUID
 # from uuid import uuid4
 
 from fastapi import APIRouter, Request, HTTPException
@@ -16,8 +15,7 @@ from app.controllers.user import userController
 from app.settings.log import logger
 from app.models.login import CredentialsSchema, JWTPayload, JWTOut, refreshTokenSchema, \
     JWTReOut, QQLoginSchema
-from app.core.ctx import CTX_USER_ID
-from app.core.dependency import DependAuth, SessionDep
+from app.core.dependency import DependUser, SessionDep
 from app.models import Api, Menu, Role, User, UpdatePassword
 from app.models.base import Fail, Success, FailAuth
 from app.settings import settings
@@ -118,21 +116,19 @@ async def refresh_token(refreshToken: refreshTokenSchema):
     return Success(data=data.model_dump())
 
 
-@router.get("/userinfo", summary="查看用户信息", dependencies=[DependAuth])
-async def get_userinfo(session: SessionDep):
-    user_id = CTX_USER_ID.get()
-    user_obj = await userController.get(session=session, id=UUID(user_id))
+@router.get("/userinfo", summary="查看用户信息")
+async def get_userinfo(session: SessionDep, current_user: DependUser):
+    user_obj = await userController.get(session=session, id=current_user.id)
     if not user_obj:
         return FailAuth(msg="用户不存在或已被删除！")
     data = await user_obj.to_dict(exclude_fields=["password"])
     return Success(data=data)
 
 
-@router.get("/userMenu", summary="查看用户菜单", dependencies=[DependAuth])
-async def get_user_menu(session: SessionDep):
-    user_id = CTX_USER_ID.get()
+@router.get("/userMenu", summary="查看用户菜单")
+async def get_user_menu(session: SessionDep, current_user: DependUser):
     statement = select(User).where(
-        col(User.id) == user_id
+        col(User.id) == current_user.id
     ).options(
         selectinload(User.roles).selectinload(Role.menus)
     )
@@ -165,11 +161,10 @@ async def get_user_menu(session: SessionDep):
     return Success(data=res)
 
 
-@router.get("/userApi", summary="查看用户API", dependencies=[DependAuth])
-async def get_user_api(session: SessionDep):
-    user_id = CTX_USER_ID.get()
+@router.get("/userApi", summary="查看用户API")
+async def get_user_api(session: SessionDep, current_user: DependUser):
     statement = select(User).where(
-        col(User.id) == user_id
+        col(User.id) == current_user.id
     ).options(
         selectinload(User.roles).selectinload(Role.apis)
     )
@@ -189,10 +184,9 @@ async def get_user_api(session: SessionDep):
     return Success(data=apis)
 
 
-@router.post("/updatePwd", summary="更新用户密码", dependencies=[DependAuth])
-async def update_user_password(session: SessionDep, req_in: UpdatePassword):
-    user_id = CTX_USER_ID.get()
-    user = await userController.get(session=session, id=UUID(user_id))
+@router.post("/updatePwd", summary="更新用户密码")
+async def update_user_password(session: SessionDep, req_in: UpdatePassword, current_user: DependUser):
+    user = await userController.get(session=session, id=current_user.id)
     if not user:
         return FailAuth(msg="用户不存在或已被删除！")
     verified = verify_password(req_in.current_password, user.password)
