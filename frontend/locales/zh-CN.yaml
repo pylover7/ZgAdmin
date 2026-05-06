@@ -368,3 +368,6 @@ system:
     title: 登录设置
     qqConfig: QQ登录配置
     wechatConfig: 微信登录配置
+  appId: App ID
+  appKey: App Key
+  redirectUri: 回调地址

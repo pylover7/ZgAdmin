@@ -1,7 +1,7 @@
 import dayjs from "dayjs";
 import editForm from "../form.vue";
 import { handleTree } from "@/utils/tree";
-import { $t } from "@/plugins/i18n";
+import { transformI18n } from "@/plugins/i18n";
 import { message } from "@/utils/message";
 import { addDept, deleteDept, getDeptList, updateDept } from "@/api/system";
 import { usePublicHooks } from "../../hooks";

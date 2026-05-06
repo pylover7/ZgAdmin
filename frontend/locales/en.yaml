@@ -362,3 +362,6 @@ system:
     title: Login Settings
     qqConfig: QQ Login
     wechatConfig: WeChat Login
+  appId: App ID
+  appKey: App Key
+  redirectUri: Redirect URI
