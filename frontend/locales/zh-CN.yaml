@@ -340,6 +340,11 @@ system:
   hide: 否
   expandCollapse: 展开/折叠
   selectAll: 全选/全不选
+  testConnection: 测试连接
+  logInfo: 信息
+  logWarn: 警告
+  logError: 重要
+  logDebug: 调试
   monitor:
     title: 系统监控
     loginLog: 登录日志

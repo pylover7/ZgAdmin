@@ -44,7 +44,7 @@ const {
       <el-form-item label="日志等级" prop="level">
         <el-select
           v-model="form.level"
-          placeholder="请选择"
+          :placeholder="$t('system.pleaseSelect')"
           clearable
           multiple
           class="w-[240px]!"
@@ -55,14 +55,14 @@ const {
           <el-option label="重要" value="error" />
         </el-select>
       </el-form-item>
-      <el-form-item label="操作时间" prop="operationTime">
+      <el-form-item :label="$t('system.operationTime')" prop="operationTime">
         <el-date-picker
           v-model="form.operationTime"
           :shortcuts="getPickerShortcuts()"
           type="datetimerange"
-          range-separator="至"
-          start-placeholder="开始日期时间"
-          end-placeholder="结束日期时间"
+          range-separator="—"
+          :start-placeholder="$t('system.startTime')"
+          :end-placeholder="$t('system.endTime')"
         />
       </el-form-item>
       <el-form-item>
@@ -80,9 +80,9 @@ const {
       </el-form-item>
     </el-form>
 
-    <PureTableBar title="操作日志" :columns="columns" @refresh="onSearch">
+    <PureTableBar :title="$t('system.operationLog')" :columns="columns" @refresh="onSearch">
       <template #buttons>
-        <el-popconfirm title="确定要删除所有日志数据吗？" @confirm="clearAll">
+        <el-popconfirm :title="$t('system.clearLogConfirm')" @confirm="clearAll">
           <template #reference>
             <el-button type="danger" :icon="useRenderIcon(Delete)">
               清空日志
@@ -101,13 +101,13 @@ const {
               style="font-size: var(--el-font-size-base)"
               class="text-[rgba(42,46,54,0.5)] dark:text-[rgba(220,220,242,0.5)]"
             >
-              已选 {{ selectedNum }} 项
+              {{ selectedNum }} {{ $t('system.selected') }}
             </span>
             <el-button type="primary" text @click="onSelectionCancel">
               取消选择
             </el-button>
           </div>
-          <el-popconfirm title="是否确认删除?" @confirm="onbatchDel">
+          <el-popconfirm :title="$t('system.deleteConfirm')" @confirm="onbatchDel">
             <template #reference>
               <el-button type="danger" text class="mr-1!"> 批量删除 </el-button>
             </template>

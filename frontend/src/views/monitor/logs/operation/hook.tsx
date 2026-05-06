@@ -13,6 +13,7 @@ import {
   levelTextMap,
   formatDateTimeRange
 } from "@/views/system/hooks";
+import { transformI18n } from "@/plugins/i18n";
 import { paginationConf } from "@/config";
 
 export function useRole(tableRef: Ref) {
@@ -28,44 +29,19 @@ export function useRole(tableRef: Ref) {
 
   const pagination = reactive<PaginationProps>({ ...paginationConf });
   const columns: TableColumnList = [
-    {
-      label: "勾选列", // 如果需要表格多选，此处label必须设置
-      type: "selection",
-      fixed: "left",
-      reserveSelection: true // 数据刷新后保留选项
-    },
-    {
-      label: "序号",
-      minWidth: 90,
-      type: "index"
-    },
-    {
-      label: "日志等级",
-      prop: "level",
-      minWidth: 100,
+    { label: transformI18n("system.select"), type: "selection", fixed: "left", reserveSelection: true },
+    { label: "#", minWidth: 90, type: "index" },
+    { label: transformI18n("system.logLevel"), prop: "level", minWidth: 100,
       cellRenderer: ({ row, props }) => (
         <el-tag size={props.size} style={levelTagStyle.value(row.level)}>
           {levelTextMap[row.level] || row.level}
         </el-tag>
       )
     },
-    {
-      label: "操作人员",
-      prop: "username",
-      minWidth: 100
-    },
-    {
-      label: "操作概要",
-      prop: "message",
-      minWidth: 140
-    },
-    {
-      label: "操作时间",
-      prop: "time",
-      minWidth: 180,
-      formatter: ({ operatingTime }) =>
-        dayjs(operatingTime).format("YYYY-MM-DD HH:mm:ss")
-    }
+    { label: transformI18n("system.operationUser"), prop: "username", minWidth: 100 },
+    { label: transformI18n("system.logMessage"), prop: "message", minWidth: 140 },
+    { label: transformI18n("system.operationTime"), prop: "time", minWidth: 180,
+      formatter: ({ operatingTime }) => dayjs(operatingTime).format("YYYY-MM-DD HH:mm:ss") }
   ];
 
   function handleSizeChange(val: number) {
@@ -97,7 +73,7 @@ export function useRole(tableRef: Ref) {
     // 返回当前选中的行
     const curSelected = tableRef.value.getTableRef().getSelectionRows();
     deleteOperationLogs(getKeyList(curSelected, "id")).then(() => {
-      message("删除成功", { type: "success" });
+      message(transformI18n("system.deleteSuccess"), { type: "success" });
       tableRef.value.getTableRef().clearSelection();
       onSearch();
     });
@@ -107,7 +83,7 @@ export function useRole(tableRef: Ref) {
   function clearAll() {
     // 根据实际业务，调用接口删除所有日志数据
     clearOperationLogs().then(() => {
-      message("已删除所有日志数据", { type: "success" });
+      message(transformI18n("system.clearLog") + transformI18n("system.success"), { type: "success" });
       onSearch();
     });
   }

@@ -333,6 +333,12 @@ system:
   phoneLogin: Phone
   qqLogin: QQ
   wechatLogin: WeChat
+  selectAll: Select All
+  testConnection: Test Connection
+  logInfo: Info
+  logWarn: Warning
+  logError: Error
+  logDebug: Debug
   monitor:
     title: System Monitor
     loginLog: Login Log
