@@ -22,7 +22,8 @@ from app.settings import settings
 from app.settings.config import base_config
 from app.utils import menuTree
 from app.utils.jwtt import create_access_token, decode_access_token, \
-    get_qq_access_token, get_qq_userinfo, find_or_create_qq_user
+    get_qq_access_token, get_qq_userinfo, find_or_create_qq_user, \
+    create_oauth_state, verify_oauth_state
 from app.utils.password import get_password_hash, verify_password
 # from app.utils.pay import notify_url
 # from app.utils.pay.wechat import wxpay
@@ -214,7 +215,7 @@ async def get_qq_auth_url():
         from app.models.base import Fail
         return Fail(msg="QQ登录未配置")
 
-    state = "qq_login_" + str(datetime.now().timestamp())
+    state = create_oauth_state()
     encoded_redirect_uri = urllib.parse.quote(redirect_uri, safe='')
 
     auth_url = (
@@ -239,6 +240,10 @@ async def qq_login(session: SessionDep, qq_login: QQLoginSchema):
         # 验证输入参数
         if not qq_login.code or not qq_login.state:
             return FailAuth(msg="授权参数不完整")
+
+        # 验证state令牌（防CSRF）
+        if not verify_oauth_state(qq_login.state):
+            return FailAuth(msg="授权验证失败，请重新登录")
 
         # 1. 使用授权码获取access_token
         token_data = await get_qq_access_token(qq_login.code)

@@ -6,7 +6,7 @@ from sqlmodel import Session
 
 from app.controllers.logs import loginLoginController, operationLogController, systemLogController
 from app.models.logs import LoginLogCreate, OperationLogCreate, SystemLogCreate
-from app.core import engine, DatabaseSession
+from app.core import engine
 
 loginLogs = Path(__file__).parent.parent.parent.joinpath("logs", "login.log")
 systemLogs = Path(__file__).parent.parent.parent.joinpath("logs", "system.log")
@@ -14,9 +14,8 @@ operationLogs = Path(__file__).parent.parent.parent.joinpath(
     "logs", "operation.log")
 
 
-class Logger(DatabaseSession):
+class Logger:
     def __init__(self):
-        super().__init__()
         self.logger = loguru_logger
         self.logger.remove()
         self.logger.add(
@@ -86,134 +85,84 @@ class Logger(DatabaseSession):
         self.sysLogger.success(msg)
 
     async def systemInfo(self, module: str, msg: str):
-        """系统信息日志 - 同时写入文件和数据库"""
         self.sysLogger.info(msg)
-        await systemLogController.create(
-            session=self.session,
-            obj_in=SystemLogCreate(module=module, message=msg, level="info")
-        )
+        with Session(engine) as session:
+            await systemLogController.create(
+                session=session,
+                obj_in=SystemLogCreate(module=module, message=msg, level="info")
+            )
 
     async def systemWarning(self, module: str, msg: str):
-        """系统警告日志 - 同时写入文件和数据库"""
         self.sysLogger.warning(msg)
-        await systemLogController.create(
-            session=self.session,
-            obj_in=SystemLogCreate(module=module, message=msg, level="warning")
-        )
+        with Session(engine) as session:
+            await systemLogController.create(
+                session=session,
+                obj_in=SystemLogCreate(module=module, message=msg, level="warning")
+            )
 
     async def systemError(self, module: str, msg: str):
-        """系统错误日志 - 同时写入文件和数据库"""
         self.sysLogger.error(msg)
-        await systemLogController.create(
-            session=self.session,
-            obj_in=SystemLogCreate(module=module, message=msg, level="error")
-        )
+        with Session(engine) as session:
+            await systemLogController.create(
+                session=session,
+                obj_in=SystemLogCreate(module=module, message=msg, level="error")
+            )
 
     async def systemDebug(self, module: str, msg: str):
-        """系统调试日志 - 同时写入文件和数据库"""
         self.sysLogger.debug(msg)
-        await systemLogController.create(
-            session=self.session,
-            obj_in=SystemLogCreate(module=module, message=msg, level="debug")
-        )
+        with Session(engine) as session:
+            await systemLogController.create(
+                session=session,
+                obj_in=SystemLogCreate(module=module, message=msg, level="debug")
+            )
 
     async def loginSuccess(self, username: str, ip: str, address: str,
                            system: str, browser: str, behavior: int):
-        """
-        登录成功日志
-
-        :param user: 用户
-        :param ip: ip
-        :param address: 登录地点
-        :param system: 操作系统
-        :param browser: 浏览器类型
-        :param behavior: 登录行为：0：账号/1：微信/2：QQ/3：电话登录 等
-        """
-        self.loginLogger.success(
-            self.loginType(behavior),
-            user=username,
-            ip=ip,
-            address=address,
-            system=system,
-            browser=browser)
-
-        await loginLoginController.create(
-            session=self.session,
-            obj_in=LoginLogCreate(
-                username=username,
-                ip=ip,
-                address=address,
-                system=system,
-                browser=browser,
-                behavior=self.loginType(behavior),
-                level="success"
+        self.loginLogger.success(self.loginType(behavior), user=username,
+                                 ip=ip, address=address, system=system, browser=browser)
+        with Session(engine) as session:
+            await loginLoginController.create(
+                session=session,
+                obj_in=LoginLogCreate(username=username, ip=ip, address=address,
+                                      system=system, browser=browser,
+                                      behavior=self.loginType(behavior), level="success")
             )
-        )
 
     async def loginFail(self, username: str, ip: str, address: str,
                         system: str, browser: str, behavior: int):
-        """
-        登录失败日志
-        :param user: 用户
-        :param ip: ip
-        :param address: 登录地点
-        :param system: 操作系统
-        :param browser: 浏览器类型
-        :param behavior: 登录行为：0：账号/1：微信/2：QQ/3：电话登录 等
-        """
-        self.loginLogger.error(
-            self.loginType(behavior),
-            user=username,
-            ip=ip,
-            address=address,
-            system=system,
-            browser=browser)
-
-        await loginLoginController.create(
-            session=self.session,
-            obj_in=LoginLogCreate(
-                username=username,
-                ip=ip,
-                address=address,
-                system=system,
-                browser=browser,
-                behavior=self.loginType(behavior),
-                level="fail"
+        self.loginLogger.error(self.loginType(behavior), user=username,
+                               ip=ip, address=address, system=system, browser=browser)
+        with Session(engine) as session:
+            await loginLoginController.create(
+                session=session,
+                obj_in=LoginLogCreate(username=username, ip=ip, address=address,
+                                      system=system, browser=browser,
+                                      behavior=self.loginType(behavior), level="fail")
             )
-        )
 
     async def operationInfo(self, user: str, msg: str):
         self.operationLogger.info(msg, user=user)
-        await operationLogController.create(
-            session=self.session,
-            obj_in=OperationLogCreate(
-                username=user,
-                message=msg,
-                level="info"
+        with Session(engine) as session:
+            await operationLogController.create(
+                session=session,
+                obj_in=OperationLogCreate(username=user, message=msg, level="info")
             )
-        )
 
     async def operationWarning(self, user: str, msg: str):
         self.operationLogger.warning(msg, user=user)
-        await operationLogController.create(
-            session=self.session,
-            obj_in=OperationLogCreate(
-                username=user,
-                message=msg,
-                level="warning"
+        with Session(engine) as session:
+            await operationLogController.create(
+                session=session,
+                obj_in=OperationLogCreate(username=user, message=msg, level="warning")
             )
-        )
 
     async def operationError(self, user: str, msg: str):
         self.operationLogger.error(msg, user=user)
-        await operationLogController.create(
-            session=self.session,
-            obj_in=OperationLogCreate(
-                username=user,
-                message=msg,
-                level="error"
+        with Session(engine) as session:
+            await operationLogController.create(
+                session=session,
+                obj_in=OperationLogCreate(username=user, message=msg, level="error")
             )
-        )
 
 
 logger = Logger()
