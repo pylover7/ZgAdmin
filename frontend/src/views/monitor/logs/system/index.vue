@@ -58,9 +58,9 @@ const {
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="时间范围" prop="oprationTime">
+      <el-form-item label="时间范围" prop="operationTime">
         <el-date-picker
-          v-model="form.oprationTime"
+          v-model="form.operationTime"
           :shortcuts="getPickerShortcuts()"
           type="datetimerange"
           range-separator="至"

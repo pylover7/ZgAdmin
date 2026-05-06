@@ -214,12 +214,12 @@ export const deleteSystemLogs = (data?: string[]) => {
 /** 获取系统监控-系统日志列表 */
 export const getSystemLogsList = (
   module: string,
-  oprationTime: [string, string] | null,
+  operationTime: [string, string] | null,
   currentPage: number,
   pageSize: number
 ) => {
   return http.request<ResultTable>("post", systemLogsUrl("/list"), {
-    data: { module, oprationTime },
+    data: { module, operationTime },
     params: {
       pageSize,
       currentPage
