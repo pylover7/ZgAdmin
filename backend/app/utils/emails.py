@@ -5,10 +5,14 @@ from email.mime.multipart import MIMEMultipart
 from email.utils import formataddr
 
 from app.settings.config import base_config
+from app.settings import settings
 from app.settings.log import logger
 
 
 def send_email(receiver: str, subject: str, body: str):
+    if not settings.FEATURE_EMAIL:
+        logger.sysLogger.warning("邮件功能已关闭（FEATURE_EMAIL=False）")
+        return False
     host = base_config.get_config("email", "host")
     port = base_config.get_config("email", "port")
     username = base_config.get_config("email", "username")

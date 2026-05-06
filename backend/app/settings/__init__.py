@@ -77,6 +77,13 @@ class Settings(BaseSettings):
         __file__).parent.parent.parent.joinpath("config").__str__()
 
     SENTRY_DSN: HttpUrl | None = None
+
+    # 功能开关 — 设为 false 可关闭对应模块
+    FEATURE_QQ_LOGIN: bool = False         # QQ 登录
+    FEATURE_WECHAT_LOGIN: bool = False     # 微信登录
+    FEATURE_EMAIL: bool = False            # 邮件发送
+    FEATURE_MONITOR_LOG: bool = True       # 操作日志/登录日志记录
+
     DB_SCHEME: str = "sqlite"
     DB_SERVER: str = "localhost"
     DB_PORT: int = 5432

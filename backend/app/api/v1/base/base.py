@@ -36,6 +36,17 @@ async def health_check():
     return {"status": "ok"}
 
 
+@router.get("/features", summary="功能开关")
+async def get_features():
+    return Success(data={
+        "qq_login": settings.FEATURE_QQ_LOGIN and bool(
+            base_config.get_config("login", "qq_app_id") or settings.QQ_APP_ID),
+        "wechat_login": settings.FEATURE_WECHAT_LOGIN,
+        "email": settings.FEATURE_EMAIL,
+        "monitor_log": settings.FEATURE_MONITOR_LOG,
+    })
+
+
 @router.post("/accessToken", summary="获取token", dependencies=[DependRateLimit])
 async def login_access_token(
         session: SessionDep, request: Request, credentials: CredentialsSchema):
@@ -210,7 +221,8 @@ async def get_qq_auth_url():
     # 优先读取运行时配置（管理后台设置），否则回退到 settings 默认值
     app_id = base_config.get_config("login", "qq_app_id") or settings.QQ_APP_ID
     redirect_uri = base_config.get_config("login", "qq_redirect_uri") or settings.QQ_REDIRECT_URI
-    qq_enabled = base_config.get_config("login", "qq_enabled", fallback="false").lower() == "true"
+    qq_enabled = settings.FEATURE_QQ_LOGIN and (
+        base_config.get_config("login", "qq_enabled", fallback="false").lower() == "true")
 
     if not qq_enabled:
         from app.models.base import Fail
