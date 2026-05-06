@@ -266,9 +266,5 @@ async def init_data(app: FastAPI) -> None:
         logger.info("初始化菜单...")
         init_menus(session)
         logger.info("启动定时任务...")
-        scheduler.add_job(
-            update_expired_orders,
-            "interval",
-            args=[session],
-            seconds=120)
+        scheduler.add_job(update_expired_orders, "interval", seconds=120)
         scheduler.start()

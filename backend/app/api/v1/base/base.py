@@ -15,7 +15,7 @@ from app.controllers.user import userController
 from app.settings.log import logger
 from app.models.login import CredentialsSchema, JWTPayload, JWTOut, refreshTokenSchema, \
     JWTReOut, QQLoginSchema
-from app.core.dependency import DependUser, SessionDep
+from app.core.dependency import DependUser, DependRateLimit, SessionDep
 from app.models import Api, Menu, Role, User, UpdatePassword
 from app.models.base import Fail, Success, FailAuth
 from app.settings import settings
@@ -31,7 +31,12 @@ from app.utils.password import get_password_hash, verify_password
 router = APIRouter()
 
 
-@router.post("/accessToken", summary="获取token")
+@router.get("/health", summary="健康检查")
+async def health_check():
+    return {"status": "ok"}
+
+
+@router.post("/accessToken", summary="获取token", dependencies=[DependRateLimit])
 async def login_access_token(
         session: SessionDep, request: Request, credentials: CredentialsSchema):
     user: User | None = await userController.authenticate(
@@ -81,7 +86,7 @@ async def login_access_token(
     return Success(data=data.model_dump())
 
 
-@router.post("/refreshToken", summary="刷新token")
+@router.post("/refreshToken", summary="刷新token", dependencies=[DependRateLimit])
 async def refresh_token(refreshToken: refreshTokenSchema):
     try:
         payload = decode_access_token(refreshToken.refreshToken)
@@ -233,7 +238,7 @@ async def get_qq_auth_url():
     })
 
 
-@router.post("/qq/login", summary="QQ登录")
+@router.post("/qq/login", summary="QQ登录", dependencies=[DependRateLimit])
 async def qq_login(session: SessionDep, qq_login: QQLoginSchema):
     """处理QQ登录回调"""
     try:

@@ -1,4 +1,6 @@
 from uuid import UUID
+import time
+import asyncio
 import jwt
 from collections.abc import Generator
 from sqlmodel import Session
@@ -84,3 +86,38 @@ DependAuth = Depends(AuthControl.is_authed)
 DependPermission = Depends(PermissionControl.has_permission)
 # 类型注解辅助：直接注入当前用户对象（替代不可靠的 ContextVar）
 DependUser = Annotated[User, DependAuth]
+
+
+class RateLimiter:
+    """IP 级别请求限流 — 防止登录暴力破解"""
+
+    def __init__(self, max_requests: int = 10, window_seconds: int = 60):
+        self.max = max_requests
+        self.window = window_seconds
+        self._attempts: dict[str, list[float]] = {}
+        self._lock = asyncio.Lock()
+
+    async def _cleanup(self):
+        now = time.monotonic()
+        cutoff = now - self.window
+        self._attempts = {
+            ip: [t for t in times if t > cutoff]
+            for ip, times in self._attempts.items() if any(t > cutoff for t in times)
+        }
+
+    async def check(self, request: Request) -> None:
+        ip = request.client.host if request.client else "unknown"
+        async with self._lock:
+            await self._cleanup()
+            attempts = self._attempts.get(ip, [])
+            if len(attempts) >= self.max:
+                raise HTTPException(
+                    status_code=429,
+                    detail="请求过于频繁，请稍后再试"
+                )
+            attempts.append(time.monotonic())
+            self._attempts[ip] = attempts
+
+
+rate_limiter = RateLimiter()
+DependRateLimit = Depends(rate_limiter.check)

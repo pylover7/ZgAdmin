@@ -80,7 +80,7 @@ async def update_role_status(session: SessionDep, data: UpdateRoleStatus):
 async def get_role_auth(session: SessionDep, data: BaseModel):
     role_obj = await roleController.get(session, data.id)
     if not role_obj:
-        return HTTPException(status_code=404, detail="角色不存在！")
+        raise HTTPException(status_code=404, detail="角色不存在！")
     # result = {
     #     "menus": [item.id.__str__() for item in role_obj.menus],
     #     "apis": [item.id.__str__() for item in role_obj.apis]
