@@ -15,4 +15,6 @@ class DatabaseSession:
         return self.session
 
     def __exit__(self, exc_type, exc_value, traceback):
+        if exc_type is not None:
+            self.session.rollback()
         self.session.close()

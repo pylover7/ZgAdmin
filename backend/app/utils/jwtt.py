@@ -1,5 +1,6 @@
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 import urllib.parse
+import secrets
 import jwt
 import httpx
 
@@ -181,3 +182,26 @@ async def find_or_create_qq_user(session, qq_userinfo: QQUserInfo) -> User:
         logger.error(f"创建或更新QQ用户失败: {str(e)}")
         session.rollback()
         raise HTTPException(status_code=500, detail="用户信息保存失败")
+
+
+def create_oauth_state(purpose: str = "qq_login") -> str:
+    """创建OAuth state令牌 — JWT签名防CSRF"""
+    payload = {
+        "purpose": purpose,
+        "nonce": secrets.token_hex(16),
+        "exp": datetime.now(timezone.utc) + timedelta(minutes=10),
+    }
+    return jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
+
+
+def verify_oauth_state(state: str, purpose: str = "qq_login") -> bool:
+    """验证OAuth state令牌"""
+    try:
+        payload = jwt.decode(
+            state, settings.SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
+        return payload.get("purpose") == purpose
+    except jwt.ExpiredSignatureError:
+        logger.warning("OAuth state令牌已过期")
+    except jwt.InvalidTokenError:
+        logger.warning("OAuth state令牌无效")
+    return False

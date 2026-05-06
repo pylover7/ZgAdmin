@@ -76,6 +76,9 @@ menus:
   pureLoginLog: Login Log
   pureOperationLog: Operation Log
   pureSystemLog: System Log
+  pureSysSettings: Settings
+  pureGenSettings: General
+  pureLoginSettings: Login Settings
   pureCodeMirror: CodeMirror
   pureMarkdown: Markdown
   pureEditor: Editor
@@ -199,44 +202,169 @@ status:
 login:
   pureUsername: Username
   purePassword: Password
-  pureVerifyCode: VerifyCode
-  pureRemember: days no need to login
-  pureRememberInfo: After checking and logging in, will automatically log in to the system without entering your username and password within the specified number of days.
-  pureSure: Sure Password
-  pureForget: Forget Password?
+  pureVerifyCode: Captcha
+  pureRemember: days auto-login
+  pureRememberInfo: After checking and logging in, you will not need to enter credentials for the specified number of days
+  pureSure: Confirm Password
+  pureForget: Forgot Password?
   pureLogin: Login
-  pureThirdLogin: Third Login
+  pureThirdLogin: Third-party Login
   purePhoneLogin: Phone Login
-  pureQRCodeLogin: QRCode Login
-  WeChatLogin: WeChat Login
-  QQLogin: QQ Login
+  pureQRCodeLogin: QR Code Login
+  WeChatLogin: WeChat
+  QQLogin: QQ
   pureRegister: Register
   pureWeChatLogin: WeChat Login
   pureAlipayLogin: Alipay Login
   pureQQLogin: QQ Login
   pureWeiBoLogin: Weibo Login
-  purePhone: Phone
-  pureSmsVerifyCode: SMS VerifyCode
+  purePhone: Phone Number
+  pureSmsVerifyCode: SMS Code
   pureBack: Back
   pureTest: Mock Test
-  pureTip: After scanning the code, click "Confirm" to complete the login
-  pureDefinite: Definite
-  pureLoginSuccess: Login Success
-  pureLoginFail: Login Fail
-  pureRegisterSuccess: Regist Success
-  pureTickPrivacy: Please tick Privacy Policy
-  pureReadAccept: I have read it carefully and accept
+  pureTip: Scan and click "Confirm" to complete login
+  pureDefinite: Confirm
+  pureLoginSuccess: Login Successful
+  pureLoginFail: Login Failed
+  pureRegisterSuccess: Registration Successful
+  pureTickPrivacy: Please accept the Privacy Policy
+  pureReadAccept: I have read and accept the
   purePrivacyPolicy: Privacy Policy
-  pureGetVerifyCode: Get VerifyCode
-  pureInfo: Seconds
+  pureGetVerifyCode: Get Code
+  pureInfo: seconds to retry
   pureUsernameReg: Please enter username
   purePassWordReg: Please enter password
-  pureVerifyCodeReg: Please enter verify code
-  pureVerifyCodeCorrectReg: Please enter correct verify code
-  pureVerifyCodeSixReg: Please enter a 6-digit verify code
-  purePhoneReg: Please enter the phone
-  purePhoneCorrectReg: Please enter the correct phone number format
-  purePassWordRuleReg: The password format should be any combination of 8-18 digits
-  purePassWordSureReg: Please enter confirm password
-  purePassWordDifferentReg: The two passwords do not match!
-  purePassWordUpdateReg: Password has been updated
+  pureVerifyCodeReg: Please enter captcha
+  pureVerifyCodeCorrectReg: Please enter the correct captcha
+  pureVerifyCodeSixReg: Please enter a 6-digit captcha
+  purePhoneReg: Please enter phone number
+  purePhoneCorrectReg: Please enter a valid phone number
+  purePassWordRuleReg: Password must be 8-18 characters with letters, numbers, or symbols
+  purePassWordSureReg: Please confirm password
+  purePassWordDifferentReg: Passwords do not match!
+  purePassWordUpdateReg: Password updated successfully
+system:
+  username: Username
+  email: Email
+  phone: Phone
+  status: Status
+  role: Role
+  dept: Department
+  remark: Remark
+  sex: Gender
+  male: Male
+  female: Female
+  nickname: Nickname
+  password: Password
+  newPassword: New Password
+  currentPassword: Current Password
+  enabled: Enabled
+  disabled: Disabled
+  search: Search
+  reset: Reset
+  add: Add
+  edit: Edit
+  delete: Delete
+  batchDelete: Batch Delete
+  import: Import
+  export: Export
+  refresh: Refresh
+  save: Save
+  cancel: Cancel
+  confirm: Confirm
+  select: Select
+  success: Success
+  createTime: Created
+  show: Yes
+  hide: No
+  pleaseSelect: Please Select
+  pleaseInput: Please Enter
+  operation: Actions
+  sort: Sort
+  principal: Principal
+  parentDept: Parent Dept
+  menuType: Menu Type
+  menuName: Menu Name
+  routeName: Route Name
+  routePath: Route Path
+  component: Component
+  icon: Icon
+  rank: Sort Order
+  redirect: Redirect
+  parentMenu: Parent Menu
+  menuDir: Directory
+  menuPage: Page
+  menuButton: Button
+  menuIframe: Iframe
+  menuLink: External Link
+  showLink: Visible
+  keepAlive: Keep Alive
+  frameSrc: Iframe URL
+  roleName: Role Name
+  roleCode: Role Code
+  roleDesc: Description
+  roleAuth: Permissions
+  userCount: Users
+  addSuccess: Added Successfully
+  editSuccess: Updated Successfully
+  deleteSuccess: Deleted Successfully
+  deleteConfirm: Confirm to delete selected items?
+  userDetail: User Detail
+  assignRole: Assign Role
+  resetPassword: Reset Password
+  resetPasswordConfirm: Confirm to reset this user's password?
+  resetPasswordSuccess: Password reset successfully
+  uploadAvatar: Upload Avatar
+  loginLog: Login Log
+  operationLog: Operation Log
+  systemLog: System Log
+  loginTime: Login Time
+  loginIp: Login IP
+  loginAddress: Location
+  loginSystem: OS
+  loginBrowser: Browser
+  loginBehavior: Method
+  logLevel: Level
+  logModule: Module
+  logMessage: Message
+  operationUser: User
+  operationTime: Time
+  logDetail: Log Detail
+  clearLog: Clear Logs
+  clearLogConfirm: Confirm to clear all logs?
+  accountLogin: Password
+  phoneLogin: Phone
+  qqLogin: QQ
+  wechatLogin: WeChat
+  selectAll: Select All
+  testConnection: Test Connection
+  logInfo: Info
+  logWarn: Warning
+  logError: Error
+  logDebug: Debug
+  monitor:
+    title: System Monitor
+    loginLog: Login Log
+    operationLog: Operation Log
+    systemLog: System Log
+  settings:
+    title: System Settings
+    general: General
+    login: Login Settings
+    qqEnabled: Enable QQ Login
+    wechatEnabled: Enable WeChat Login
+    appId: App ID
+    appKey: App Key
+    redirectUri: Redirect URI
+  generalSettings:
+    title: General Settings
+    siteName: Site Name
+    siteDesc: Description
+    logo: Logo
+  loginSettings:
+    title: Login Settings
+    qqConfig: QQ Login
+    wechatConfig: WeChat Login
+  appId: App ID
+  appKey: App Key
+  redirectUri: Redirect URI

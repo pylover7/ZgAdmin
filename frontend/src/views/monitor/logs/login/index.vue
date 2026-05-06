@@ -41,81 +41,58 @@ const {
       :model="form"
       class="search-form bg-bg_color w-full pl-8 pt-[12px] overflow-auto"
     >
-      <el-form-item label="用户名" prop="username">
-        <el-input
-          v-model="form.username"
-          placeholder="请输入用户名"
-          clearable
-          class="w-[150px]!"
-        />
+      <el-form-item :label="$t('system.username')" prop="username">
+        <el-input v-model="form.username" :placeholder="$t('system.pleaseInput') + $t('system.username')"
+          clearable class="w-[150px]!" />
       </el-form-item>
-      <el-form-item label="登录状态" prop="level">
-        <el-select
-          v-model="form.level"
-          placeholder="请选择"
-          clearable
-          class="w-[150px]!"
-        >
-          <el-option label="成功" value="success" />
-          <el-option label="失败" value="fail" />
+      <el-form-item :label="$t('system.status')" prop="level">
+        <el-select v-model="form.level" :placeholder="$t('system.pleaseSelect')"
+          clearable class="w-[150px]!">
+          <el-option :label="$t('system.success')" value="success" />
+          <el-option :label="$t('system.fail')" value="fail" />
         </el-select>
       </el-form-item>
-      <el-form-item label="登录时间" prop="loginTime">
-        <el-date-picker
-          v-model="form.loginTime"
-          :shortcuts="getPickerShortcuts()"
-          type="datetimerange"
-          range-separator="至"
-          start-placeholder="开始日期时间"
-          end-placeholder="结束日期时间"
-          value-format="YYYY-MM-DD HH:mm:ss"
-        />
+      <el-form-item :label="$t('system.loginTime')" prop="loginTime">
+        <el-date-picker v-model="form.loginTime" :shortcuts="getPickerShortcuts()"
+          type="datetimerange" range-separator="—"
+          :start-placeholder="$t('system.startTime')" :end-placeholder="$t('system.endTime')"
+          value-format="YYYY-MM-DD HH:mm:ss" />
       </el-form-item>
       <el-form-item>
-        <el-button
-          type="primary"
-          :icon="useRenderIcon('ri:search-line')"
-          :loading="loading"
-          @click="onSearch"
-        >
-          搜索
+        <el-button type="primary" :icon="useRenderIcon('ri:search-line')" :loading="loading" @click="onSearch">
+          {{ $t('system.search') }}
         </el-button>
         <el-button :icon="useRenderIcon(Refresh)" @click="resetForm(formRef)">
-          重置
+          {{ $t('system.reset') }}
         </el-button>
       </el-form-item>
     </el-form>
 
-    <PureTableBar title="登录日志" :columns="columns" @refresh="onSearch">
+    <PureTableBar :title="$t('system.loginLog')" :columns="columns" @refresh="onSearch">
       <template #buttons>
-        <el-popconfirm title="确定要删除所有日志数据吗？" @confirm="clearAll">
+        <el-popconfirm :title="$t('system.clearLogConfirm')" @confirm="clearAll">
           <template #reference>
             <el-button type="danger" :icon="useRenderIcon(Delete)">
-              清空日志
+              {{ $t('system.clearLog') }}
             </el-button>
           </template>
         </el-popconfirm>
       </template>
       <template v-slot="{ size, dynamicColumns }">
-        <div
-          v-if="selectedNum > 0"
-          v-motion-fade
-          class="bg-[var(--el-fill-color-light)] w-full h-[46px] mb-2 pl-4 flex items-center"
-        >
+        <div v-if="selectedNum > 0" v-motion-fade
+          class="bg-[var(--el-fill-color-light)] w-full h-[46px] mb-2 pl-4 flex items-center">
           <div class="flex-auto">
-            <span
-              style="font-size: var(--el-font-size-base)"
-              class="text-[rgba(42,46,54,0.5)] dark:text-[rgba(220,220,242,0.5)]"
-            >
-              已选 {{ selectedNum }} 项
+            <span style="font-size: var(--el-font-size-base)"
+              class="text-[rgba(42,46,54,0.5)] dark:text-[rgba(220,220,242,0.5)]">
+              {{ selectedNum }} {{ $t('system.selected') }}
             </span>
             <el-button type="primary" text @click="onSelectionCancel">
-              取消选择
+              {{ $t('system.cancel') }}
             </el-button>
           </div>
-          <el-popconfirm title="是否确认删除?" @confirm="onbatchDel">
+          <el-popconfirm :title="$t('system.deleteConfirm')" @confirm="onbatchDel">
             <template #reference>
-              <el-button type="danger" text class="mr-1!"> 批量删除 </el-button>
+              <el-button type="danger" text class="mr-1!">{{ $t('system.batchDelete') }}</el-button>
             </template>
           </el-popconfirm>
         </div>

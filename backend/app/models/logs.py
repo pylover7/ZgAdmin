@@ -75,6 +75,6 @@ class SystemLogUpdate(SystemLogCreate):
 
 class SystemLogFilter(SQLModel):
     module: str | None = Field(default=None, description="模块名称")
-    oprationTime: list[datetime] | None = Field(
+    operationTime: list[datetime] | None = Field(
         default=None, description="操作时间范围"
     )

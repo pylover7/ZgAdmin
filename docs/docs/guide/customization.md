@@ -1,0 +1,80 @@
+# 自定义配置
+
+## 改项目名称
+
+编辑 `.env`：
+
+```env
+PROJECT_NAME=我的系统
+```
+
+## 改 Logo
+
+替换 `frontend/public/` 下的图标文件，或者修改 `frontend/src/layout/components/` 中的引用。
+
+## 改管理员密码
+
+编辑 `.env`：
+
+```env
+FIRST_SUPERUSER=admin
+FIRST_SUPERUSER_PASSWORD=my-new-password
+```
+
+删除数据库后重启生效：
+
+```bash
+rm backend/static/pytool.sqlite
+./scripts/start.sh
+```
+
+## 改默认菜单
+
+编辑 `backend/app/seed/data/menus.py`，修改或添加菜单树：
+
+```python
+DEFAULT_MENUS = [
+    dict(
+        menuType=0, title="我的菜单", name="my", path="/my",
+        component="", rank=1, icon="ep:home-filled",
+        children=[...],
+    ),
+]
+```
+
+删除数据库重启后生效。
+
+## 关闭不需要的功能
+
+编辑 `.env`：
+
+```env
+FEATURE_QQ_LOGIN=False          # 关闭 QQ 登录
+FEATURE_WECHAT_LOGIN=False      # 关闭微信登录
+FEATURE_EMAIL=False             # 关闭邮件发送
+FEATURE_MONITOR_LOG=True        # 保留操作日志
+```
+
+前端会自动查询 `/api/v1/base/features` 并根据返回值隐藏对应入口。
+
+## 切换数据库
+
+默认使用 SQLite（零配置）。切换到 PostgreSQL：
+
+```env
+DB_SCHEME=postgresql
+DB_SERVER=localhost
+DB_PORT=5432
+DB_PATH=mydb
+DB_USER=myuser
+DB_PASSWORD=mypassword
+```
+
+## 修改 JWT 过期时间
+
+编辑 `.env`：
+
+```env
+ACCESS_TOKEN_EXPIRE_MINUTES=120       # 访问令牌 2 小时
+REFRESH_TOKEN_EXPIRE_MINUTES=43200    # 刷新令牌 30 天
+```

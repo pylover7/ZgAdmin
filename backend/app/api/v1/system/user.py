@@ -4,14 +4,15 @@ from uuid import UUID
 
 from fastapi import APIRouter, Query
 from fastapi.exceptions import HTTPException
-from sqlmodel import col, and_
+from sqlalchemy.orm import selectinload
+from sqlmodel import col, and_, select
 
 from app.core.dependency import SessionDep
-from app.controllers.role import roleController
 from app.controllers.user import userController
 from app.models.base import Success, SuccessExtra
 from app.models.user import UserCreate, UserUpdate, User, UserFiter, UserResetPwd, UserAvatar, UpdateStatus, \
     UpdateUserRoles
+from app.models.role import Role
 from app.settings.log import logger
 from app.settings import settings
 from app.utils import base_decode
@@ -90,7 +91,9 @@ async def list_user(
         currentPage,
         pageSize,
         where,
-        order
+        order,
+        options=[selectinload(User.department),
+                 selectinload(User.roles)]
     )
     result = []
     for obj in user_objs:
@@ -149,13 +152,10 @@ async def update_roles(
         data: UpdateUserRoles,
 ):
     user = await userController.get(session, data.id)
-    roleList = []
-    for role_id in data.roleIds:
-        role = await roleController.get(session, UUID(role_id))
-        roleList.append(role)
-
     if not user:
         raise HTTPException(status_code=404, detail="用户不存在！")
+    role_ids = [UUID(rid) for rid in data.roleIds]
+    roleList = list(session.exec(select(Role).where(col(Role.id).in_(role_ids))).all())
     user.roles = roleList
     session.add(user)
     session.commit()

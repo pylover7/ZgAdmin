@@ -1,6 +1,6 @@
 # PyTool 知识库
 
-**生成时间:** 2026-05-01 | **提交:** 54cbb43 | **分支:** feat/qqLogin
+**生成时间:** 2026-05-05 | **提交:** 85fef5b | **分支:** feat/youhua
 
 ## 概述
 PyTool — 全栈管理平台。Python/FastAPI 后端 + Vue 3/TypeScript 前端，Docker 部署。

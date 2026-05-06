@@ -3,6 +3,7 @@ import { ref, reactive, onMounted, computed } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import type { FormInstance, FormRules } from "element-plus";
 import { Connection, ChatDotRound } from "@element-plus/icons-vue";
+import { transformI18n } from "@/plugins/i18n";
 import {
   getLoginConfig,
   updateLoginConfig,
@@ -158,12 +159,12 @@ const handleSave = async () => {
 
     loading.value = true;
     await updateLoginConfig(loginForm);
-    ElMessage.success("保存成功");
+    ElMessage.success(transformI18n("system.save") + transformI18n("system.success"));
     // 更新初始配置
     initialForm.value = JSON.parse(JSON.stringify(loginForm));
   } catch (error) {
     if (error !== false) {
-      ElMessage.error("保存失败");
+      ElMessage.error(transformI18n("system.save") + transformI18n("system.fail"));
       console.error("保存登录配置失败:", error);
     }
   } finally {
@@ -211,7 +212,7 @@ onMounted(() => {
         <el-divider content-position="left">
           <div class="divider-title">
             <el-icon><Connection /></el-icon>
-            <span>QQ登录</span>
+            <span>{{ $t('login.QQLogin') }}</span>
             <el-switch v-model="loginForm.qq.enabled" />
           </div>
         </el-divider>
@@ -225,27 +226,27 @@ onMounted(() => {
         />
 
         <el-form-item
-          label="QQ App ID"
+          :label="$t('system.appId')"
           prop="qq.app_id"
           :rules="loginForm.qq.enabled ? getRules('qq', 'app_id') : []"
         >
           <el-input
             v-model="loginForm.qq.app_id"
-            placeholder="请输入QQ互联应用ID"
+            :placeholder="$t('system.pleaseInput') + $t('system.appId')"
             :disabled="!loginForm.qq.enabled"
             clearable
           />
         </el-form-item>
 
         <el-form-item
-          label="QQ App Key"
+          :label="$t('system.appKey')"
           prop="qq.app_key"
           :rules="loginForm.qq.enabled ? getRules('qq', 'app_key') : []"
         >
           <el-input
             v-model="loginForm.qq.app_key"
             type="password"
-            placeholder="请输入QQ互联应用Key"
+            :placeholder="$t('system.pleaseInput') + $t('system.appKey')"
             :disabled="!loginForm.qq.enabled"
             show-password
             clearable
@@ -253,13 +254,13 @@ onMounted(() => {
         </el-form-item>
 
         <el-form-item
-          label="QQ回调地址"
+          :label="$t('system.redirectUri')"
           prop="qq.redirect_uri"
           :rules="loginForm.qq.enabled ? getRules('qq', 'redirect_uri') : []"
         >
           <el-input
             v-model="loginForm.qq.redirect_uri"
-            placeholder="请输入QQ登录回调地址"
+            :placeholder="$t('system.pleaseInput') + $t('system.redirectUri')"
             :disabled="!loginForm.qq.enabled"
             clearable
           />
@@ -275,7 +276,7 @@ onMounted(() => {
         <el-divider content-position="left">
           <div class="divider-title">
             <el-icon><ChatDotRound /></el-icon>
-            <span>微信登录</span>
+            <span>{{ $t('login.WeChatLogin') }}</span>
             <el-switch v-model="loginForm.wechat.enabled" />
           </div>
         </el-divider>
@@ -289,20 +290,20 @@ onMounted(() => {
         />
 
         <el-form-item
-          label="微信 App ID"
+          :label="$t('system.appId')"
           prop="wechat.app_id"
           :rules="loginForm.wechat.enabled ? getRules('wechat', 'app_id') : []"
         >
           <el-input
             v-model="loginForm.wechat.app_id"
-            placeholder="请输入微信开放平台AppID"
+            :placeholder="$t('system.pleaseInput') + $t('system.appId')"
             :disabled="!loginForm.wechat.enabled"
             clearable
           />
         </el-form-item>
 
         <el-form-item
-          label="微信 App Secret"
+          :label="$t('system.appKey')"
           prop="wechat.app_secret"
           :rules="
             loginForm.wechat.enabled ? getRules('wechat', 'app_secret') : []
@@ -311,7 +312,7 @@ onMounted(() => {
           <el-input
             v-model="loginForm.wechat.app_secret"
             type="password"
-            placeholder="请输入微信开放平台AppSecret"
+            :placeholder="$t('system.pleaseInput') + $t('system.appKey')"
             :disabled="!loginForm.wechat.enabled"
             show-password
             clearable
@@ -319,7 +320,7 @@ onMounted(() => {
         </el-form-item>
 
         <el-form-item
-          label="微信回调地址"
+          :label="$t('system.redirectUri')"
           prop="wechat.redirect_uri"
           :rules="
             loginForm.wechat.enabled ? getRules('wechat', 'redirect_uri') : []
@@ -327,7 +328,7 @@ onMounted(() => {
         >
           <el-input
             v-model="loginForm.wechat.redirect_uri"
-            placeholder="请输入微信登录回调地址"
+            :placeholder="$t('system.pleaseInput') + $t('system.redirectUri')"
             :disabled="!loginForm.wechat.enabled"
             clearable
           />
@@ -388,8 +389,8 @@ onMounted(() => {
 
   .card-header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
 
     .title {
       font-size: 18px;
@@ -405,27 +406,27 @@ onMounted(() => {
 
   .divider-title {
     display: flex;
-    align-items: center;
     gap: 8px;
+    align-items: center;
     font-size: 16px;
     font-weight: 500;
   }
 
   .tip-text {
+    margin-top: 4px;
     font-size: 12px;
     color: var(--el-text-color-secondary);
-    margin-top: 4px;
   }
 
   .help-content {
-    background: var(--el-fill-color-light);
     padding: 20px;
+    background: var(--el-fill-color-light);
     border-radius: 4px;
 
     h4 {
       margin: 16px 0 8px;
-      color: var(--el-text-color-primary);
       font-weight: 500;
+      color: var(--el-text-color-primary);
 
       &:first-child {
         margin-top: 0;

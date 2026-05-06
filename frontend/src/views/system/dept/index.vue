@@ -41,55 +41,32 @@ function onFullscreen() {
       :model="form"
       class="search-form bg-bg_color w-full pl-8 pt-[12px] overflow-auto"
     >
-      <el-form-item label="部门名称：" prop="name">
-        <el-input
-          v-model="form.name"
-          placeholder="请输入部门名称"
-          clearable
-          class="w-[180px]!"
-        />
+      <el-form-item :label="$t('system.deptName') + '：'" prop="name">
+        <el-input v-model="form.name" :placeholder="$t('system.pleaseInput') + $t('system.deptName')"
+          clearable class="w-[180px]!" />
       </el-form-item>
-      <el-form-item label="状态：" prop="status">
-        <el-select
-          v-model="form.status"
-          placeholder="请选择状态"
-          clearable
-          class="w-[180px]!"
-          @change="onSearch"
-        >
-          <el-option label="启用" :value="1" />
-          <el-option label="停用" :value="0" />
+      <el-form-item :label="$t('system.status') + '：'" prop="status">
+        <el-select v-model="form.status" :placeholder="$t('system.pleaseSelect') + $t('system.status')"
+          clearable class="w-[180px]!" @change="onSearch">
+          <el-option :label="$t('system.enabled')" :value="1" />
+          <el-option :label="$t('system.disabled')" :value="0" />
         </el-select>
       </el-form-item>
       <el-form-item>
-        <el-button
-          type="primary"
-          :icon="useRenderIcon('ri/search-line')"
-          :loading="loading"
-          @click="onSearch"
-        >
-          搜索
+        <el-button type="primary" :icon="useRenderIcon('ri/search-line')" :loading="loading" @click="onSearch">
+          {{ $t('system.search') }}
         </el-button>
         <el-button :icon="useRenderIcon(Refresh)" @click="resetForm(formRef)">
-          重置
+          {{ $t('system.reset') }}
         </el-button>
       </el-form-item>
     </el-form>
 
-    <PureTableBar
-      title="部门管理"
-      :columns="columns"
-      :tableRef="tableRef?.getTableRef()"
-      @refresh="onSearch"
-      @fullscreen="onFullscreen"
-    >
+    <PureTableBar :title="$t('menus.pureDept')" :columns="columns"
+      :tableRef="tableRef?.getTableRef()" @refresh="onSearch" @fullscreen="onFullscreen">
       <template #buttons>
-        <el-button
-          type="primary"
-          :icon="useRenderIcon(AddFill)"
-          @click="openDialog()"
-        >
-          新增部门
+        <el-button type="primary" :icon="useRenderIcon(AddFill)" @click="openDialog()">
+          {{ $t('system.add') }}
         </el-button>
       </template>
       <template v-slot="{ size, dynamicColumns }">
@@ -113,39 +90,19 @@ function onFullscreen() {
           @selection-change="handleSelectionChange"
         >
           <template #operation="{ row }">
-            <el-button
-              class="reset-margin"
-              link
-              type="primary"
-              :size="size"
-              :icon="useRenderIcon(EditPen)"
-              @click="openDialog('修改', row)"
-            >
-              修改
+            <el-button class="reset-margin" link type="primary" :size="size"
+              :icon="useRenderIcon(EditPen)" @click="openDialog($t('system.edit'), row)">
+              {{ $t('system.edit') }}
             </el-button>
-            <el-button
-              class="reset-margin"
-              link
-              type="primary"
-              :size="size"
-              :icon="useRenderIcon(AddFill)"
-              @click="openDialog('新增', { parentId: row.id } as any)"
-            >
-              新增
+            <el-button class="reset-margin" link type="primary" :size="size"
+              :icon="useRenderIcon(AddFill)" @click="openDialog($t('system.add'), { parentId: row.id } as any)">
+              {{ $t('system.add') }}
             </el-button>
-            <el-popconfirm
-              :title="`是否确认删除部门名称为${row.name}的这条数据`"
-              @confirm="handleDelete(row)"
-            >
+            <el-popconfirm :title="$t('system.deleteConfirm')" @confirm="handleDelete(row)">
               <template #reference>
-                <el-button
-                  class="reset-margin"
-                  link
-                  type="primary"
-                  :size="size"
-                  :icon="useRenderIcon(Delete)"
-                >
-                  删除
+                <el-button class="reset-margin" link type="primary" :size="size"
+                  :icon="useRenderIcon(Delete)">
+                  {{ $t('system.delete') }}
                 </el-button>
               </template>
             </el-popconfirm>

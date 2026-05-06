@@ -14,20 +14,18 @@ api2 = "https://searchplugin.csdn.net/api/v1/ip/get?ip={}"
 async def getIpAddress(ip: str) -> str:
     if ipaddress.ip_address(ip).is_private:
         return "内网IP"
-    try:
-        res = httpx.get(api2.format(ip))
-        res.content.decode("utf-8")
-        return res.json()["data"]["address"].replace(" ", "")
-    except Exception as e:
-        logger.error(f"获取IP地址失败，API2失效！")
-        pass
-    try:
-        res = httpx.get(api1.format(ip))
-        res.content.decode("utf-8")
-        return res.json()["data"][0]["location"].replace(" ", "")
-    except Exception as e:
-        logger.error(f"获取IP地址失败，API1失效！")
-        return ""
+    async with httpx.AsyncClient(timeout=5.0) as client:
+        try:
+            res = await client.get(api2.format(ip))
+            return res.json()["data"]["address"].replace(" ", "")
+        except Exception:
+            logger.error("获取IP地址失败，API2失效！")
+        try:
+            res = await client.get(api1.format(ip))
+            return res.json()["data"][0]["location"].replace(" ", "")
+        except Exception:
+            logger.error("获取IP地址失败，API1失效！")
+            return ""
 
 
 class SysBro(BaseModel):

@@ -1,5 +1,7 @@
 # 前端知识库
 
+**生成时间:** 2026-05-05 | **提交:** 85fef5b | **分支:** feat/youhua
+
 **PyTool 前端** — Vue 3 + TypeScript + Vite 7 + Element Plus + Tailwind CSS 4
 
 ## 目录结构
