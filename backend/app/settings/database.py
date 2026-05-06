@@ -18,7 +18,7 @@ def db_engine(
     match scheme:
         case "postgresql":
             return MultiHostUrl.build(
-                scheme="postgresql+psycopg2",
+                scheme="postgresql+psycopg",
                 username=username,
                 password=password,
                 host=host,

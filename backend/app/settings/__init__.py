@@ -33,7 +33,7 @@ class Settings(BaseSettings):
         extra="ignore"
     )
     API_V1_STR: str = "/api/v1"
-    SECRET_KEY: str = secrets.token_urlsafe(32)
+    SECRET_KEY: str = ""
     # 60 minutes * 24 hours * 8 days = 8 days
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 2
@@ -77,6 +77,13 @@ class Settings(BaseSettings):
         __file__).parent.parent.parent.joinpath("config").__str__()
 
     SENTRY_DSN: HttpUrl | None = None
+
+    # 功能开关 — 设为 false 可关闭对应模块
+    FEATURE_QQ_LOGIN: bool = False         # QQ 登录
+    FEATURE_WECHAT_LOGIN: bool = False     # 微信登录
+    FEATURE_EMAIL: bool = False            # 邮件发送
+    FEATURE_MONITOR_LOG: bool = True       # 操作日志/登录日志记录
+
     DB_SCHEME: str = "sqlite"
     DB_SERVER: str = "localhost"
     DB_PORT: int = 5432
@@ -138,13 +145,32 @@ class Settings(BaseSettings):
             else:
                 raise ValueError(message)
 
+    def _resolve_secret_key(self) -> str:
+        """生成持久化的 SECRET_KEY，重启后保持不变。"""
+        secret_key_file = Path(__file__).parent.parent.parent / ".secret_key"
+        key = ""
+
+        # 1. 从文件读取已有的 key
+        if secret_key_file.exists():
+            key = secret_key_file.read_text().strip()
+
+        # 2. 生成新 key 并持久化
+        if not key:
+            key = secrets.token_urlsafe(32)
+            secret_key_file.write_text(key)
+            if self.ENVIRONMENT != "local":
+                warnings.warn(
+                    "SECRET_KEY 未设置，已自动生成并持久化。"
+                    "生产环境请在 .env 中手动设置 SECRET_KEY。",
+                    stacklevel=1,
+                )
+
+        return key
+
     @model_validator(mode="after")
     def _enforce_non_default_secrets(self) -> Self:
-        self._check_default_secret("SECRET_KEY", self.SECRET_KEY)
-        # self._check_default_secret(
-        #     "FIRST_SUPERUSER_PASSWORD", self.FIRST_SUPERUSER_PASSWORD
-        # )
-
+        if not self.SECRET_KEY:
+            self.SECRET_KEY = self._resolve_secret_key()
         return self
 
     APP_LOG_CONFIG: dict = {

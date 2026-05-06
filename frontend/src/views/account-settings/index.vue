@@ -62,7 +62,7 @@ const panes = [
 const witchPane = ref("profile");
 
 getMine().then(res => {
-  userInfo.value = res.data;
+  if (res?.data) userInfo.value = res.data;
 });
 </script>
 

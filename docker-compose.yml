@@ -4,10 +4,49 @@ services:
     container_name: pytool-app
     ports:
       - "7000:80"
-      - "7001:7001"
     restart: unless-stopped
     environment:
-      - NODE_ENV=production
-    # 如需数据持久化，取消下面的注释
-    # volumes:
-    #   - ./data:/app/data
+      - ENVIRONMENT=production
+      # 数据库：默认 SQLite（零配置启动），取消注释切换 PostgreSQL
+      - DB_SCHEME=sqlite
+      # - DB_SCHEME=postgresql
+      # - DB_SERVER=postgres
+      # - DB_PORT=5432
+      # - DB_PATH=pytool
+      # - DB_USER=pytool
+      # - DB_PASSWORD=changethis
+    volumes:
+      - pytool_data:/backend/static
+    depends_on:
+      postgres:
+        condition: service_healthy
+        required: false
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/api/v1/base/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: pytool-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=pytool
+      - POSTGRES_PASSWORD=changethis
+      - POSTGRES_DB=pytool
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pytool"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    # PostgreSQL 默认不启动，取消下行注释以启用
+    profiles:
+      - postgres
+
+volumes:
+  pytool_data:
+  pgdata:

@@ -1,12 +1,12 @@
 # import json
 import urllib.parse
 from datetime import timedelta, datetime
-from uuid import UUID
 # from uuid import uuid4
 
 from fastapi import APIRouter, Request, HTTPException
 # from fastapi.websockets import WebSocketState
-from sqlmodel import select
+from sqlalchemy.orm import selectinload
+from sqlmodel import select, col
 from jwt.exceptions import ExpiredSignatureError
 # from wechatpayv3 import WeChatPayType
 
@@ -15,15 +15,15 @@ from app.controllers.user import userController
 from app.settings.log import logger
 from app.models.login import CredentialsSchema, JWTPayload, JWTOut, refreshTokenSchema, \
     JWTReOut, QQLoginSchema
-from app.core.ctx import CTX_USER_ID
-from app.core.dependency import DependAuth, SessionDep
+from app.core.dependency import DependUser, DependRateLimit, SessionDep
 from app.models import Api, Menu, Role, User, UpdatePassword
 from app.models.base import Fail, Success, FailAuth
 from app.settings import settings
 from app.settings.config import base_config
 from app.utils import menuTree
 from app.utils.jwtt import create_access_token, decode_access_token, \
-    get_qq_access_token, get_qq_userinfo, find_or_create_qq_user
+    get_qq_access_token, get_qq_userinfo, find_or_create_qq_user, \
+    create_oauth_state, verify_oauth_state
 from app.utils.password import get_password_hash, verify_password
 # from app.utils.pay import notify_url
 # from app.utils.pay.wechat import wxpay
@@ -31,7 +31,23 @@ from app.utils.password import get_password_hash, verify_password
 router = APIRouter()
 
 
-@router.post("/accessToken", summary="获取token")
+@router.get("/health", summary="健康检查")
+async def health_check():
+    return {"status": "ok"}
+
+
+@router.get("/features", summary="功能开关")
+async def get_features():
+    return Success(data={
+        "qq_login": settings.FEATURE_QQ_LOGIN and bool(
+            base_config.get_config("login", "qq_app_id") or settings.QQ_APP_ID),
+        "wechat_login": settings.FEATURE_WECHAT_LOGIN,
+        "email": settings.FEATURE_EMAIL,
+        "monitor_log": settings.FEATURE_MONITOR_LOG,
+    })
+
+
+@router.post("/accessToken", summary="获取token", dependencies=[DependRateLimit])
 async def login_access_token(
         session: SessionDep, request: Request, credentials: CredentialsSchema):
     user: User | None = await userController.authenticate(
@@ -81,7 +97,7 @@ async def login_access_token(
     return Success(data=data.model_dump())
 
 
-@router.post("/refreshToken", summary="刷新token")
+@router.post("/refreshToken", summary="刷新token", dependencies=[DependRateLimit])
 async def refresh_token(refreshToken: refreshTokenSchema):
     try:
         payload = decode_access_token(refreshToken.refreshToken)
@@ -117,30 +133,31 @@ async def refresh_token(refreshToken: refreshTokenSchema):
     return Success(data=data.model_dump())
 
 
-@router.get("/userinfo", summary="查看用户信息", dependencies=[DependAuth])
-async def get_userinfo(session: SessionDep):
-    user_id = CTX_USER_ID.get()
-    user_obj = await userController.get(session=session, id=UUID(user_id))
+@router.get("/userinfo", summary="查看用户信息")
+async def get_userinfo(session: SessionDep, current_user: DependUser):
+    user_obj = await userController.get(session=session, id=current_user.id)
     if not user_obj:
         return FailAuth(msg="用户不存在或已被删除！")
     data = await user_obj.to_dict(exclude_fields=["password"])
     return Success(data=data)
 
 
-@router.get("/userMenu", summary="查看用户菜单", dependencies=[DependAuth])
-async def get_user_menu(session: SessionDep):
-    user_id = CTX_USER_ID.get()
-    user_obj = await userController.get(session=session, id=UUID(user_id))
+@router.get("/userMenu", summary="查看用户菜单")
+async def get_user_menu(session: SessionDep, current_user: DependUser):
+    statement = select(User).where(
+        col(User.id) == current_user.id
+    ).options(
+        selectinload(User.roles).selectinload(Role.menus)
+    )
+    user_obj = session.exec(statement).first()
     if not user_obj:
         return FailAuth(msg="用户不存在或已被删除！")
     menus: list[Menu] = []
     if user_obj.is_superuser:
         menus = list(session.exec(select(Menu)).all())
     else:
-        role_objs: list[Role] = user_obj.roles
-        for role_obj in role_objs:
-            menu = role_obj.menus
-            menus.extend(menu)
+        for role_obj in user_obj.roles:
+            menus.extend(role_obj.menus)
     parent_menus: list[Menu] = []
     for menu in menus:
         if menu.parentId is None:
@@ -161,10 +178,14 @@ async def get_user_menu(session: SessionDep):
     return Success(data=res)
 
 
-@router.get("/userApi", summary="查看用户API", dependencies=[DependAuth])
-async def get_user_api(session: SessionDep):
-    user_id = CTX_USER_ID.get()
-    user_obj = await userController.get(session=session, id=UUID(user_id))
+@router.get("/userApi", summary="查看用户API")
+async def get_user_api(session: SessionDep, current_user: DependUser):
+    statement = select(User).where(
+        col(User.id) == current_user.id
+    ).options(
+        selectinload(User.roles).selectinload(Role.apis)
+    )
+    user_obj = session.exec(statement).first()
     if not user_obj:
         return FailAuth(msg="用户不存在或已被删除！")
     if user_obj.is_superuser:
@@ -173,19 +194,19 @@ async def get_user_api(session: SessionDep):
         api_objs = list(result.all())
         apis = [api.method.lower() + api.path for api in api_objs]
         return Success(data=apis)
-    role_objs: list[Role] = user_obj.roles
     apis = []
-    for role_obj in role_objs:
-        api_objs: list[Api] = role_obj.apis
-        apis.extend([api.method.lower() + api.path for api in api_objs])
+    for role_obj in user_obj.roles:
+        apis.extend([api.method.lower() + api.path for api in role_obj.apis])
     apis = list(set(apis))
     return Success(data=apis)
 
 
-@router.post("/updatePwd", summary="更新用户密码", dependencies=[DependAuth])
-async def update_user_password(session: SessionDep, req_in: UpdatePassword):
-    user_id = CTX_USER_ID.get()
-    user = await userController.get(session=session, id=UUID(user_id))
+@router.post("/updatePwd", summary="更新用户密码")
+async def update_user_password(
+        session: SessionDep,
+        req_in: UpdatePassword,
+        current_user: DependUser):
+    user = await userController.get(session=session, id=current_user.id)
     if not user:
         return FailAuth(msg="用户不存在或已被删除！")
     verified = verify_password(req_in.current_password, user.password)
@@ -203,7 +224,8 @@ async def get_qq_auth_url():
     # 优先读取运行时配置（管理后台设置），否则回退到 settings 默认值
     app_id = base_config.get_config("login", "qq_app_id") or settings.QQ_APP_ID
     redirect_uri = base_config.get_config("login", "qq_redirect_uri") or settings.QQ_REDIRECT_URI
-    qq_enabled = base_config.get_config("login", "qq_enabled", fallback="false").lower() == "true"
+    qq_enabled = settings.FEATURE_QQ_LOGIN and (
+        base_config.get_config("login", "qq_enabled", fallback="false").lower() == "true")
 
     if not qq_enabled:
         from app.models.base import Fail
@@ -213,7 +235,7 @@ async def get_qq_auth_url():
         from app.models.base import Fail
         return Fail(msg="QQ登录未配置")
 
-    state = "qq_login_" + str(datetime.now().timestamp())
+    state = create_oauth_state()
     encoded_redirect_uri = urllib.parse.quote(redirect_uri, safe='')
 
     auth_url = (
@@ -231,13 +253,17 @@ async def get_qq_auth_url():
     })
 
 
-@router.post("/qq/login", summary="QQ登录")
+@router.post("/qq/login", summary="QQ登录", dependencies=[DependRateLimit])
 async def qq_login(session: SessionDep, qq_login: QQLoginSchema):
     """处理QQ登录回调"""
     try:
         # 验证输入参数
         if not qq_login.code or not qq_login.state:
             return FailAuth(msg="授权参数不完整")
+
+        # 验证state令牌（防CSRF）
+        if not verify_oauth_state(qq_login.state):
+            return FailAuth(msg="授权验证失败，请重新登录")
 
         # 1. 使用授权码获取access_token
         token_data = await get_qq_access_token(qq_login.code)

@@ -1,5 +1,7 @@
 # 后端知识库
 
+**生成时间:** 2026-05-05 | **提交:** 85fef5b | **分支:** feat/youhua
+
 **PyTool 后端** — Python 3.13+ / FastAPI / SQLModel / PostgreSQL
 
 ## 目录结构

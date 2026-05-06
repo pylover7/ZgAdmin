@@ -1,6 +1,7 @@
 import dayjs from "dayjs";
 import { message } from "@/utils/message";
 import type { PaginationProps } from "@pureadmin/table";
+import { transformI18n } from "@/plugins/i18n";
 import { type Ref, reactive, ref, onMounted } from "vue";
 import { getKeyList } from "@pureadmin/utils";
 import {
@@ -36,14 +37,14 @@ export function useRole(tableRef: Ref) {
 
   const columns: TableColumnList = [
     {
-      label: "勾选列",
+      label: transformI18n("system.select"),
       type: "selection",
       fixed: "left",
       reserveSelection: true
     },
     {
       type: "index",
-      label: "序号",
+      label: "#",
       minWidth: 60
     },
     {
@@ -62,13 +63,13 @@ export function useRole(tableRef: Ref) {
       )
     },
     {
-      label: "日志内容",
+      label: transformI18n("system.logMessage"),
       prop: "message",
       minWidth: 200,
       align: "left"
     },
     {
-      label: "日志时间",
+      label: transformI18n("system.operationTime"),
       prop: "time",
       minWidth: 180,
       formatter: ({ time }) => dayjs(time).format("YYYY-MM-DD HH:mm:ss")
@@ -115,7 +116,7 @@ export function useRole(tableRef: Ref) {
 
   function clearAll() {
     clearSystemLogs().then(() => {
-      message("已删除所有日志数据", {
+      message(transformI18n("system.clearLog") + transformI18n("system.success"), {
         type: "success"
       });
       onSearch();

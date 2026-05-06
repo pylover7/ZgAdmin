@@ -8,6 +8,7 @@ import { message } from "@/utils/message";
 import userAvatar from "@/assets/user.jpg";
 import { usePublicHooks } from "../../hooks";
 import { addDialog } from "@/components/ReDialog";
+import { $t, transformI18n } from "@/plugins/i18n";
 import type { FormItemProps, RoleFormItemProps } from "../utils/types";
 import {
   getKeyList,
@@ -50,18 +51,18 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
   const pagination = reactive<PaginationProps>({ ...paginationConf });
   const columns: TableColumnList = [
     {
-      label: "勾选列", // 如果需要表格多选，此处label必须设置
+      label: transformI18n("system.select"),
       type: "selection",
       fixed: "left",
-      reserveSelection: true // 数据刷新后保留选项
+      reserveSelection: true
     },
     {
-      label: "用户编号",
+      label: "#",
       type: "index",
       width: 90
     },
     {
-      label: "用户头像",
+      label: transformI18n("system.uploadAvatar"),
       prop: "avatar",
       cellRenderer: ({ row }) => (
         <el-image
@@ -75,17 +76,17 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
       width: 90
     },
     {
-      label: "用户名称",
+      label: transformI18n("system.username"),
       prop: "username",
       minWidth: 130
     },
     {
-      label: "用户昵称",
+      label: transformI18n("system.nickname"),
       prop: "nickname",
       minWidth: 130
     },
     {
-      label: "性别",
+      label: transformI18n("system.sex"),
       prop: "sex",
       minWidth: 90,
       cellRenderer: ({ row, props }) => (
@@ -94,17 +95,17 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
           type={row.sex === 0 ? "danger" : null}
           effect="plain"
         >
-          {row.sex === 0 ? "女" : "男"}
+          {row.sex === 0 ? transformI18n("system.female") : transformI18n("system.male")}
         </el-tag>
       )
     },
     {
-      label: "部门",
+      label: transformI18n("system.dept"),
       prop: "dept.name",
       minWidth: 90
     },
     {
-      label: "手机号码",
+      label: transformI18n("system.phone"),
       prop: "phone",
       minWidth: 90,
       formatter: ({ phone }) => {
@@ -113,7 +114,7 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
       }
     },
     {
-      label: "状态",
+      label: transformI18n("system.status"),
       prop: "status",
       minWidth: 90,
       cellRenderer: scope => (
@@ -123,8 +124,8 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
           v-model={scope.row.status}
           active-value={1}
           inactive-value={0}
-          active-text="已启用"
-          inactive-text="已停用"
+          active-text={transformI18n("system.enabled")}
+          inactive-text={transformI18n("system.disabled")}
           inline-prompt
           style={switchStyle.value}
           onChange={() => onChange(scope as any)}
@@ -132,14 +133,14 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
       )
     },
     {
-      label: "创建时间",
+      label: transformI18n("system.createTime"),
       minWidth: 90,
       prop: "created_at",
       formatter: ({ createTime }) =>
         dayjs(createTime).format("YYYY-MM-DD HH:mm:ss")
     },
     {
-      label: "操作",
+      label: transformI18n("system.operation"),
       fixed: "right",
       width: 180,
       slot: "operation"
@@ -164,15 +165,11 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
 
   function onChange({ row, index }) {
     ElMessageBox.confirm(
-      `确认要<strong>${
-        row.status === 0 ? "停用" : "启用"
-      }</strong><strong style='color:var(--el-color-primary)'>${
-        row.username
-      }</strong>用户吗?`,
-      "系统提示",
+      `${transformI18n("system.confirm")}${row.status === 0 ? transformI18n("system.disabled") : transformI18n("system.enabled")} ${row.username}?`,
+      transformI18n("system.confirm"),
       {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
+        confirmButtonText: transformI18n("system.confirm"),
+        cancelButtonText: transformI18n("system.cancel"),
         type: "warning",
         dangerouslyUseHTMLString: true,
         draggable: true
@@ -182,16 +179,12 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
         switchLoadMap.value[index] = Object.assign(
           {},
           switchLoadMap.value[index],
-          {
-            loading: true
-          }
+          { loading: true }
         );
         updateUserStatus({ id: row.id, status: row.status })
           .then(res => {
             if (res.success) {
-              message("已成功修改用户状态", {
-                type: "success"
-              });
+              message(transformI18n("system.editSuccess"), { type: "success" });
             } else {
               row.status === 0 ? (row.status = 1) : (row.status = 0);
             }
@@ -200,9 +193,7 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
             switchLoadMap.value[index] = Object.assign(
               {},
               switchLoadMap.value[index],
-              {
-                loading: false
-              }
+              { loading: false }
             );
           });
       })
@@ -217,7 +208,7 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
 
   function handleDelete(row) {
     deleteUser([row.id]).then(() => {
-      message(`您删除了用户名为【${row.username}】的这条数据`, {
+      message(`${transformI18n("system.deleteSuccess")}: ${row.username}`, {
         type: "success"
       });
       onSearch();
@@ -250,10 +241,8 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
 
   /** 批量删除 */
   function onbatchDel() {
-    // 返回当前选中的行
     const curSelected = tableRef.value.getTableRef().getSelectionRows();
-    // 接下来根据实际业务，通过选中行的某项数据，比如下面的id，调用接口进行批量删除
-    message(`已删除用户编号为 ${getKeyList(curSelected, "id")} 的数据`, {
+    message(`${transformI18n("system.deleteSuccess")}: ${getKeyList(curSelected, "id")}`, {
       type: "success"
     });
     tableRef.value.getTableRef().clearSelection();
@@ -304,9 +293,10 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
     return newTreeList;
   }
 
-  function openDialog(title = "新增", row?: FormItemProps) {
+  function openDialog(title = transformI18n("system.add"), row?: FormItemProps) {
+    const isAdd = title === transformI18n("system.add");
     addDialog({
-      title: `${title}用户`,
+      title: `${title}`,
       props: {
         formInline: {
           title,
@@ -333,7 +323,7 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
         const FormRef = formRef.value.getRef();
         const curData = options.props.formInline as FormItemProps;
         function chores() {
-          message(`您${title}了用户名称为${curData.username}的这条数据`, {
+          message(`${title}${transformI18n("system.success")}: ${curData.username}`, {
             type: "success"
           });
           done(); // 关闭弹框
@@ -343,7 +333,7 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
           if (valid) {
             console.log("curData", curData);
             // 表单规则校验通过
-            if (title === "新增") {
+            if (isAdd) {
               delete curData.id;
               addUser(curData).then(res => {
                 if (res.success) {
@@ -378,7 +368,7 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
     // 选中的角色列表
     const ids = (await getRoleIds({ userId: row.id })).data ?? [];
     addDialog({
-      title: `分配 ${row.username} 用户的角色`,
+      title: `${transformI18n("system.assignRole")} - ${row.username}`,
       props: {
         formInline: {
           username: row?.username ?? "",

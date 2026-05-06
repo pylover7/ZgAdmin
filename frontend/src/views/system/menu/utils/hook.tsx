@@ -2,7 +2,7 @@ import editForm from "../form.vue";
 import { handleTree } from "@/utils/tree";
 import { message } from "@/utils/message";
 import { addMenu, deleteMenu, getMenuList, updateMenu } from "@/api/system";
-import { transformI18n } from "@/plugins/i18n";
+import { $t, transformI18n } from "@/plugins/i18n";
 import { addDialog } from "@/components/ReDialog";
 import { reactive, ref, onMounted, h } from "vue";
 import type { FormItemProps } from "../utils/types";
@@ -20,78 +20,37 @@ export function useMenu() {
 
   const getMenuType = (type, text = false) => {
     switch (type) {
-      case 0:
-        return text ? "菜单" : "primary";
-      case 1:
-        return text ? "iframe" : "warning";
-      case 2:
-        return text ? "外链" : "danger";
-      case 3:
-        return text ? "按钮" : "info";
+      case 0: return text ? transformI18n("system.menuPage") : "primary";
+      case 1: return text ? transformI18n("system.menuIframe") : "warning";
+      case 2: return text ? transformI18n("system.menuLink") : "danger";
+      case 3: return text ? transformI18n("system.menuButton") : "info";
     }
   };
 
   const columns: TableColumnList = [
-    {
-      label: "菜单名称",
-      prop: "title",
-      align: "left",
+    { label: transformI18n("system.menuName"), prop: "title", align: "left",
       cellRenderer: ({ row }) => (
         <>
-          <span class="inline-block mr-1">
-            {h(useRenderIcon(row.icon), {
-              style: { paddingTop: "1px" }
-            })}
-          </span>
+          <span class="inline-block mr-1">{h(useRenderIcon(row.icon), { style: { paddingTop: "1px" } })}</span>
           <span>{transformI18n(row.title)}</span>
         </>
       )
     },
-    {
-      label: "菜单类型",
-      prop: "menuType",
-      width: 100,
+    { label: transformI18n("system.menuType"), prop: "menuType", width: 100,
       cellRenderer: ({ row, props }) => (
-        <el-tag
-          size={props.size}
-          type={getMenuType(row.menuType)}
-          effect="plain"
-        >
+        <el-tag size={props.size} type={getMenuType(row.menuType)} effect="plain">
           {getMenuType(row.menuType, true)}
         </el-tag>
       )
     },
-    {
-      label: "路由路径",
-      prop: "path"
-    },
-    {
-      label: "组件路径",
-      prop: "component",
-      formatter: ({ path, component }) =>
-        isAllEmpty(component) ? path : component
-    },
-    {
-      label: "权限标识",
-      prop: "auths"
-    },
-    {
-      label: "排序",
-      prop: "rank",
-      width: 100
-    },
-    {
-      label: "隐藏",
-      prop: "showLink",
-      formatter: ({ showLink }) => (showLink ? "否" : "是"),
-      width: 100
-    },
-    {
-      label: "操作",
-      fixed: "right",
-      width: 210,
-      slot: "operation"
-    }
+    { label: transformI18n("system.routePath"), prop: "path" },
+    { label: transformI18n("system.component"), prop: "component",
+      formatter: ({ path, component }) => isAllEmpty(component) ? path : component },
+    { label: transformI18n("system.auths"), prop: "auths" },
+    { label: transformI18n("system.sort"), prop: "rank", width: 100 },
+    { label: transformI18n("system.showLink"), prop: "showLink",
+      formatter: ({ showLink }) => (showLink ? transformI18n("system.hide") : transformI18n("system.show")), width: 100 },
+    { label: transformI18n("system.operation"), fixed: "right", width: 210, slot: "operation" }
   ];
 
   function handleSelectionChange(val) {
@@ -131,9 +90,10 @@ export function useMenu() {
     return newTreeList;
   }
 
-  function openDialog(title = "新增", row?: FormItemProps) {
+  function openDialog(title = transformI18n("system.add"), row?: FormItemProps) {
+    const isAdd = title === transformI18n("system.add");
     addDialog({
-      title: `${title}菜单`,
+      title: `${title} — ${transformI18n("menus.pureSystemMenu")}`,
       props: {
         formInline: {
           id: row.id,
@@ -172,20 +132,12 @@ export function useMenu() {
         const FormRef = formRef.value.getRef();
         const curData = options.props.formInline as FormItemProps;
         function chores() {
-          message(
-            `您${title}了菜单名称为${transformI18n(curData.title)}的这条数据`,
-            {
-              type: "success"
-            }
-          );
-          done(); // 关闭弹框
-          onSearch(); // 刷新表格数据
+          message(`${title}${transformI18n("system.success")}: ${transformI18n(curData.title)}`, { type: "success" });
+          done(); onSearch();
         }
         FormRef.validate(valid => {
           if (valid) {
-            console.log("curData", curData);
-            // 表单规则校验通过
-            if (title === "新增") {
+            if (isAdd) {
               // 实际开发先调用新增接口，再进行下面操作
               addMenu(curData).then(res => {
                 if (res.success) {
@@ -209,9 +161,7 @@ export function useMenu() {
   function handleDelete(row) {
     deleteMenu([row.id]).then(res => {
       if (res.success) {
-        message(`您删除了名称为${transformI18n(row.title)}的菜单`, {
-          type: "success"
-        });
+        message(`${transformI18n("system.deleteSuccess")}: ${transformI18n(row.title)}`, { type: "success" });
         onSearch();
       }
     });

@@ -25,11 +25,8 @@ class UserController(CRUDBase[User, UserCreate, UserUpdate]):
         :param obj_in: 用户创建数据
         :return: 用户对象
         """
-        db_obj = User.model_validate(
-            obj_in, update={
-                "hashed_password": get_password_hash(
-                    obj_in.password)}
-        )
+        db_obj = User.model_validate(obj_in)
+        db_obj.password = get_password_hash(obj_in.password)
         session.add(db_obj)
         session.commit()
         session.refresh(db_obj)
@@ -43,9 +40,8 @@ class UserController(CRUDBase[User, UserCreate, UserUpdate]):
         user_data = obj_in.model_dump(exclude_unset=True)
         extra_data = {}
         if "password" in user_data:
-            password = user_data["password"]
-            hashed_password = get_password_hash(password)
-            extra_data["hashed_password"] = hashed_password
+            hashed = get_password_hash(user_data.pop("password"))
+            extra_data["password"] = hashed
         db_user.sqlmodel_update(user_data, update=extra_data)
         session.add(db_user)
         session.commit()
@@ -82,11 +78,11 @@ class UserController(CRUDBase[User, UserCreate, UserUpdate]):
         sysBro = await getReqSysBro(request=request)
         ip_area = await getIpAddress(request.client.host if request.client else "unknown")
         if user is None:
-            raise HTTPException(status_code=400, detail="无效的用户名！！！")
+            raise HTTPException(status_code=400, detail="用户名或密码错误")
         try:
             result = verify_password(credentials.password, user.password)
             if not result:
-                raise HTTPException(status_code=400, detail="密码错误！！！")
+                raise HTTPException(status_code=400, detail="用户名或密码错误")
         except Exception:
             await logger.loginFail(
                 username=user.username,
@@ -96,7 +92,7 @@ class UserController(CRUDBase[User, UserCreate, UserUpdate]):
                 browser=sysBro.browser,
                 behavior=0
             )
-            raise HTTPException(status_code=400, detail="密码错误！！！")
+            raise HTTPException(status_code=400, detail="用户名或密码错误")
         if user.is_superuser:  # 超级管理员不验证状态
             await logger.loginSuccess(
                 username=user.username,

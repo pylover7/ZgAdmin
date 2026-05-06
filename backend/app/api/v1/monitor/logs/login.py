@@ -2,13 +2,11 @@ from uuid import UUID
 from fastapi import APIRouter, Query
 from sqlmodel import and_, col
 
-from app.models import SuccessExtra, Success, Fail
+from app.models import SuccessExtra, Success
 from app.controllers.logs import loginLoginController
-from app.controllers.user import userController
-from app.core.dependency import SessionDep
+from app.core.dependency import DependUser, SessionDep
 from app.models.logs import LoginLogFilter, LoginLog
 from app.settings.log import logger
-from app.core.ctx import CTX_USER_ID
 
 loginRouter = APIRouter()
 
@@ -20,12 +18,9 @@ async def delete_login_logs(session: SessionDep, data: list[UUID]):
 
 
 @loginRouter.get("/clear")
-async def clear_login_logs(session: SessionDep):
+async def clear_login_logs(session: SessionDep, current_user: DependUser):
     await loginLoginController.delete_all(session)
-    user = await userController.get(session, UUID(CTX_USER_ID.get()))
-    if user is None:
-        return Fail(msg="用户不存在，操作日志记录失败！")
-    await logger.operationError(user=user.username, msg="用户清空登录日志")
+    await logger.operationError(user=current_user.username, msg="用户清空登录日志")
     return Success(msg="登录日志清空成功！")
 
 

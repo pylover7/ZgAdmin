@@ -1,6 +1,7 @@
 import dayjs from "dayjs";
 import editForm from "../form.vue";
 import { handleTree } from "@/utils/tree";
+import { transformI18n } from "@/plugins/i18n";
 import { message } from "@/utils/message";
 import { addDept, deleteDept, getDeptList, updateDept } from "@/api/system";
 import { usePublicHooks } from "../../hooks";
@@ -21,45 +22,20 @@ export function useDept() {
   const { tagStyle } = usePublicHooks();
 
   const columns: TableColumnList = [
+    { label: transformI18n("system.deptName"), prop: "name", width: 180, align: "left" },
+    { label: transformI18n("system.sort"), prop: "sort", minWidth: 70 },
     {
-      label: "部门名称",
-      prop: "name",
-      width: 180,
-      align: "left"
-    },
-    {
-      label: "排序",
-      prop: "sort",
-      minWidth: 70
-    },
-    {
-      label: "状态",
-      prop: "status",
-      minWidth: 100,
+      label: transformI18n("system.status"), prop: "status", minWidth: 100,
       cellRenderer: ({ row, props }) => (
         <el-tag size={props.size} style={tagStyle.value(row.status)}>
-          {row.status === 1 ? "启用" : "停用"}
+          {row.status === 1 ? transformI18n("system.enabled") : transformI18n("system.disabled")}
         </el-tag>
       )
     },
-    {
-      label: "创建时间",
-      minWidth: 200,
-      prop: "createTime",
-      formatter: ({ createTime }) =>
-        dayjs(createTime).format("YYYY-MM-DD HH:mm:ss")
-    },
-    {
-      label: "备注",
-      prop: "remark",
-      minWidth: 320
-    },
-    {
-      label: "操作",
-      fixed: "right",
-      width: 210,
-      slot: "operation"
-    }
+    { label: transformI18n("system.createTime"), minWidth: 200, prop: "createTime",
+      formatter: ({ createTime }) => dayjs(createTime).format("YYYY-MM-DD HH:mm:ss") },
+    { label: transformI18n("system.remark"), prop: "remark", minWidth: 320 },
+    { label: transformI18n("system.operation"), fixed: "right", width: 210, slot: "operation" }
   ];
 
   function handleSelectionChange(val) {
@@ -102,9 +78,9 @@ export function useDept() {
     return newTreeList;
   }
 
-  function openDialog(title = "新增", row?: FormItemProps) {
+  function openDialog(title = transformI18n("system.add"), row?: FormItemProps) {
     addDialog({
-      title: `${title}部门`,
+      title: `${title} — ${transformI18n("menus.pureDept")}`,
       props: {
         formInline: {
           id: row?.id ?? null,
@@ -129,17 +105,12 @@ export function useDept() {
         const FormRef = formRef.value.getRef();
         const curData = options.props.formInline as FormItemProps;
         function chores() {
-          message(`您${title}了名称为【${curData.name}】的部门`, {
-            type: "success"
-          });
-          done(); // 关闭弹框
-          onSearch(); // 刷新表格数据
+          message(`${title}${transformI18n("system.success")}: ${curData.name}`, { type: "success" });
+          done(); onSearch();
         }
         FormRef.validate(valid => {
           if (valid) {
-            console.log("curData", curData);
-            // 表单规则校验通过
-            if (title === "新增") {
+            if (title === transformI18n("system.add")) {
               delete curData.id;
               addDept(curData).then(res => {
                 if (res.success) {
@@ -166,7 +137,7 @@ export function useDept() {
   function handleDelete(row) {
     deleteDept([row.id]).then(res => {
       if (res.success) {
-        message(`您删除了部门名称为${row.name}的这条数据`, { type: "success" });
+        message(`${transformI18n("system.deleteSuccess")}: ${row.name}`, { type: "success" });
         onSearch();
       }
     });

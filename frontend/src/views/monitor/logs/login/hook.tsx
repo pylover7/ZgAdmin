@@ -1,12 +1,9 @@
 import dayjs from "dayjs";
 import { message } from "@/utils/message";
 import { getKeyList } from "@pureadmin/utils";
-import {
-  clearLoginLogs,
-  deleteLoginLogs,
-  getLoginLogsList
-} from "@/api/system";
+import { clearLoginLogs, deleteLoginLogs, getLoginLogsList } from "@/api/system";
 import { usePublicHooks, formatDateTimeRange } from "@/views/system/hooks";
+import { transformI18n } from "@/plugins/i18n";
 import { type Ref, reactive, ref, onMounted } from "vue";
 import { paginationConf } from "@/config";
 import type { PaginationProps } from "@pureadmin/table";
@@ -25,66 +22,24 @@ export function useRole(tableRef: Ref) {
 
   const pagination = reactive<PaginationProps>({ ...paginationConf });
   const columns: TableColumnList = [
+    { label: transformI18n("system.select"), type: "selection", fixed: "left", reserveSelection: true },
+    { label: "#", minWidth: 90, type: "index" },
+    { label: transformI18n("system.username"), prop: "username", minWidth: 100 },
+    { label: transformI18n("system.loginIp"), prop: "ip", minWidth: 140 },
+    { label: transformI18n("system.loginAddress"), prop: "address", minWidth: 140 },
+    { label: transformI18n("system.loginSystem"), prop: "system", minWidth: 100 },
+    { label: transformI18n("system.loginBrowser"), prop: "browser", minWidth: 100 },
     {
-      label: "勾选列", // 如果需要表格多选，此处label必须设置
-      type: "selection",
-      fixed: "left",
-      reserveSelection: true // 数据刷新后保留选项
-    },
-    {
-      label: "序号",
-      minWidth: 90,
-      type: "index"
-    },
-    {
-      label: "用户名",
-      prop: "username",
-      minWidth: 100
-    },
-    {
-      label: "登录 IP",
-      prop: "ip",
-      minWidth: 140
-    },
-    {
-      label: "登录地点",
-      prop: "address",
-      minWidth: 140
-    },
-    {
-      label: "操作系统",
-      prop: "system",
-      minWidth: 100
-    },
-    {
-      label: "浏览器类型",
-      prop: "browser",
-      minWidth: 100
-    },
-    {
-      label: "登录状态",
-      prop: "level",
-      minWidth: 100,
+      label: transformI18n("system.status"), prop: "level", minWidth: 100,
       cellRenderer: ({ row, props }) => (
-        <el-tag
-          size={props.size}
-          style={tagStyle.value(row.level == "success" ? 1 : 0)}
-        >
-          {row.level === "success" ? "成功" : "失败"}
+        <el-tag size={props.size} style={tagStyle.value(row.level == "success" ? 1 : 0)}>
+          {row.level === "success" ? transformI18n("system.success") : transformI18n("system.fail")}
         </el-tag>
       )
     },
-    {
-      label: "登录行为",
-      prop: "behavior",
-      minWidth: 100
-    },
-    {
-      label: "登录时间",
-      prop: "time",
-      minWidth: 180,
-      formatter: ({ time }) => dayjs(time).format("YYYY-MM-DD HH:mm:ss")
-    }
+    { label: transformI18n("system.loginBehavior"), prop: "behavior", minWidth: 100 },
+    { label: transformI18n("system.loginTime"), prop: "time", minWidth: 180,
+      formatter: ({ time }) => dayjs(time).format("YYYY-MM-DD HH:mm:ss") }
   ];
 
   function handleSizeChange(val: number) {
@@ -117,7 +72,7 @@ export function useRole(tableRef: Ref) {
     const curSelected = tableRef.value.getTableRef().getSelectionRows();
     console.log("当前选中行：", getKeyList(curSelected, "id"));
     deleteLoginLogs(getKeyList(curSelected, "id")).then(() => {
-      message("已批量删除部分日志", { type: "success" });
+      message(transformI18n("system.deleteSuccess"), { type: "success" });
       tableRef.value.getTableRef().clearSelection();
       onSearch();
     });
@@ -126,7 +81,7 @@ export function useRole(tableRef: Ref) {
   /** 清空日志 */
   function clearAll() {
     clearLoginLogs().then(() => {
-      message("已删除所有日志数据", { type: "success" });
+      message(transformI18n("system.clearLog") + transformI18n("system.success"), { type: "success" });
       onSearch();
     });
   }
