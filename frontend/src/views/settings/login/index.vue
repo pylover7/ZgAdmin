@@ -388,8 +388,8 @@ onMounted(() => {
 
   .card-header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
 
     .title {
       font-size: 18px;
@@ -405,27 +405,27 @@ onMounted(() => {
 
   .divider-title {
     display: flex;
-    align-items: center;
     gap: 8px;
+    align-items: center;
     font-size: 16px;
     font-weight: 500;
   }
 
   .tip-text {
+    margin-top: 4px;
     font-size: 12px;
     color: var(--el-text-color-secondary);
-    margin-top: 4px;
   }
 
   .help-content {
-    background: var(--el-fill-color-light);
     padding: 20px;
+    background: var(--el-fill-color-light);
     border-radius: 4px;
 
     h4 {
       margin: 16px 0 8px;
-      color: var(--el-text-color-primary);
       font-weight: 500;
+      color: var(--el-text-color-primary);
 
       &:first-child {
         margin-top: 0;

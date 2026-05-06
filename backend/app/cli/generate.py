@@ -27,7 +27,8 @@ def _field_def(name: str, ftype: str) -> list[str]:
                 f"        default=None, foreign_key=\"{name}.id\", description=\"{label}\")"
             ]
         case "datetime":
-            return [f"    {name}: datetime | None = Field(default=None, nullable=True, description=\"{label}\")"]
+            return [
+                f"    {name}: datetime | None = Field(default=None, nullable=True, description=\"{label}\")"]
         case _:
             return [f"    {name}: {ftype} = Field(description=\"{label}\")"]
 

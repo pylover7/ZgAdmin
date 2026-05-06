@@ -45,9 +45,9 @@ async def init_data(app: FastAPI) -> None:
         # 创建默认管理员
         admin = session.exec(
             select(User).where(
-                (User.email == settings.EMAIL_TEST_USER) |
-                (User.username == settings.FIRST_SUPERUSER) |
-                (User.is_superuser == True)
+                (User.email == settings.EMAIL_TEST_USER)
+                | (User.username == settings.FIRST_SUPERUSER)
+                | (User.is_superuser)
             )
         ).first()
         if not admin:

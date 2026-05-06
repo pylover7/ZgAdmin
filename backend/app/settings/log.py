@@ -87,7 +87,8 @@ class Logger:
 
     async def systemInfo(self, module: str, msg: str):
         self.sysLogger.info(msg)
-        if not settings.FEATURE_MONITOR_LOG: return
+        if not settings.FEATURE_MONITOR_LOG:
+            return
         with Session(engine) as session:
             await systemLogController.create(
                 session=session,
@@ -96,7 +97,8 @@ class Logger:
 
     async def systemWarning(self, module: str, msg: str):
         self.sysLogger.warning(msg)
-        if not settings.FEATURE_MONITOR_LOG: return
+        if not settings.FEATURE_MONITOR_LOG:
+            return
         with Session(engine) as session:
             await systemLogController.create(
                 session=session,
@@ -105,7 +107,8 @@ class Logger:
 
     async def systemError(self, module: str, msg: str):
         self.sysLogger.error(msg)
-        if not settings.FEATURE_MONITOR_LOG: return
+        if not settings.FEATURE_MONITOR_LOG:
+            return
         with Session(engine) as session:
             await systemLogController.create(
                 session=session,
@@ -114,7 +117,8 @@ class Logger:
 
     async def systemDebug(self, module: str, msg: str):
         self.sysLogger.debug(msg)
-        if not settings.FEATURE_MONITOR_LOG: return
+        if not settings.FEATURE_MONITOR_LOG:
+            return
         with Session(engine) as session:
             await systemLogController.create(
                 session=session,
@@ -125,7 +129,8 @@ class Logger:
                            system: str, browser: str, behavior: int):
         self.loginLogger.success(self.loginType(behavior), user=username,
                                  ip=ip, address=address, system=system, browser=browser)
-        if not settings.FEATURE_MONITOR_LOG: return
+        if not settings.FEATURE_MONITOR_LOG:
+            return
         with Session(engine) as session:
             await loginLoginController.create(
                 session=session,
@@ -138,7 +143,8 @@ class Logger:
                         system: str, browser: str, behavior: int):
         self.loginLogger.error(self.loginType(behavior), user=username,
                                ip=ip, address=address, system=system, browser=browser)
-        if not settings.FEATURE_MONITOR_LOG: return
+        if not settings.FEATURE_MONITOR_LOG:
+            return
         with Session(engine) as session:
             await loginLoginController.create(
                 session=session,
@@ -149,7 +155,8 @@ class Logger:
 
     async def operationInfo(self, user: str, msg: str):
         self.operationLogger.info(msg, user=user)
-        if not settings.FEATURE_MONITOR_LOG: return
+        if not settings.FEATURE_MONITOR_LOG:
+            return
         with Session(engine) as session:
             await operationLogController.create(
                 session=session,
@@ -158,7 +165,8 @@ class Logger:
 
     async def operationWarning(self, user: str, msg: str):
         self.operationLogger.warning(msg, user=user)
-        if not settings.FEATURE_MONITOR_LOG: return
+        if not settings.FEATURE_MONITOR_LOG:
+            return
         with Session(engine) as session:
             await operationLogController.create(
                 session=session,
@@ -167,7 +175,8 @@ class Logger:
 
     async def operationError(self, user: str, msg: str):
         self.operationLogger.error(msg, user=user)
-        if not settings.FEATURE_MONITOR_LOG: return
+        if not settings.FEATURE_MONITOR_LOG:
+            return
         with Session(engine) as session:
             await operationLogController.create(
                 session=session,

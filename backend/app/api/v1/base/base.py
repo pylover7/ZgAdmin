@@ -202,7 +202,10 @@ async def get_user_api(session: SessionDep, current_user: DependUser):
 
 
 @router.post("/updatePwd", summary="更新用户密码")
-async def update_user_password(session: SessionDep, req_in: UpdatePassword, current_user: DependUser):
+async def update_user_password(
+        session: SessionDep,
+        req_in: UpdatePassword,
+        current_user: DependUser):
     user = await userController.get(session=session, id=current_user.id)
     if not user:
         return FailAuth(msg="用户不存在或已被删除！")

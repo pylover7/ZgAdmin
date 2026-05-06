@@ -22,7 +22,8 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     try:
         if plain_password is None or hashed_password is None:
             return False
-        if not isinstance(hashed_password, str) or not hashed_password.startswith('$2b$') or len(hashed_password) != 60:
+        if not isinstance(hashed_password, str) or not hashed_password.startswith(
+                '$2b$') or len(hashed_password) != 60:
             return False
         return bcrypt.checkpw(plain_password.encode('utf-8'),
                               hashed_password.encode('utf-8'))

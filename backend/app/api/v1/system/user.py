@@ -93,7 +93,7 @@ async def list_user(
         where,
         order,
         options=[selectinload(User.department),
-        selectinload(User.roles)]
+                 selectinload(User.roles)]
     )
     result = []
     for obj in user_objs:
