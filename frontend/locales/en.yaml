@@ -76,6 +76,9 @@ menus:
   pureLoginLog: Login Log
   pureOperationLog: Operation Log
   pureSystemLog: System Log
+  pureSysSettings: Settings
+  pureGenSettings: General
+  pureLoginSettings: Login Settings
   pureCodeMirror: CodeMirror
   pureMarkdown: Markdown
   pureEditor: Editor

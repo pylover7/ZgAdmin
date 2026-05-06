@@ -76,6 +76,9 @@ menus:
   pureLoginLog: 登录日志
   pureOperationLog: 操作日志
   pureSystemLog: 系统日志
+  pureSysSettings: 系统设置
+  pureGenSettings: 通用设置
+  pureLoginSettings: 登录设置
   pureCodeMirror: 代码编辑器
   pureMarkdown: Markdown
   pureEditor: 编辑器
