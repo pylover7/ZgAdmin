@@ -25,11 +25,8 @@ class UserController(CRUDBase[User, UserCreate, UserUpdate]):
         :param obj_in: 用户创建数据
         :return: 用户对象
         """
-        db_obj = User.model_validate(
-            obj_in, update={
-                "hashed_password": get_password_hash(
-                    obj_in.password)}
-        )
+        db_obj = User.model_validate(obj_in)
+        db_obj.password = get_password_hash(obj_in.password)
         session.add(db_obj)
         session.commit()
         session.refresh(db_obj)
@@ -43,9 +40,8 @@ class UserController(CRUDBase[User, UserCreate, UserUpdate]):
         user_data = obj_in.model_dump(exclude_unset=True)
         extra_data = {}
         if "password" in user_data:
-            password = user_data["password"]
-            hashed_password = get_password_hash(password)
-            extra_data["hashed_password"] = hashed_password
+            hashed = get_password_hash(user_data.pop("password"))
+            extra_data["password"] = hashed
         db_user.sqlmodel_update(user_data, update=extra_data)
         session.add(db_user)
         session.commit()

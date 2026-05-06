@@ -6,7 +6,7 @@ from app.controllers.user import userController
 from app.core.schedule import update_expired_orders
 from app.models import *
 from app.settings.log import logger
-from app.utils.password import get_password_hash, md5_encrypt
+from app.utils.password import get_password_hash
 from app.utils.staticFileUtils import check_dir_exists
 from app.core import engine, DatabaseSession
 
@@ -240,8 +240,7 @@ async def init_data(app: FastAPI) -> None:
                 (User.is_superuser == True)
             )
         ).first()
-        password = get_password_hash(
-            md5_encrypt(settings.FIRST_SUPERUSER_PASSWORD))
+        password = get_password_hash(settings.FIRST_SUPERUSER_PASSWORD)
         if not admin:
             logger.info("创建管理员账户...")
             user_in = UserCreate(
