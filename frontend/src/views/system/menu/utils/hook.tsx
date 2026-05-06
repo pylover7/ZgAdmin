@@ -20,15 +20,15 @@ export function useMenu() {
 
   const getMenuType = (type, text = false) => {
     switch (type) {
-      case 0: return text ? $t("system.menuPage") : "primary";
-      case 1: return text ? $t("system.menuIframe") : "warning";
-      case 2: return text ? $t("system.menuLink") : "danger";
-      case 3: return text ? $t("system.menuButton") : "info";
+      case 0: return text ? transformI18n("system.menuPage") : "primary";
+      case 1: return text ? transformI18n("system.menuIframe") : "warning";
+      case 2: return text ? transformI18n("system.menuLink") : "danger";
+      case 3: return text ? transformI18n("system.menuButton") : "info";
     }
   };
 
   const columns: TableColumnList = [
-    { label: $t("system.menuName"), prop: "title", align: "left",
+    { label: transformI18n("system.menuName"), prop: "title", align: "left",
       cellRenderer: ({ row }) => (
         <>
           <span class="inline-block mr-1">{h(useRenderIcon(row.icon), { style: { paddingTop: "1px" } })}</span>
@@ -36,21 +36,21 @@ export function useMenu() {
         </>
       )
     },
-    { label: $t("system.menuType"), prop: "menuType", width: 100,
+    { label: transformI18n("system.menuType"), prop: "menuType", width: 100,
       cellRenderer: ({ row, props }) => (
         <el-tag size={props.size} type={getMenuType(row.menuType)} effect="plain">
           {getMenuType(row.menuType, true)}
         </el-tag>
       )
     },
-    { label: $t("system.routePath"), prop: "path" },
-    { label: $t("system.component"), prop: "component",
+    { label: transformI18n("system.routePath"), prop: "path" },
+    { label: transformI18n("system.component"), prop: "component",
       formatter: ({ path, component }) => isAllEmpty(component) ? path : component },
-    { label: $t("system.auths"), prop: "auths" },
-    { label: $t("system.sort"), prop: "rank", width: 100 },
-    { label: $t("system.showLink"), prop: "showLink",
-      formatter: ({ showLink }) => (showLink ? $t("system.hide") : $t("system.show")), width: 100 },
-    { label: $t("system.operation"), fixed: "right", width: 210, slot: "operation" }
+    { label: transformI18n("system.auths"), prop: "auths" },
+    { label: transformI18n("system.sort"), prop: "rank", width: 100 },
+    { label: transformI18n("system.showLink"), prop: "showLink",
+      formatter: ({ showLink }) => (showLink ? transformI18n("system.hide") : transformI18n("system.show")), width: 100 },
+    { label: transformI18n("system.operation"), fixed: "right", width: 210, slot: "operation" }
   ];
 
   function handleSelectionChange(val) {
@@ -90,10 +90,10 @@ export function useMenu() {
     return newTreeList;
   }
 
-  function openDialog(title = $t("system.add"), row?: FormItemProps) {
-    const isAdd = title === $t("system.add");
+  function openDialog(title = transformI18n("system.add"), row?: FormItemProps) {
+    const isAdd = title === transformI18n("system.add");
     addDialog({
-      title: `${title} — ${$t("menus.pureSystemMenu")}`,
+      title: `${title} — ${transformI18n("menus.pureSystemMenu")}`,
       props: {
         formInline: {
           id: row.id,
@@ -132,7 +132,7 @@ export function useMenu() {
         const FormRef = formRef.value.getRef();
         const curData = options.props.formInline as FormItemProps;
         function chores() {
-          message(`${title}${$t("system.success")}: ${transformI18n(curData.title)}`, { type: "success" });
+          message(`${title}${transformI18n("system.success")}: ${transformI18n(curData.title)}`, { type: "success" });
           done(); onSearch();
         }
         FormRef.validate(valid => {
@@ -161,7 +161,7 @@ export function useMenu() {
   function handleDelete(row) {
     deleteMenu([row.id]).then(res => {
       if (res.success) {
-        message(`${$t("system.deleteSuccess")}: ${transformI18n(row.title)}`, { type: "success" });
+        message(`${transformI18n("system.deleteSuccess")}: ${transformI18n(row.title)}`, { type: "success" });
         onSearch();
       }
     });

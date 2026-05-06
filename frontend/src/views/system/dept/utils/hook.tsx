@@ -22,20 +22,20 @@ export function useDept() {
   const { tagStyle } = usePublicHooks();
 
   const columns: TableColumnList = [
-    { label: $t("system.deptName"), prop: "name", width: 180, align: "left" },
-    { label: $t("system.sort"), prop: "sort", minWidth: 70 },
+    { label: transformI18n("system.deptName"), prop: "name", width: 180, align: "left" },
+    { label: transformI18n("system.sort"), prop: "sort", minWidth: 70 },
     {
-      label: $t("system.status"), prop: "status", minWidth: 100,
+      label: transformI18n("system.status"), prop: "status", minWidth: 100,
       cellRenderer: ({ row, props }) => (
         <el-tag size={props.size} style={tagStyle.value(row.status)}>
-          {row.status === 1 ? $t("system.enabled") : $t("system.disabled")}
+          {row.status === 1 ? transformI18n("system.enabled") : transformI18n("system.disabled")}
         </el-tag>
       )
     },
-    { label: $t("system.createTime"), minWidth: 200, prop: "createTime",
+    { label: transformI18n("system.createTime"), minWidth: 200, prop: "createTime",
       formatter: ({ createTime }) => dayjs(createTime).format("YYYY-MM-DD HH:mm:ss") },
-    { label: $t("system.remark"), prop: "remark", minWidth: 320 },
-    { label: $t("system.operation"), fixed: "right", width: 210, slot: "operation" }
+    { label: transformI18n("system.remark"), prop: "remark", minWidth: 320 },
+    { label: transformI18n("system.operation"), fixed: "right", width: 210, slot: "operation" }
   ];
 
   function handleSelectionChange(val) {
@@ -78,9 +78,9 @@ export function useDept() {
     return newTreeList;
   }
 
-  function openDialog(title = $t("system.add"), row?: FormItemProps) {
+  function openDialog(title = transformI18n("system.add"), row?: FormItemProps) {
     addDialog({
-      title: `${title} — ${$t("menus.pureDept")}`,
+      title: `${title} — ${transformI18n("menus.pureDept")}`,
       props: {
         formInline: {
           id: row?.id ?? null,
@@ -105,12 +105,12 @@ export function useDept() {
         const FormRef = formRef.value.getRef();
         const curData = options.props.formInline as FormItemProps;
         function chores() {
-          message(`${title}${$t("system.success")}: ${curData.name}`, { type: "success" });
+          message(`${title}${transformI18n("system.success")}: ${curData.name}`, { type: "success" });
           done(); onSearch();
         }
         FormRef.validate(valid => {
           if (valid) {
-            if (title === $t("system.add")) {
+            if (title === transformI18n("system.add")) {
               delete curData.id;
               addDept(curData).then(res => {
                 if (res.success) {
@@ -137,7 +137,7 @@ export function useDept() {
   function handleDelete(row) {
     deleteDept([row.id]).then(res => {
       if (res.success) {
-        message(`${$t("system.deleteSuccess")}: ${row.name}`, { type: "success" });
+        message(`${transformI18n("system.deleteSuccess")}: ${row.name}`, { type: "success" });
         onSearch();
       }
     });

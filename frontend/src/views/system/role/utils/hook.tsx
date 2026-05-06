@@ -47,18 +47,18 @@ export function useRole(treeRef: Ref) {
   const pagination = reactive<PaginationProps>({ ...paginationConf });
   const columns: TableColumnList = [
     { label: "#", type: "index", minWidth: 60 },
-    { label: $t("system.roleName"), prop: "name" },
-    { label: $t("system.roleCode"), prop: "code" },
+    { label: transformI18n("system.roleName"), prop: "name" },
+    { label: transformI18n("system.roleCode"), prop: "code" },
     {
-      label: $t("system.status"),
+      label: transformI18n("system.status"),
       cellRenderer: scope => (
         <el-switch
           size={scope.props.size === "small" ? "small" : "default"}
           loading={switchLoadMap.value[scope.index]?.loading}
           v-model={scope.row.status}
           active-value={1} inactive-value={0}
-          active-text={$t("system.enabled")}
-          inactive-text={$t("system.disabled")}
+          active-text={transformI18n("system.enabled")}
+          inactive-text={transformI18n("system.disabled")}
           inline-prompt
           style={switchStyle.value}
           onChange={() => onChange(scope as any)}
@@ -66,20 +66,20 @@ export function useRole(treeRef: Ref) {
       ),
       minWidth: 90
     },
-    { label: $t("system.remark"), prop: "remark", minWidth: 160 },
-    { label: $t("system.createTime"), prop: "createTime", minWidth: 160,
+    { label: transformI18n("system.remark"), prop: "remark", minWidth: 160 },
+    { label: transformI18n("system.createTime"), prop: "createTime", minWidth: 160,
       formatter: ({ createTime }) => dayjs(createTime).format("YYYY-MM-DD HH:mm:ss") },
-    { label: $t("system.operation"), fixed: "right", width: 210, slot: "operation" }
+    { label: transformI18n("system.operation"), fixed: "right", width: 210, slot: "operation" }
   ];
 
   function onChange({ row, index }) {
-    const action = row.status === 0 ? $t("system.disabled") : $t("system.enabled");
+    const action = row.status === 0 ? transformI18n("system.disabled") : transformI18n("system.enabled");
     ElMessageBox.confirm(
-      `${$t("system.confirm")} ${action} 【${row.name}】?`,
-      $t("system.confirm"),
+      `${transformI18n("system.confirm")} ${action} 【${row.name}】?`,
+      transformI18n("system.confirm"),
       {
-        confirmButtonText: $t("system.confirm"),
-        cancelButtonText: $t("system.cancel"),
+        confirmButtonText: transformI18n("system.confirm"),
+        cancelButtonText: transformI18n("system.cancel"),
         type: "warning",
         dangerouslyUseHTMLString: true,
         draggable: true
@@ -90,7 +90,7 @@ export function useRole(treeRef: Ref) {
         updateRoleStatus({ id: row.id, status: row.status })
           .then(res => {
             if (res.success) {
-              message(`${action} ${$t("system.role")}【${row.name}】${$t("system.success")}`, { type: "success" });
+              message(`${action} ${transformI18n("system.role")}【${row.name}】${transformI18n("system.success")}`, { type: "success" });
             } else {
               row.status === 0 ? (row.status = 1) : (row.status = 0);
             }
@@ -105,7 +105,7 @@ export function useRole(treeRef: Ref) {
   }
 
   function handleDelete(row) {
-    message(`${$t("system.deleteSuccess")}: ${row.name}`, { type: "success" });
+    message(`${transformI18n("system.deleteSuccess")}: ${row.name}`, { type: "success" });
     onSearch();
   }
 
@@ -148,8 +148,8 @@ export function useRole(treeRef: Ref) {
     onSearch();
   };
 
-  function openDialog(title = $t("system.add"), row?: FormItemProps) {
-    const isAdd = title === $t("system.add");
+  function openDialog(title = transformI18n("system.add"), row?: FormItemProps) {
+    const isAdd = title === transformI18n("system.add");
     addDialog({
       title: `${title}`,
       props: {
@@ -169,7 +169,7 @@ export function useRole(treeRef: Ref) {
         const FormRef = formRef.value.getRef();
         const curData = options.props.formInline as FormItemProps;
         function chores() {
-          message(`${title}${$t("system.success")}: ${curData.name}`, { type: "success" });
+          message(`${title}${transformI18n("system.success")}: ${curData.name}`, { type: "success" });
           done(); onSearch();
         }
         FormRef.validate(valid => {
@@ -223,7 +223,7 @@ export function useRole(treeRef: Ref) {
     // 根据用户 id 调用实际项目中菜单权限修改接口
     updateRoleAuth({ id, menuIds: treeRef.value.getCheckedKeys() }).then(res => {
         if (res.success) {
-          message(`${$t("system.role")}【${name}】${$t("system.roleAuth")}${$t("system.editSuccess")}`, { type: "success" });
+          message(`${transformI18n("system.role")}【${name}】${transformI18n("system.roleAuth")}${transformI18n("system.editSuccess")}`, { type: "success" });
         }
       }
     );

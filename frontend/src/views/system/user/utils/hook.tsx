@@ -8,7 +8,7 @@ import { message } from "@/utils/message";
 import userAvatar from "@/assets/user.jpg";
 import { usePublicHooks } from "../../hooks";
 import { addDialog } from "@/components/ReDialog";
-import { $t } from "@/plugins/i18n";
+import { $t, transformI18n } from "@/plugins/i18n";
 import type { FormItemProps, RoleFormItemProps } from "../utils/types";
 import {
   getKeyList,
@@ -51,7 +51,7 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
   const pagination = reactive<PaginationProps>({ ...paginationConf });
   const columns: TableColumnList = [
     {
-      label: $t("system.select"),
+      label: transformI18n("system.select"),
       type: "selection",
       fixed: "left",
       reserveSelection: true
@@ -62,7 +62,7 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
       width: 90
     },
     {
-      label: $t("system.uploadAvatar"),
+      label: transformI18n("system.uploadAvatar"),
       prop: "avatar",
       cellRenderer: ({ row }) => (
         <el-image
@@ -76,17 +76,17 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
       width: 90
     },
     {
-      label: $t("system.username"),
+      label: transformI18n("system.username"),
       prop: "username",
       minWidth: 130
     },
     {
-      label: $t("system.nickname"),
+      label: transformI18n("system.nickname"),
       prop: "nickname",
       minWidth: 130
     },
     {
-      label: $t("system.sex"),
+      label: transformI18n("system.sex"),
       prop: "sex",
       minWidth: 90,
       cellRenderer: ({ row, props }) => (
@@ -95,17 +95,17 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
           type={row.sex === 0 ? "danger" : null}
           effect="plain"
         >
-          {row.sex === 0 ? $t("system.female") : $t("system.male")}
+          {row.sex === 0 ? transformI18n("system.female") : transformI18n("system.male")}
         </el-tag>
       )
     },
     {
-      label: $t("system.dept"),
+      label: transformI18n("system.dept"),
       prop: "dept.name",
       minWidth: 90
     },
     {
-      label: $t("system.phone"),
+      label: transformI18n("system.phone"),
       prop: "phone",
       minWidth: 90,
       formatter: ({ phone }) => {
@@ -114,7 +114,7 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
       }
     },
     {
-      label: $t("system.status"),
+      label: transformI18n("system.status"),
       prop: "status",
       minWidth: 90,
       cellRenderer: scope => (
@@ -124,8 +124,8 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
           v-model={scope.row.status}
           active-value={1}
           inactive-value={0}
-          active-text={$t("system.enabled")}
-          inactive-text={$t("system.disabled")}
+          active-text={transformI18n("system.enabled")}
+          inactive-text={transformI18n("system.disabled")}
           inline-prompt
           style={switchStyle.value}
           onChange={() => onChange(scope as any)}
@@ -133,14 +133,14 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
       )
     },
     {
-      label: $t("system.createTime"),
+      label: transformI18n("system.createTime"),
       minWidth: 90,
       prop: "created_at",
       formatter: ({ createTime }) =>
         dayjs(createTime).format("YYYY-MM-DD HH:mm:ss")
     },
     {
-      label: $t("system.operation"),
+      label: transformI18n("system.operation"),
       fixed: "right",
       width: 180,
       slot: "operation"
@@ -165,11 +165,11 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
 
   function onChange({ row, index }) {
     ElMessageBox.confirm(
-      `${$t("system.confirm")}${row.status === 0 ? $t("system.disabled") : $t("system.enabled")} ${row.username}?`,
-      $t("system.confirm"),
+      `${transformI18n("system.confirm")}${row.status === 0 ? transformI18n("system.disabled") : transformI18n("system.enabled")} ${row.username}?`,
+      transformI18n("system.confirm"),
       {
-        confirmButtonText: $t("system.confirm"),
-        cancelButtonText: $t("system.cancel"),
+        confirmButtonText: transformI18n("system.confirm"),
+        cancelButtonText: transformI18n("system.cancel"),
         type: "warning",
         dangerouslyUseHTMLString: true,
         draggable: true
@@ -184,7 +184,7 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
         updateUserStatus({ id: row.id, status: row.status })
           .then(res => {
             if (res.success) {
-              message($t("system.editSuccess"), { type: "success" });
+              message(transformI18n("system.editSuccess"), { type: "success" });
             } else {
               row.status === 0 ? (row.status = 1) : (row.status = 0);
             }
@@ -208,7 +208,7 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
 
   function handleDelete(row) {
     deleteUser([row.id]).then(() => {
-      message(`${$t("system.deleteSuccess")}: ${row.username}`, {
+      message(`${transformI18n("system.deleteSuccess")}: ${row.username}`, {
         type: "success"
       });
       onSearch();
@@ -242,7 +242,7 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
   /** 批量删除 */
   function onbatchDel() {
     const curSelected = tableRef.value.getTableRef().getSelectionRows();
-    message(`${$t("system.deleteSuccess")}: ${getKeyList(curSelected, "id")}`, {
+    message(`${transformI18n("system.deleteSuccess")}: ${getKeyList(curSelected, "id")}`, {
       type: "success"
     });
     tableRef.value.getTableRef().clearSelection();
@@ -293,8 +293,8 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
     return newTreeList;
   }
 
-  function openDialog(title = $t("system.add"), row?: FormItemProps) {
-    const isAdd = title === $t("system.add");
+  function openDialog(title = transformI18n("system.add"), row?: FormItemProps) {
+    const isAdd = title === transformI18n("system.add");
     addDialog({
       title: `${title}`,
       props: {
@@ -323,7 +323,7 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
         const FormRef = formRef.value.getRef();
         const curData = options.props.formInline as FormItemProps;
         function chores() {
-          message(`${title}${$t("system.success")}: ${curData.username}`, {
+          message(`${title}${transformI18n("system.success")}: ${curData.username}`, {
             type: "success"
           });
           done(); // 关闭弹框
@@ -368,7 +368,7 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
     // 选中的角色列表
     const ids = (await getRoleIds({ userId: row.id })).data ?? [];
     addDialog({
-      title: `${$t("system.assignRole")} - ${row.username}`,
+      title: `${transformI18n("system.assignRole")} - ${row.username}`,
       props: {
         formInline: {
           username: row?.username ?? "",

@@ -131,7 +131,11 @@ onMounted(() => {
       </el-form-item>
     </el-form>
 
-    <PureTableBar :title="$t('menus.pureRole')" :columns="columns" @refresh="onSearch">
+    <div ref="contentRef" :class="['flex', deviceDetection() ? 'flex-wrap' : '']">
+      <PureTableBar
+        :class="[isShow && !deviceDetection() ? 'w-[60vw]!' : 'w-full']"
+        style="transition: width 220ms cubic-bezier(0.4, 0, 0.2, 1)"
+        :title="$t('menus.pureRole')" :columns="columns" @refresh="onSearch">
       <template #buttons>
         <el-button type="primary" :icon="useRenderIcon(AddFill)" @click="openDialog()">
           {{ $t('system.add') + $t('menus.pureRole') }}

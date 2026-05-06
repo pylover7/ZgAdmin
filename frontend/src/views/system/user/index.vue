@@ -100,10 +100,10 @@ const {
             :loading="loading"
             @click="onSearch"
           >
-            {{ t("system.search") }}
+            {{ $t("system.search") }}
           </el-button>
           <el-button :icon="useRenderIcon(Refresh)" @click="resetForm(formRef)">
-            {{ t("system.reset") }}
+            {{ $t("system.reset") }}
           </el-button>
         </el-form-item>
       </el-form>
@@ -119,7 +119,7 @@ const {
             :icon="useRenderIcon(AddFill)"
             @click="openDialog()"
           >
-            {{ t("system.add") + t("menus.pureUser") }}
+            {{ $t("system.add") + $t("menus.pureUser") }}
           </el-button>
         </template>
         <template v-slot="{ size, dynamicColumns }">
@@ -134,15 +134,15 @@ const {
                 class="text-[rgba(42,46,54,0.5)] dark:text-[rgba(220,220,242,0.5)]"
               >
                 {{
-                  t("status.pureTotal") +
+                  $t("status.pureTotal") +
                   " " +
                   selectedNum +
                   " " +
-                  t("status.pureMessage").toLowerCase()
+                  $t("status.pureMessage").toLowerCase()
                 }}
               </span>
               <el-button type="primary" text @click="onSelectionCancel">
-                {{ t("system.cancel") + t("system.pleaseSelect") }}
+                {{ $t("system.cancel") + $t("system.pleaseSelect") }}
               </el-button>
             </div>
             <el-popconfirm
@@ -151,7 +151,7 @@ const {
             >
               <template #reference>
                 <el-button type="danger" text class="mr-1!">
-                  {{ t("system.batchDelete") }}
+                  {{ $t("system.batchDelete") }}
                 </el-button>
               </template>
             </el-popconfirm>
@@ -185,7 +185,7 @@ const {
                 :icon="useRenderIcon(EditPen)"
                 @click="openDialog($t('system.edit'), row)"
               >
-                {{ t("system.edit") }}
+                {{ $t("system.edit") }}
               </el-button>
               <el-popconfirm
                 :title="$t('system.deleteConfirm')"
@@ -199,7 +199,7 @@ const {
                     :size="size"
                     :icon="useRenderIcon(Delete)"
                   >
-                    {{ t("system.delete") }}
+                    {{ $t("system.delete") }}
                   </el-button>
                 </template>
               </el-popconfirm>
@@ -223,7 +223,7 @@ const {
                         :icon="useRenderIcon(Role)"
                         @click="handleRole(row)"
                       >
-                        {{ t("system.assignRole") }}
+                        {{ $t("system.assignRole") }}
                       </el-button>
                     </el-dropdown-item>
                   </el-dropdown-menu>
