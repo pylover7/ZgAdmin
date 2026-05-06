@@ -42,44 +42,25 @@ function onFullscreen() {
       :model="form"
       class="search-form bg-bg_color w-full pl-8 pt-[12px] overflow-auto"
     >
-      <el-form-item label="菜单名称：" prop="title">
-        <el-input
-          v-model="form.title"
-          placeholder="请输入菜单名称"
-          clearable
-          class="w-[180px]!"
-        />
+      <el-form-item :label="$t('system.menuName') + '：'" prop="title">
+        <el-input v-model="form.title" :placeholder="$t('system.pleaseInput') + $t('system.menuName')"
+          clearable class="w-[180px]!" />
       </el-form-item>
       <el-form-item>
-        <el-button
-          type="primary"
-          :icon="useRenderIcon('ri/search-line')"
-          :loading="loading"
-          @click="onSearch"
-        >
-          搜索
+        <el-button type="primary" :icon="useRenderIcon('ri/search-line')" :loading="loading" @click="onSearch">
+          {{ $t('system.search') }}
         </el-button>
         <el-button :icon="useRenderIcon(Refresh)" @click="resetForm(formRef)">
-          重置
+          {{ $t('system.reset') }}
         </el-button>
       </el-form-item>
     </el-form>
 
-    <PureTableBar
-      title="菜单管理"
-      :columns="columns"
-      :isExpandAll="false"
-      :tableRef="tableRef?.getTableRef()"
-      @refresh="onSearch"
-      @fullscreen="onFullscreen"
-    >
+    <PureTableBar :title="$t('menus.pureSystemMenu')" :columns="columns"
+      :isExpandAll="false" :tableRef="tableRef?.getTableRef()" @refresh="onSearch" @fullscreen="onFullscreen">
       <template #buttons>
-        <el-button
-          type="primary"
-          :icon="useRenderIcon(AddFill)"
-          @click="openDialog()"
-        >
-          新增菜单
+        <el-button type="primary" :icon="useRenderIcon(AddFill)" @click="openDialog()">
+          {{ $t('system.add') }}
         </el-button>
       </template>
       <template v-slot="{ size, dynamicColumns }">
@@ -102,40 +83,20 @@ function onFullscreen() {
           @selection-change="handleSelectionChange"
         >
           <template #operation="{ row }">
-            <el-button
-              class="reset-margin"
-              link
-              type="primary"
-              :size="size"
-              :icon="useRenderIcon(EditPen)"
-              @click="openDialog('修改', row)"
-            >
-              修改
+            <el-button class="reset-margin" link type="primary" :size="size"
+              :icon="useRenderIcon(EditPen)" @click="openDialog($t('system.edit'), row)">
+              {{ $t('system.edit') }}
             </el-button>
-            <el-button
-              v-show="row.menuType !== 3"
-              class="reset-margin"
-              link
-              type="primary"
-              :size="size"
-              :icon="useRenderIcon(AddFill)"
-              @click="openDialog('新增', { parentId: row.id } as any)"
-            >
-              新增
+            <el-button v-show="row.menuType !== 3" class="reset-margin" link type="primary"
+              :size="size" :icon="useRenderIcon(AddFill)"
+              @click="openDialog($t('system.add'), { parentId: row.id } as any)">
+              {{ $t('system.add') }}
             </el-button>
-            <el-popconfirm
-              :title="`是否确认删除菜单名称为${transformI18n(row.title)}的这条数据${row?.children?.length > 0 ? '。注意下级菜单也会一并删除，请谨慎操作' : ''}`"
-              @confirm="handleDelete(row)"
-            >
+            <el-popconfirm :title="$t('system.deleteConfirm')" @confirm="handleDelete(row)">
               <template #reference>
-                <el-button
-                  class="reset-margin"
-                  link
-                  type="primary"
-                  :size="size"
-                  :icon="useRenderIcon(Delete)"
-                >
-                  删除
+                <el-button class="reset-margin" link type="primary" :size="size"
+                  :icon="useRenderIcon(Delete)">
+                  {{ $t('system.delete') }}
                 </el-button>
               </template>
             </el-popconfirm>

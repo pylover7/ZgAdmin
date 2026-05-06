@@ -4,7 +4,7 @@ import { handleTree } from "@/utils/tree";
 import { message } from "@/utils/message";
 import { ElMessageBox } from "element-plus";
 import { usePublicHooks } from "../../hooks";
-import { transformI18n } from "@/plugins/i18n";
+import { $t, transformI18n } from "@/plugins/i18n";
 import { addDialog } from "@/components/ReDialog";
 import type { FormItemProps } from "../utils/types";
 import type { PaginationProps } from "@pureadmin/table";
@@ -46,30 +46,19 @@ export function useRole(treeRef: Ref) {
   };
   const pagination = reactive<PaginationProps>({ ...paginationConf });
   const columns: TableColumnList = [
+    { label: "#", type: "index", minWidth: 60 },
+    { label: $t("system.roleName"), prop: "name" },
+    { label: $t("system.roleCode"), prop: "code" },
     {
-      label: "角色编号",
-      type: "index",
-      minWidth: 60
-    },
-    {
-      label: "角色名称",
-      prop: "name"
-    },
-    {
-      label: "角色标识",
-      prop: "code"
-    },
-    {
-      label: "状态",
+      label: $t("system.status"),
       cellRenderer: scope => (
         <el-switch
           size={scope.props.size === "small" ? "small" : "default"}
           loading={switchLoadMap.value[scope.index]?.loading}
           v-model={scope.row.status}
-          active-value={1}
-          inactive-value={0}
-          active-text="已启用"
-          inactive-text="已停用"
+          active-value={1} inactive-value={0}
+          active-text={$t("system.enabled")}
+          inactive-text={$t("system.disabled")}
           inline-prompt
           style={switchStyle.value}
           onChange={() => onChange(scope as any)}
@@ -77,71 +66,37 @@ export function useRole(treeRef: Ref) {
       ),
       minWidth: 90
     },
-    {
-      label: "备注",
-      prop: "remark",
-      minWidth: 160
-    },
-    {
-      label: "创建时间",
-      prop: "createTime",
-      minWidth: 160,
-      formatter: ({ createTime }) =>
-        dayjs(createTime).format("YYYY-MM-DD HH:mm:ss")
-    },
-    {
-      label: "操作",
-      fixed: "right",
-      width: 210,
-      slot: "operation"
-    }
+    { label: $t("system.remark"), prop: "remark", minWidth: 160 },
+    { label: $t("system.createTime"), prop: "createTime", minWidth: 160,
+      formatter: ({ createTime }) => dayjs(createTime).format("YYYY-MM-DD HH:mm:ss") },
+    { label: $t("system.operation"), fixed: "right", width: 210, slot: "operation" }
   ];
 
   function onChange({ row, index }) {
+    const action = row.status === 0 ? $t("system.disabled") : $t("system.enabled");
     ElMessageBox.confirm(
-      `确认要<strong>${
-        row.status === 0 ? "停用" : "启用"
-      }【</strong><strong style='color:var(--el-color-primary)'>${
-        row.name
-      }</strong>】吗?`,
-      "系统提示",
+      `${$t("system.confirm")} ${action} 【${row.name}】?`,
+      $t("system.confirm"),
       {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
+        confirmButtonText: $t("system.confirm"),
+        cancelButtonText: $t("system.cancel"),
         type: "warning",
         dangerouslyUseHTMLString: true,
         draggable: true
       }
     )
       .then(() => {
-        switchLoadMap.value[index] = Object.assign(
-          {},
-          switchLoadMap.value[index],
-          {
-            loading: true
-          }
-        );
+        switchLoadMap.value[index] = Object.assign({}, switchLoadMap.value[index], { loading: true });
         updateRoleStatus({ id: row.id, status: row.status })
           .then(res => {
             if (res.success) {
-              message(
-                `已${row.status === 0 ? "停用" : "启用"}角色【${row.name}】`,
-                {
-                  type: "success"
-                }
-              );
+              message(`${action} ${$t("system.role")}【${row.name}】${$t("system.success")}`, { type: "success" });
             } else {
               row.status === 0 ? (row.status = 1) : (row.status = 0);
             }
           })
           .finally(() => {
-            switchLoadMap.value[index] = Object.assign(
-              {},
-              switchLoadMap.value[index],
-              {
-                loading: false
-              }
-            );
+            switchLoadMap.value[index] = Object.assign({}, switchLoadMap.value[index], { loading: false });
           });
       })
       .catch(() => {
@@ -150,7 +105,7 @@ export function useRole(treeRef: Ref) {
   }
 
   function handleDelete(row) {
-    message(`您删除了角色名称为${row.name}的这条数据`, { type: "success" });
+    message(`${$t("system.deleteSuccess")}: ${row.name}`, { type: "success" });
     onSearch();
   }
 
@@ -193,9 +148,10 @@ export function useRole(treeRef: Ref) {
     onSearch();
   };
 
-  function openDialog(title = "新增", row?: FormItemProps) {
+  function openDialog(title = $t("system.add"), row?: FormItemProps) {
+    const isAdd = title === $t("system.add");
     addDialog({
-      title: `${title}角色`,
+      title: `${title}`,
       props: {
         formInline: {
           name: row?.name ?? "",
@@ -213,17 +169,12 @@ export function useRole(treeRef: Ref) {
         const FormRef = formRef.value.getRef();
         const curData = options.props.formInline as FormItemProps;
         function chores() {
-          message(`您${title}了角色名称为${curData.name}的这条数据`, {
-            type: "success"
-          });
-          done(); // 关闭弹框
-          onSearch(); // 刷新表格数据
+          message(`${title}${$t("system.success")}: ${curData.name}`, { type: "success" });
+          done(); onSearch();
         }
         FormRef.validate(valid => {
           if (valid) {
-            console.log("curData", curData);
-            // 表单规则校验通过
-            if (title === "新增") {
+            if (isAdd) {
               addRole(curData).then(res => {
                 if (res.success) {
                   chores();
@@ -270,12 +221,9 @@ export function useRole(treeRef: Ref) {
   function handleSave() {
     const { id, name } = curRow.value;
     // 根据用户 id 调用实际项目中菜单权限修改接口
-    updateRoleAuth({ id, menuIds: treeRef.value.getCheckedKeys() }).then(
-      res => {
+    updateRoleAuth({ id, menuIds: treeRef.value.getCheckedKeys() }).then(res => {
         if (res.success) {
-          message(`角色名称为【${name}】的菜单权限修改成功`, {
-            type: "success"
-          });
+          message(`${$t("system.role")}【${name}】${$t("system.roleAuth")}${$t("system.editSuccess")}`, { type: "success" });
         }
       }
     );

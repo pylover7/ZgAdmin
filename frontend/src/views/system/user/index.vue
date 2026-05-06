@@ -66,31 +66,31 @@ const {
         :model="form"
         class="search-form bg-bg_color w-full pl-8 pt-[12px] overflow-auto"
       >
-        <el-form-item label="用户名称：" prop="username">
+        <el-form-item :label="$t('system.username') + '：'" prop="username">
           <el-input
             v-model="form.username"
-            placeholder="请输入用户名称"
+            :placeholder="$t('system.pleaseInput') + $t('system.username')"
             clearable
             class="w-[180px]!"
           />
         </el-form-item>
-        <el-form-item label="邮箱：" prop="email">
+        <el-form-item :label="$t('system.email') + '：'" prop="email">
           <el-input
             v-model="form.email"
-            placeholder="请输入邮箱"
+            :placeholder="$t('system.pleaseInput') + $t('system.email')"
             clearable
             class="w-[180px]!"
           />
         </el-form-item>
-        <el-form-item label="状态：" prop="status">
+        <el-form-item :label="$t('system.status') + '：'" prop="status">
           <el-select
             v-model="form.status"
-            placeholder="请选择"
+            :placeholder="$t('system.pleaseSelect')"
             clearable
             class="w-[180px]!"
           >
-            <el-option label="已开启" value="1" />
-            <el-option label="已关闭" value="0" />
+            <el-option :label="$t('system.enabled')" value="1" />
+            <el-option :label="$t('system.disabled')" value="0" />
           </el-select>
         </el-form-item>
         <el-form-item>
@@ -100,22 +100,26 @@ const {
             :loading="loading"
             @click="onSearch"
           >
-            搜索
+            {{ t("system.search") }}
           </el-button>
           <el-button :icon="useRenderIcon(Refresh)" @click="resetForm(formRef)">
-            重置
+            {{ t("system.reset") }}
           </el-button>
         </el-form-item>
       </el-form>
 
-      <PureTableBar title="用户管理" :columns="columns" @refresh="onSearch">
+      <PureTableBar
+        :title="$t('menus.pureUser')"
+        :columns="columns"
+        @refresh="onSearch"
+      >
         <template #buttons>
           <el-button
             type="primary"
             :icon="useRenderIcon(AddFill)"
             @click="openDialog()"
           >
-            新增用户
+            {{ t("system.add") + t("menus.pureUser") }}
           </el-button>
         </template>
         <template v-slot="{ size, dynamicColumns }">
@@ -129,16 +133,25 @@ const {
                 style="font-size: var(--el-font-size-base)"
                 class="text-[rgba(42,46,54,0.5)] dark:text-[rgba(220,220,242,0.5)]"
               >
-                已选 {{ selectedNum }} 项
+                {{
+                  t("status.pureTotal") +
+                  " " +
+                  selectedNum +
+                  " " +
+                  t("status.pureMessage").toLowerCase()
+                }}
               </span>
               <el-button type="primary" text @click="onSelectionCancel">
-                取消选择
+                {{ t("system.cancel") + t("system.pleaseSelect") }}
               </el-button>
             </div>
-            <el-popconfirm title="是否确认删除?" @confirm="onbatchDel">
+            <el-popconfirm
+              :title="$t('system.deleteConfirm')"
+              @confirm="onbatchDel"
+            >
               <template #reference>
                 <el-button type="danger" text class="mr-1!">
-                  批量删除
+                  {{ t("system.batchDelete") }}
                 </el-button>
               </template>
             </el-popconfirm>
@@ -170,12 +183,12 @@ const {
                 type="primary"
                 :size="size"
                 :icon="useRenderIcon(EditPen)"
-                @click="openDialog('修改', row)"
+                @click="openDialog($t('system.edit'), row)"
               >
-                修改
+                {{ t("system.edit") }}
               </el-button>
               <el-popconfirm
-                :title="`是否确认删除用户名为【${row.username}】的这条数据`"
+                :title="$t('system.deleteConfirm')"
                 @confirm="handleDelete(row)"
               >
                 <template #reference>
@@ -186,7 +199,7 @@ const {
                     :size="size"
                     :icon="useRenderIcon(Delete)"
                   >
-                    删除
+                    {{ t("system.delete") }}
                   </el-button>
                 </template>
               </el-popconfirm>
@@ -210,7 +223,7 @@ const {
                         :icon="useRenderIcon(Role)"
                         @click="handleRole(row)"
                       >
-                        分配角色
+                        {{ t("system.assignRole") }}
                       </el-button>
                     </el-dropdown-item>
                   </el-dropdown-menu>
