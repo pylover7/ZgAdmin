@@ -41,3 +41,4 @@ tsconfig.tsbuildinfo
 .logs/
 .pids/
 .sisyphus/
+.secret_key
