@@ -29,19 +29,40 @@ export function useRole(tableRef: Ref) {
 
   const pagination = reactive<PaginationProps>({ ...paginationConf });
   const columns: TableColumnList = [
-    { label: transformI18n("system.select"), type: "selection", fixed: "left", reserveSelection: true },
+    {
+      label: transformI18n("system.select"),
+      type: "selection",
+      fixed: "left",
+      reserveSelection: true
+    },
     { label: "#", minWidth: 90, type: "index" },
-    { label: transformI18n("system.logLevel"), prop: "level", minWidth: 100,
+    {
+      label: transformI18n("system.logLevel"),
+      prop: "level",
+      minWidth: 100,
       cellRenderer: ({ row, props }) => (
         <el-tag size={props.size} style={levelTagStyle.value(row.level)}>
           {levelTextMap[row.level] || row.level}
         </el-tag>
       )
     },
-    { label: transformI18n("system.operationUser"), prop: "username", minWidth: 100 },
-    { label: transformI18n("system.logMessage"), prop: "message", minWidth: 140 },
-    { label: transformI18n("system.operationTime"), prop: "time", minWidth: 180,
-      formatter: ({ operatingTime }) => dayjs(operatingTime).format("YYYY-MM-DD HH:mm:ss") }
+    {
+      label: transformI18n("system.operationUser"),
+      prop: "username",
+      minWidth: 100
+    },
+    {
+      label: transformI18n("system.logMessage"),
+      prop: "message",
+      minWidth: 140
+    },
+    {
+      label: transformI18n("system.operationTime"),
+      prop: "time",
+      minWidth: 180,
+      formatter: ({ operatingTime }) =>
+        dayjs(operatingTime).format("YYYY-MM-DD HH:mm:ss")
+    }
   ];
 
   function handleSizeChange(val: number) {
@@ -83,7 +104,10 @@ export function useRole(tableRef: Ref) {
   function clearAll() {
     // 根据实际业务，调用接口删除所有日志数据
     clearOperationLogs().then(() => {
-      message(transformI18n("system.clearLog") + transformI18n("system.success"), { type: "success" });
+      message(
+        transformI18n("system.clearLog") + transformI18n("system.success"),
+        { type: "success" }
+      );
       onSearch();
     });
   }

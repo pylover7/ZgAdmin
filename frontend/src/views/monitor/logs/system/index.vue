@@ -40,14 +40,14 @@ const {
       ref="formRef"
       :inline="true"
       :model="form"
-      class="search-form bg-bg_color w-full pl-8 pt-[12px] overflow-auto"
+      class="search-form bg-bg_color w-full pl-8 pt-3 overflow-auto"
     >
       <el-form-item :label="$t('system.logModule')" prop="module">
         <el-select
           v-model="form.module"
           placeholder="请选择所属模块"
           clearable
-          class="w-[170px]!"
+          class="w-42.5!"
           @change="onSearch"
         >
           <el-option
@@ -83,9 +83,16 @@ const {
       </el-form-item>
     </el-form>
 
-    <PureTableBar :title="$t('system.systemLog')" :columns="columns" @refresh="onSearch">
+    <PureTableBar
+      :title="$t('system.systemLog')"
+      :columns="columns"
+      @refresh="onSearch"
+    >
       <template #buttons>
-        <el-popconfirm :title="$t('system.clearLogConfirm')" @confirm="clearAll">
+        <el-popconfirm
+          :title="$t('system.clearLogConfirm')"
+          @confirm="clearAll"
+        >
           <template #reference>
             <el-button type="danger" :icon="useRenderIcon(Delete)">
               清空日志
@@ -97,20 +104,23 @@ const {
         <div
           v-if="selectedNum > 0"
           v-motion-fade
-          class="bg-[var(--el-fill-color-light)] w-full h-[46px] mb-2 pl-4 flex items-center"
+          class="bg-(--el-fill-color-light) w-full h-11.5 mb-2 pl-4 flex items-center"
         >
           <div class="flex-auto">
             <span
               style="font-size: var(--el-font-size-base)"
               class="text-[rgba(42,46,54,0.5)] dark:text-[rgba(220,220,242,0.5)]"
             >
-              {{ selectedNum }} {{ $t('system.selected') }}
+              {{ selectedNum }} {{ $t("system.selected") }}
             </span>
             <el-button type="primary" text @click="onSelectionCancel">
               取消选择
             </el-button>
           </div>
-          <el-popconfirm :title="$t('system.deleteConfirm')" @confirm="onbatchDel">
+          <el-popconfirm
+            :title="$t('system.deleteConfirm')"
+            @confirm="onbatchDel"
+          >
             <template #reference>
               <el-button type="danger" text class="mr-1!"> 批量删除 </el-button>
             </template>

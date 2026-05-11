@@ -159,12 +159,16 @@ const handleSave = async () => {
 
     loading.value = true;
     await updateLoginConfig(loginForm);
-    ElMessage.success(transformI18n("system.save") + transformI18n("system.success"));
+    ElMessage.success(
+      transformI18n("system.save") + transformI18n("system.success")
+    );
     // 更新初始配置
     initialForm.value = JSON.parse(JSON.stringify(loginForm));
   } catch (error) {
     if (error !== false) {
-      ElMessage.error(transformI18n("system.save") + transformI18n("system.fail"));
+      ElMessage.error(
+        transformI18n("system.save") + transformI18n("system.fail")
+      );
       console.error("保存登录配置失败:", error);
     }
   } finally {
@@ -212,7 +216,7 @@ onMounted(() => {
         <el-divider content-position="left">
           <div class="divider-title">
             <el-icon><Connection /></el-icon>
-            <span>{{ $t('login.QQLogin') }}</span>
+            <span>{{ $t("login.QQLogin") }}</span>
             <el-switch v-model="loginForm.qq.enabled" />
           </div>
         </el-divider>
@@ -276,7 +280,7 @@ onMounted(() => {
         <el-divider content-position="left">
           <div class="divider-title">
             <el-icon><ChatDotRound /></el-icon>
-            <span>{{ $t('login.WeChatLogin') }}</span>
+            <span>{{ $t("login.WeChatLogin") }}</span>
             <el-switch v-model="loginForm.wechat.enabled" />
           </div>
         </el-divider>

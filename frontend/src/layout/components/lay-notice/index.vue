@@ -25,7 +25,7 @@ const getLabel = computed(
         'dropdown-badge',
         'navbar-bg-hover',
         'select-none',
-        Number(noticesNum) !== 0 && 'mr-[10px]'
+        Number(noticesNum) !== 0 && 'mr-2.5'
       ]"
     >
       <el-badge :value="Number(noticesNum) === 0 ? '' : noticesNum" :max="99">

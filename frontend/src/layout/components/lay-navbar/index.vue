@@ -33,7 +33,7 @@ const { t, locale, translationCh, translationEn } = useTranslationLang();
 </script>
 
 <template>
-  <div class="navbar bg-[#fff] shadow-xs shadow-[rgba(0,21,41,0.08)]">
+  <div class="navbar bg-white shadow-xs shadow-[rgba(0,21,41,0.08)]">
     <LaySidebarTopCollapse
       v-if="device === 'mobile'"
       class="hamburger-container"
@@ -54,7 +54,7 @@ const { t, locale, translationCh, translationEn } = useTranslationLang();
       <!-- 国际化 -->
       <el-dropdown id="header-translation" trigger="click">
         <GlobalizationIcon
-          class="navbar-bg-hover w-[40px] h-[48px] p-[11px] cursor-pointer outline-hidden"
+          class="navbar-bg-hover w-10 h-12 p-2.75 cursor-pointer outline-hidden"
         />
         <template #dropdown>
           <el-dropdown-menu class="translation">
