@@ -10,8 +10,8 @@
 import { checkVersion } from "version-rocket";
 import { ElConfigProvider } from "element-plus";
 import { useRouter, useRoute } from "vue-router";
-import { useGlobal } from "@pureadmin/utils";
-import { defineComponent, computed } from "vue";
+import { useGlobal, useWatermark } from "@pureadmin/utils";
+import { defineComponent, computed, watch, nextTick } from "vue";
 import { ReDialog, closeAllDialog } from "@/components/ReDialog";
 import { ReDrawer, closeAllDrawer } from "@/components/ReDrawer";
 import en from "element-plus/es/locale/lang/en";
@@ -29,27 +29,38 @@ export default defineComponent({
   setup() {
     const route = useRoute();
     const router = useRouter();
+    const { setWatermark, clear } = useWatermark();
     const { $storage } = useGlobal<GlobalPropertiesApi>();
     const watermarkEnable = computed(() => $storage.configure?.watermark);
     const watermarkText = computed(() => $storage.configure?.watermarkText);
-    const isLoginPage = computed(() => route.name === "Login");
     const currentLocale = computed(() => {
       return $storage.locale?.locale === "zh"
         ? { ...zhCn, ...plusZhCn }
         : { ...en, ...plusEn };
     });
 
-    /** 路由切换时关闭所有弹框和抽屉 */
     router.beforeEach(() => {
       closeAllDialog();
       closeAllDrawer();
     });
 
+    watch(
+      [watermarkEnable, watermarkText, () => route.name],
+      async ([enable, text, name]) => {
+        await nextTick();
+        if (enable && name !== "Login") {
+          setWatermark(text, { verticalOffset: 170 });
+        } else {
+          clear();
+        }
+      },
+      {
+        immediate: true
+      }
+    );
+
     return {
-      currentLocale,
-      watermarkEnable,
-      watermarkText,
-      isLoginPage
+      currentLocale
     };
   },
   beforeCreate() {

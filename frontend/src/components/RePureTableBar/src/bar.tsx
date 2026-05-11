@@ -1,5 +1,6 @@
 import Sortable from "sortablejs";
-import { transformI18n } from "@/plugins/i18n";
+import { $t, transformI18n } from "@/plugins/i18n";
+import type { CheckboxValueType } from "element-plus";
 import { useEpThemeStoreHook } from "@/store/modules/epTheme";
 import {
   type PropType,
@@ -18,7 +19,9 @@ import {
   getKeyList
 } from "@pureadmin/utils";
 
+import PinAngle from "~icons/bi/pin-angle";
 import Fullscreen from "~icons/ri/fullscreen-fill";
+import PinAngleFill from "~icons/bi/pin-angle-fill";
 import ExitFullscreen from "~icons/ri/fullscreen-exit-fill";
 import DragIcon from "@/assets/table-bar/drag.svg?component";
 import ExpandIcon from "@/assets/table-bar/expand.svg?component";
@@ -30,7 +33,7 @@ const props = {
   /** 头部最左边的标题 */
   title: {
     type: String,
-    default: "列表"
+    default: $t("tableBar.pureList")
   },
   /** 对于树形表格，如果想启用展开和折叠功能，传入当前表格的ref即可 */
   tableRef: {
@@ -97,10 +100,10 @@ export default defineComponent({
       return [
         "flex",
         "justify-between",
-        "pt-[3px]",
-        "px-[11px]",
-        "border-b-[1px]",
-        "border-solid",
+        "pt-0.75",
+        "px-2.75",
+        "border-b",
+        "border-b-solid",
         "border-[#dcdfe6]",
         "dark:border-[#303030]"
       ];
@@ -131,7 +134,7 @@ export default defineComponent({
       });
     }
 
-    function handleCheckAllChange(val: boolean) {
+    function handleCheckAllChange(val: CheckboxValueType) {
       checkedColumns.value = val ? checkColumnList : [];
       isIndeterminate.value = false;
       dynamicColumns.value.map(column =>
@@ -139,7 +142,7 @@ export default defineComponent({
       );
     }
 
-    function handleCheckedColumnsChange(value: string[]) {
+    function handleCheckedColumnsChange(value: CheckboxValueType[]) {
       checkedColumns.value = value;
       const checkedCount = value.length;
       checkAll.value = checkedCount === checkColumnList.length;
@@ -147,10 +150,22 @@ export default defineComponent({
         checkedCount > 0 && checkedCount < checkColumnList.length;
     }
 
-    function handleCheckColumnListChange(val: boolean, label: string) {
+    function handleCheckColumnListChange(
+      val: CheckboxValueType,
+      label: string
+    ) {
       dynamicColumns.value.filter(
         item => transformI18n(item.label) === transformI18n(label)
       )[0].hide = !val;
+    }
+
+    function handleToggleColumnFixed(fixed, label: string) {
+      const column = dynamicColumns.value.find(
+        item => transformI18n(item.label) === transformI18n(label)
+      );
+      if (column) {
+        column.fixed = fixed;
+      }
     }
 
     async function onReset() {
@@ -169,19 +184,19 @@ export default defineComponent({
             style={getDropdownItemStyle.value("large")}
             onClick={() => (size.value = "large")}
           >
-            宽松
+            {transformI18n($t("tableBar.pureLarge"))}
           </el-dropdown-item>
           <el-dropdown-item
             style={getDropdownItemStyle.value("default")}
             onClick={() => (size.value = "default")}
           >
-            默认
+            {transformI18n($t("tableBar.pureDefault"))}
           </el-dropdown-item>
           <el-dropdown-item
             style={getDropdownItemStyle.value("small")}
             onClick={() => (size.value = "small")}
           >
-            紧凑
+            {transformI18n($t("tableBar.pureSmall"))}
           </el-dropdown-item>
         </el-dropdown-menu>
       )
@@ -223,11 +238,13 @@ export default defineComponent({
     };
 
     const isFixedColumn = (label: string) => {
-      return dynamicColumns.value.filter(
+      const column = dynamicColumns.value.find(
         item => transformI18n(item.label) === transformI18n(label)
-      )[0].fixed
-        ? true
-        : false;
+      );
+      const fixedOption = column?.fixed;
+      const left = fixedOption === "left";
+      const right = fixedOption === true || fixedOption === "right";
+      return { fixed: left || right, left, right };
     };
 
     const rendTippyProps = (content: string) => {
@@ -245,7 +262,9 @@ export default defineComponent({
       reference: () => (
         <SettingIcon
           class={["w-4", iconClass.value]}
-          v-tippy={rendTippyProps("列设置")}
+          v-tippy={rendTippyProps(
+            transformI18n($t("tableBar.pureColumnSettings"))
+          )}
         />
       )
     };
@@ -268,9 +287,9 @@ export default defineComponent({
             {slots?.title ? (
               slots.title()
             ) : (
-              <p class="font-bold truncate">{props.title}</p>
+              <p class="font-bold truncate">{transformI18n(props.title)}</p>
             )}
-            <div class="flex-ac  ">
+            <div class="flex-ac">
               {slots?.buttons ? (
                 <div class="flex mr-4">{slots.buttons()}</div>
               ) : null}
@@ -282,7 +301,9 @@ export default defineComponent({
                       transform: isExpandAll.value ? "none" : "rotate(-90deg)"
                     }}
                     v-tippy={rendTippyProps(
-                      isExpandAll.value ? "折叠" : "展开"
+                      isExpandAll.value
+                        ? transformI18n($t("tableBar.pureCollapse"))
+                        : transformI18n($t("tableBar.pureExpand"))
                     )}
                     onClick={() => onExpand()}
                   />
@@ -295,14 +316,18 @@ export default defineComponent({
                   iconClass.value,
                   loading.value ? "animate-spin" : ""
                 ]}
-                v-tippy={rendTippyProps("刷新")}
+                v-tippy={rendTippyProps(
+                  transformI18n($t("tableBar.pureRefresh"))
+                )}
                 onClick={() => onReFresh()}
               />
               <el-divider direction="vertical" />
               <el-dropdown
                 v-slots={dropdown}
                 trigger="click"
-                v-tippy={rendTippyProps("密度")}
+                v-tippy={rendTippyProps(
+                  transformI18n($t("tableBar.pureDensity"))
+                )}
               >
                 <CollapseIcon class={["w-4", iconClass.value]} />
               </el-dropdown>
@@ -312,19 +337,19 @@ export default defineComponent({
                 v-slots={reference}
                 placement="bottom-start"
                 popper-style={{ padding: 0 }}
-                width="200"
+                width="245"
                 trigger="click"
               >
                 <div class={[topClass.value]}>
                   <el-checkbox
                     class="-mr-1!"
-                    label="列展示"
+                    label={transformI18n($t("tableBar.pureColumnDisplay"))}
                     v-model={checkAll.value}
                     indeterminate={isIndeterminate.value}
                     onChange={value => handleCheckAllChange(value)}
                   />
                   <el-button type="primary" link onClick={() => onReset()}>
-                    重置
+                    {transformI18n($t("tableBar.pureReset"))}
                   </el-button>
                 </div>
 
@@ -341,14 +366,13 @@ export default defineComponent({
                         size={0}
                       >
                         {checkColumnList.map((item, index) => {
+                          const { fixed, left, right } = isFixedColumn(item);
                           return (
                             <div class="flex items-center">
                               <DragIcon
                                 class={[
                                   "drag-btn w-4 mr-2",
-                                  isFixedColumn(item)
-                                    ? "cursor-no-drop!"
-                                    : "cursor-grab!"
+                                  fixed ? "cursor-no-drop!" : "cursor-grab!"
                                 ]}
                                 onMouseenter={(event: {
                                   preventDefault: () => void;
@@ -369,6 +393,49 @@ export default defineComponent({
                                   {transformI18n(item)}
                                 </span>
                               </el-checkbox>
+                              <iconify-icon-offline
+                                class={[
+                                  "ml-2",
+                                  "size-4",
+                                  "hover:text-primary",
+                                  "cursor-pointer",
+                                  left ? "text-primary" : ""
+                                ]}
+                                icon={left ? PinAngleFill : PinAngle}
+                                v-tippy={
+                                  left
+                                    ? transformI18n($t("tableBar.pureUnpin"))
+                                    : transformI18n($t("tableBar.purePinLeft"))
+                                }
+                                onClick={() =>
+                                  handleToggleColumnFixed(
+                                    left ? false : "left",
+                                    item
+                                  )
+                                }
+                              />
+                              <iconify-icon-offline
+                                class={[
+                                  "ml-2",
+                                  "size-4",
+                                  "hover:text-primary",
+                                  "scale-x-[-1]",
+                                  "cursor-pointer",
+                                  right ? "text-primary" : ""
+                                ]}
+                                icon={right ? PinAngleFill : PinAngle}
+                                v-tippy={
+                                  right
+                                    ? transformI18n($t("tableBar.pureUnpin"))
+                                    : transformI18n($t("tableBar.purePinRight"))
+                                }
+                                onClick={() =>
+                                  handleToggleColumnFixed(
+                                    right ? false : "right",
+                                    item
+                                  )
+                                }
+                              />
                             </div>
                           );
                         })}
@@ -379,10 +446,14 @@ export default defineComponent({
               </el-popover>
               <el-divider direction="vertical" />
 
-              <iconifyIconOffline
+              <iconify-icon-offline
                 class={["w-4", iconClass.value]}
                 icon={isFullscreen.value ? ExitFullscreen : Fullscreen}
-                v-tippy={isFullscreen.value ? "退出全屏" : "全屏"}
+                v-tippy={
+                  isFullscreen.value
+                    ? transformI18n($t("tableBar.pureExitFullScreen"))
+                    : transformI18n($t("tableBar.pureFullScreen"))
+                }
                 onClick={() => onFullscreen()}
               />
             </div>
