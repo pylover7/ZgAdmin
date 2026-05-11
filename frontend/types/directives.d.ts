@@ -2,7 +2,7 @@ import type { Directive } from "vue";
 import type { CopyEl, OptimizeOptions, RippleOptions } from "@/directives";
 
 declare module "vue" {
-  export interface ComponentCustomProperties {
+  interface GlobalDirectives {
     /** `Loading` 动画加载指令，具体看：https://element-plus.org/zh-CN/component/loading.html#%E6%8C%87%E4%BB%A4 */
     vLoading: Directive<Element, boolean>;
     /** 按钮权限指令（根据路由`meta`中的`auths`字段进行判断）*/

@@ -536,7 +536,7 @@ onMounted(() => {
   });
 
   // 改变标签风格
-  emitter.on("tagViewsShowModel", key => {
+  emitter.on("tagViewsTagsStyle", key => {
     showModel.value = key;
   });
 
@@ -553,9 +553,9 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
-  // 解绑`tagViewsChange`、`tagViewsShowModel`、`changLayoutRoute`公共事件，防止多次触发
+  // 解绑`tagViewsChange`、`tagViewsTagsStyle`、`changLayoutRoute`公共事件，防止多次触发
   emitter.off("tagViewsChange");
-  emitter.off("tagViewsShowModel");
+  emitter.off("tagViewsTagsStyle");
   emitter.off("changLayoutRoute");
 });
 </script>
