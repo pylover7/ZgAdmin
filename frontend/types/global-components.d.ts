@@ -6,7 +6,9 @@ type IconifyIconOfflineProps = {
   icon?: IconifyIcon | string | Component;
 } & iconType &
   HTMLAttributes;
+
 type IconifyIconOnlineProps = { icon?: string } & iconType & HTMLAttributes;
+
 type FontIconProps = {
   icon?: string;
   /** `unicode` 引用模式 */
@@ -15,8 +17,11 @@ type FontIconProps = {
   svg?: boolean;
   iconType?: "uni" | "svg";
 } & HTMLAttributes;
+
 /** 权限控制组件公共 `Props` */
-type AuthorityProps = { value?: string | string[] };
+type AuthorityProps = {
+  value?: string | string[];
+};
 
 declare module "vue" {
   /**
