@@ -19,6 +19,8 @@ export default async ({ mode }: ConfigEnv): Promise<UserConfigExport> => {
     resolve: {
       alias
     },
+    // 环境变量读取项目根目录
+    envDir: pathResolve("../"),
     // 服务端渲染
     server: {
       // 端口号
