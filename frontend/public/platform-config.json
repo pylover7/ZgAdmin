@@ -1,5 +1,5 @@
 {
-  "Version": "0.0.1",
+  "Version": "0.0.3",
   "Title": "PyTool",
   "FixedHeader": true,
   "HiddenSideBar": false,
@@ -32,6 +32,8 @@
       "resizeEnable": true,
       "center": [113.6401, 34.72468],
       "zoom": 12
-    }
+    },
+  "RepositoryUrl": "https://cnb.cool/pylover/Tools/ZgAdmin",
+  "IssuesUrl": "https://cnb.cool/pylover/Tools/ZgAdmin/-/issues"
   }
 }

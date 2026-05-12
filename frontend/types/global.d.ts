@@ -14,12 +14,13 @@ declare global {
       version: string;
       engines: {
         node: string;
-        pnpm: string;
+        bun: string;
       };
       dependencies: Recordable;
       devDependencies: Recordable;
     };
     lastBuildTime: string;
+    projectVersion: string;
   };
 
   /**
@@ -118,6 +119,8 @@ declare global {
         zoom?: number;
       };
     };
+    RepositoryUrl?: string;
+    IssuesUrl?: string;
   }
 
   /**
@@ -157,6 +160,8 @@ declare global {
       };
     };
     username?: string;
+    RepositoryUrl?: string;
+    IssuesUrl?: string;
   }
 
   /**

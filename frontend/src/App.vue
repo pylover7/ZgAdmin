@@ -64,7 +64,8 @@ export default defineComponent({
     };
   },
   beforeCreate() {
-    const { version, name: title } = __APP_INFO__.pkg;
+    const { name: title } = __APP_INFO__.pkg;
+    const { projectVersion } = __APP_INFO__;
     const { VITE_PUBLIC_PATH, MODE } = import.meta.env;
     // https://github.com/guMcrey/version-rocket/blob/main/README.zh-CN.md#api
     if (MODE === "production") {
@@ -74,7 +75,7 @@ export default defineComponent({
         {
           // 5分钟检测一次版本
           pollingTime: 300000,
-          localPackageVersion: version,
+          localPackageVersion: projectVersion,
           originVersionFileUrl: `${location.origin}${VITE_PUBLIC_PATH}version.json`
         },
         // options

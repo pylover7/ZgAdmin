@@ -236,3 +236,7 @@ export const clearSystemLogs = () => {
 export const getSystemLogsDetail = (data?: object) => {
   return http.request<Result>("post", "/system-logs-detail", { data });
 };
+
+export const getSystemVersion = () => {
+  return http.request<Result>("get", systemUrl("/version"));
+};
