@@ -140,11 +140,14 @@ function findRouteByPath(path: string, routes: RouteRecordRaw[]) {
 }
 
 function addPathMatch() {
-  if (!router.hasRoute("pathMatch")) {
+  if (!router.hasRoute("PageNotFound")) {
     router.addRoute({
-      path: "/:pathMatch(.*)",
-      name: "pathMatch",
-      redirect: "/error/404"
+      path: "/:pathMatch(.*)*",
+      name: "PageNotFound",
+      redirect: "/error/404",
+      meta: {
+        showLink: false
+      }
     });
   }
 }
