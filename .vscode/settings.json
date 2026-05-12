@@ -129,6 +129,15 @@
                 "name": "Start PyTool",
                 "description": "Terminal profile that runs start.sh to launch PyTool"
         },
+        "版本号同步": {
+            "path": "/bin/zsh",
+            "args": [
+                "-c",
+                "zsh /workspace/scripts/version-sync.sh && zsh"
+                ],
+                "name": "Sync version",
+                "description": "将所有的版本号同步"
+        },
         "代码风格检查": {
             "path": "/bin/zsh",
             "args": [

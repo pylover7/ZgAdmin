@@ -6,7 +6,7 @@ start_time=$(date +%s)
 # 从 VERSION 文件读取版本号
 if [ -f "VERSION" ]; then
     export IMAGE_VERSION=$(cat VERSION)
-    export VITE_APP_VERSION=$(cat VERSION)
+    export VERSION=$(cat VERSION)
     echo "从 VERSION 文件读取版本号: $IMAGE_VERSION"
 else
     export IMAGE_VERSION="1.0.0"
