@@ -7,12 +7,13 @@ import {
   wrapperEnv,
   pathResolve,
   __APP_INFO__,
-  BACKEND_URL
+  BACKEND_URL,
+  projectRoot
 } from "./build/utils";
 
 export default async ({ mode }: ConfigEnv): Promise<UserConfigExport> => {
   const { VITE_CDN, VITE_PORT, VITE_COMPRESSION, VITE_PUBLIC_PATH } =
-    wrapperEnv(loadEnv(mode, root));
+    wrapperEnv(loadEnv(mode, projectRoot));
   return {
     base: VITE_PUBLIC_PATH,
     root,
@@ -20,7 +21,7 @@ export default async ({ mode }: ConfigEnv): Promise<UserConfigExport> => {
       alias
     },
     // 环境变量读取项目根目录
-    envDir: pathResolve("../"),
+    envDir: projectRoot,
     // 服务端渲染
     server: {
       // 端口号

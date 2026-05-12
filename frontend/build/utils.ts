@@ -14,6 +14,9 @@ import {
 /** 启动`node`进程时所在工作目录的绝对路径 */
 const root: string = process.cwd();
 
+/** 项目根目录的绝对路径 */
+const projectRoot: string = resolve(root, "..");
+
 /** CNB 中后端 URL 环境变量 */
 const BACKEND_URL =
   process.env.CNB_VSCODE_PROXY_URI?.replace(/\{\{port\}\}/g, "7001") ||
@@ -114,6 +117,7 @@ const getPackageSize = options => {
 
 export {
   root,
+  projectRoot,
   pathResolve,
   alias,
   __APP_INFO__,
