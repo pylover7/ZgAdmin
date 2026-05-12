@@ -14,12 +14,13 @@ declare global {
       version: string;
       engines: {
         node: string;
-        pnpm: string;
+        bun: string;
       };
-      dependencies: Recordable<string>;
-      devDependencies: Recordable<string>;
+      dependencies: Recordable;
+      devDependencies: Recordable;
     };
     lastBuildTime: string;
+    projectVersion: string;
   };
 
   /**
@@ -27,7 +28,7 @@ declare global {
    */
   interface Window {
     // Global vue app instance
-    __APP__: App<Element>;
+    __APP__: App;
     webkitCancelAnimationFrame: (handle: number) => void;
     mozCancelAnimationFrame: (handle: number) => void;
     oCancelAnimationFrame: (handle: number) => void;
@@ -93,7 +94,7 @@ declare global {
     Layout?: string;
     Theme?: string;
     DarkMode?: boolean;
-    OverallStyle?: string;
+    ThemeMode?: string;
     Grey?: boolean;
     Weak?: boolean;
     HideTabs?: boolean;
@@ -102,7 +103,9 @@ declare global {
     SidebarStatus?: boolean;
     EpThemeColor?: string;
     ShowLogo?: boolean;
-    ShowModel?: string;
+    Watermark?: boolean;
+    WatermarkText?: string;
+    TagsStyle?: string;
     MenuArrowIconNoTransition?: boolean;
     CachingAsyncRoutes?: boolean;
     TooltipEffect?: Effect;
@@ -116,6 +119,8 @@ declare global {
         zoom?: number;
       };
     };
+    RepositoryUrl?: string;
+    IssuesUrl?: string;
   }
 
   /**
@@ -140,9 +145,11 @@ declare global {
     sidebarStatus?: boolean;
     epThemeColor?: string;
     themeColor?: string;
-    overallStyle?: string;
+    themeMode?: string;
     showLogo?: boolean;
-    showModel?: string;
+    watermark?: boolean;
+    watermarkText?: string;
+    tagsStyle?: string;
     menuSearchHistory?: number;
     mapConfigure?: {
       amapKey?: string;
@@ -153,6 +160,8 @@ declare global {
       };
     };
     username?: string;
+    RepositoryUrl?: string;
+    IssuesUrl?: string;
   }
 
   /**
@@ -169,7 +178,7 @@ declare global {
       sidebarStatus?: boolean;
       epThemeColor?: string;
       themeColor?: string;
-      overallStyle?: string;
+      themeMode?: string;
     };
     configure: {
       grey?: boolean;
@@ -177,7 +186,9 @@ declare global {
       hideTabs?: boolean;
       hideFooter?: boolean;
       showLogo?: boolean;
-      showModel?: string;
+      watermark?: boolean;
+      watermarkText?: string;
+      tagsStyle?: string;
       multiTagsCache?: boolean;
       stretch?: boolean | number;
     };

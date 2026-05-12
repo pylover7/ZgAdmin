@@ -19,6 +19,8 @@ buttons:
   pureBackTop: BackTop
   pureOpenText: Open
   pureCloseText: Close
+  pureWatchMore: Watch More
+  pureMarkAsRead: Mark As Read
 search:
   pureTotal: Total
   pureHistory: History
@@ -243,6 +245,23 @@ login:
   purePassWordSureReg: Please confirm password
   purePassWordDifferentReg: Passwords do not match!
   purePassWordUpdateReg: Password updated successfully
+tableBar:
+  pureList: List
+  pureLarge: Large
+  pureDefault: Default
+  pureSmall: Small
+  pureColumnSettings: Column Settings
+  pureCollapse: Collapse
+  pureExpand: Expand
+  pureRefresh: Refresh
+  pureDensity: Density
+  pureColumnDisplay: Column Display
+  pureReset: Reset
+  pureExitFullScreen: Exit FullScreen
+  pureFullScreen: FullScreen
+  purePinLeft: Pin Left
+  purePinRight: Pin Right
+  pureUnpin: Unpin
 system:
   username: Username
   email: Email

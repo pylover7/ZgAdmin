@@ -52,7 +52,7 @@ const {
   <div :class="['flex', 'justify-between', deviceDetection() && 'flex-wrap']">
     <tree
       ref="treeRef"
-      :class="['mr-2', deviceDetection() ? 'w-full' : 'min-w-[200px]']"
+      :class="['mr-2', deviceDetection() ? 'w-full' : 'min-w-50']"
       :treeData="treeData"
       :treeLoading="treeLoading"
       @tree-select="onTreeSelect"
@@ -64,14 +64,14 @@ const {
         ref="formRef"
         :inline="true"
         :model="form"
-        class="search-form bg-bg_color w-full pl-8 pt-[12px] overflow-auto"
+        class="search-form bg-bg_color w-full pl-8 pt-3 overflow-auto"
       >
         <el-form-item :label="$t('system.username') + '：'" prop="username">
           <el-input
             v-model="form.username"
             :placeholder="$t('system.pleaseInput') + $t('system.username')"
             clearable
-            class="w-[180px]!"
+            class="w-45!"
           />
         </el-form-item>
         <el-form-item :label="$t('system.email') + '：'" prop="email">
@@ -79,7 +79,7 @@ const {
             v-model="form.email"
             :placeholder="$t('system.pleaseInput') + $t('system.email')"
             clearable
-            class="w-[180px]!"
+            class="w-45!"
           />
         </el-form-item>
         <el-form-item :label="$t('system.status') + '：'" prop="status">
@@ -87,7 +87,7 @@ const {
             v-model="form.status"
             :placeholder="$t('system.pleaseSelect')"
             clearable
-            class="w-[180px]!"
+            class="w-45!"
           >
             <el-option :label="$t('system.enabled')" value="1" />
             <el-option :label="$t('system.disabled')" value="0" />
@@ -126,7 +126,7 @@ const {
           <div
             v-if="selectedNum > 0"
             v-motion-fade
-            class="bg-[var(--el-fill-color-light)] w-full h-[46px] mb-2 pl-4 flex items-center"
+            class="bg-(--el-fill-color-light) w-full h-11.5 mb-2 pl-4 flex items-center"
           >
             <div class="flex-auto">
               <span
@@ -205,7 +205,7 @@ const {
               </el-popconfirm>
               <el-dropdown>
                 <el-button
-                  class="ml-3! mt-[2px]!"
+                  class="ml-3! mt-0.5!"
                   link
                   type="primary"
                   :size="size"

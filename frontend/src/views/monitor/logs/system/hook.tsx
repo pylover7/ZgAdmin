@@ -116,9 +116,12 @@ export function useRole(tableRef: Ref) {
 
   function clearAll() {
     clearSystemLogs().then(() => {
-      message(transformI18n("system.clearLog") + transformI18n("system.success"), {
-        type: "success"
-      });
+      message(
+        transformI18n("system.clearLog") + transformI18n("system.success"),
+        {
+          type: "success"
+        }
+      );
       onSearch();
     });
   }

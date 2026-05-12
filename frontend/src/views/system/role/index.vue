@@ -95,52 +95,70 @@ onMounted(() => {
       ref="formRef"
       :inline="true"
       :model="form"
-      class="search-form bg-bg_color w-full pl-8 pt-[12px] overflow-auto"
+      class="search-form bg-bg_color w-full pl-8 pt-3 overflow-auto"
     >
       <el-form-item :label="$t('system.roleName') + '：'" prop="name">
         <el-input
           v-model="form.name"
           :placeholder="$t('system.pleaseInput') + $t('system.roleName')"
-          clearable class="w-[180px]!"
+          clearable
+          class="w-45!"
         />
       </el-form-item>
       <el-form-item :label="$t('system.roleCode') + '：'" prop="code">
         <el-input
           v-model="form.code"
           :placeholder="$t('system.pleaseInput') + $t('system.roleCode')"
-          clearable class="w-[180px]!"
+          clearable
+          class="w-45!"
         />
       </el-form-item>
       <el-form-item :label="$t('system.status') + '：'" prop="status">
         <el-select
           v-model="form.status"
           :placeholder="$t('system.pleaseSelect') + $t('system.status')"
-          clearable class="w-[180px]!"
+          clearable
+          class="w-45!"
         >
           <el-option :label="$t('system.enabled')" value="1" />
           <el-option :label="$t('system.disabled')" value="0" />
         </el-select>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" :icon="useRenderIcon('ri/search-line')" :loading="loading" @click="onSearch">
-          {{ $t('system.search') }}
+        <el-button
+          type="primary"
+          :icon="useRenderIcon('ri/search-line')"
+          :loading="loading"
+          @click="onSearch"
+        >
+          {{ $t("system.search") }}
         </el-button>
         <el-button :icon="useRenderIcon(Refresh)" @click="resetForm(formRef)">
-          {{ $t('system.reset') }}
+          {{ $t("system.reset") }}
         </el-button>
       </el-form-item>
     </el-form>
 
-    <div ref="contentRef" :class="['flex', deviceDetection() ? 'flex-wrap' : '']">
+    <div
+      ref="contentRef"
+      :class="['flex', deviceDetection() ? 'flex-wrap' : '']"
+    >
       <PureTableBar
         :class="[isShow && !deviceDetection() ? 'w-[60vw]!' : 'w-full']"
         style="transition: width 220ms cubic-bezier(0.4, 0, 0.2, 1)"
-        :title="$t('menus.pureRole')" :columns="columns" @refresh="onSearch">
-      <template #buttons>
-        <el-button type="primary" :icon="useRenderIcon(AddFill)" @click="openDialog()">
-          {{ $t('system.add') + $t('menus.pureRole') }}
-        </el-button>
-      </template>
+        :title="$t('menus.pureRole')"
+        :columns="columns"
+        @refresh="onSearch"
+      >
+        <template #buttons>
+          <el-button
+            type="primary"
+            :icon="useRenderIcon(AddFill)"
+            @click="openDialog()"
+          >
+            {{ $t("system.add") + $t("menus.pureRole") }}
+          </el-button>
+        </template>
         <template v-slot="{ size, dynamicColumns }">
           <pure-table
             ref="tableRef"
@@ -164,21 +182,41 @@ onMounted(() => {
             @page-current-change="handleCurrentChange"
           >
             <template #operation="{ row }">
-              <el-button class="reset-margin" link type="primary" :size="size"
-                :icon="useRenderIcon(EditPen)" @click="openDialog($t('system.edit'), row)">
-                {{ $t('system.edit') }}
+              <el-button
+                class="reset-margin"
+                link
+                type="primary"
+                :size="size"
+                :icon="useRenderIcon(EditPen)"
+                @click="openDialog($t('system.edit'), row)"
+              >
+                {{ $t("system.edit") }}
               </el-button>
-              <el-popconfirm :title="$t('system.deleteConfirm')" @confirm="handleDelete(row)">
+              <el-popconfirm
+                :title="$t('system.deleteConfirm')"
+                @confirm="handleDelete(row)"
+              >
                 <template #reference>
-                  <el-button class="reset-margin" link type="primary" :size="size"
-                    :icon="useRenderIcon(Delete)">
-                    {{ $t('system.delete') }}
+                  <el-button
+                    class="reset-margin"
+                    link
+                    type="primary"
+                    :size="size"
+                    :icon="useRenderIcon(Delete)"
+                  >
+                    {{ $t("system.delete") }}
                   </el-button>
                 </template>
               </el-popconfirm>
-              <el-button class="reset-margin" link type="primary" :size="size"
-                :icon="useRenderIcon(Menu)" @click="handleMenu(row)">
-                {{ $t('system.roleAuth') }}
+              <el-button
+                class="reset-margin"
+                link
+                type="primary"
+                :size="size"
+                :icon="useRenderIcon(Menu)"
+                @click="handleMenu(row)"
+              >
+                {{ $t("system.roleAuth") }}
               </el-button>
             </template>
           </pure-table>
@@ -215,17 +253,22 @@ onMounted(() => {
             </span>
           </div>
           <p class="font-bold truncate">
-            {{ $t('system.roleAuth') }}
+            {{ $t("system.roleAuth") }}
             {{ curRow?.name ? `（${curRow.name}）` : "" }}
           </p>
         </div>
         <el-input
           v-model="treeSearchValue"
           :placeholder="$t('system.pleaseInput') + $t('menus.pureSystemMenu')"
-          class="mb-1" clearable @input="onQueryChanged"
+          class="mb-1"
+          clearable
+          @input="onQueryChanged"
         />
         <div class="flex flex-wrap">
-          <el-checkbox v-model="isExpandAll" :label="$t('system.expandCollapse')" />
+          <el-checkbox
+            v-model="isExpandAll"
+            :label="$t('system.expandCollapse')"
+          />
           <el-checkbox v-model="isSelectAll" :label="$t('system.selectAll')" />
         </div>
         <el-tree-v2

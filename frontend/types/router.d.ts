@@ -49,6 +49,8 @@ declare global {
     hiddenTag?: boolean;
     /** 当前菜单名称是否固定显示在标签页且不可关闭（默认`false`） */
     fixedTag?: boolean;
+    /** 路由是否已经加载过 `可选` */
+    loaded?: boolean;
     /** 动态路由可打开的最大数量 `可选` */
     dynamicLevel?: number;
     /** 将某个菜单激活

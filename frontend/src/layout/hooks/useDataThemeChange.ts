@@ -33,7 +33,7 @@ export function useDataThemeChange() {
 
   const { $storage } = useGlobal<GlobalPropertiesApi>();
   const dataTheme = ref<boolean>($storage?.layout?.darkMode);
-  const overallStyle = ref<string>($storage?.layout?.overallStyle);
+  const overallStyle = ref<string>($storage?.layout?.themeMode);
   const body = document.documentElement as HTMLElement;
 
   function toggleClass(flag: boolean, clsName: string, target?: HTMLElement) {
@@ -59,7 +59,7 @@ export function useDataThemeChange() {
       sidebarStatus: $storage.layout?.sidebarStatus,
       epThemeColor: $storage.layout?.epThemeColor,
       themeColor: isClick ? theme : storageThemeColor,
-      overallStyle: overallStyle.value
+      themeMode: overallStyle.value
     };
 
     if (theme === "default" || theme === "light") {

@@ -1,7 +1,11 @@
 import dayjs from "dayjs";
 import { message } from "@/utils/message";
 import { getKeyList } from "@pureadmin/utils";
-import { clearLoginLogs, deleteLoginLogs, getLoginLogsList } from "@/api/system";
+import {
+  clearLoginLogs,
+  deleteLoginLogs,
+  getLoginLogsList
+} from "@/api/system";
 import { usePublicHooks, formatDateTimeRange } from "@/views/system/hooks";
 import { transformI18n } from "@/plugins/i18n";
 import { type Ref, reactive, ref, onMounted } from "vue";
@@ -22,24 +26,60 @@ export function useRole(tableRef: Ref) {
 
   const pagination = reactive<PaginationProps>({ ...paginationConf });
   const columns: TableColumnList = [
-    { label: transformI18n("system.select"), type: "selection", fixed: "left", reserveSelection: true },
-    { label: "#", minWidth: 90, type: "index" },
-    { label: transformI18n("system.username"), prop: "username", minWidth: 100 },
-    { label: transformI18n("system.loginIp"), prop: "ip", minWidth: 140 },
-    { label: transformI18n("system.loginAddress"), prop: "address", minWidth: 140 },
-    { label: transformI18n("system.loginSystem"), prop: "system", minWidth: 100 },
-    { label: transformI18n("system.loginBrowser"), prop: "browser", minWidth: 100 },
     {
-      label: transformI18n("system.status"), prop: "level", minWidth: 100,
+      label: transformI18n("system.select"),
+      type: "selection",
+      fixed: "left",
+      reserveSelection: true
+    },
+    { label: "#", minWidth: 90, type: "index" },
+    {
+      label: transformI18n("system.username"),
+      prop: "username",
+      minWidth: 100
+    },
+    { label: transformI18n("system.loginIp"), prop: "ip", minWidth: 140 },
+    {
+      label: transformI18n("system.loginAddress"),
+      prop: "address",
+      minWidth: 140
+    },
+    {
+      label: transformI18n("system.loginSystem"),
+      prop: "system",
+      minWidth: 100
+    },
+    {
+      label: transformI18n("system.loginBrowser"),
+      prop: "browser",
+      minWidth: 100
+    },
+    {
+      label: transformI18n("system.status"),
+      prop: "level",
+      minWidth: 100,
       cellRenderer: ({ row, props }) => (
-        <el-tag size={props.size} style={tagStyle.value(row.level == "success" ? 1 : 0)}>
-          {row.level === "success" ? transformI18n("system.success") : transformI18n("system.fail")}
+        <el-tag
+          size={props.size}
+          style={tagStyle.value(row.level == "success" ? 1 : 0)}
+        >
+          {row.level === "success"
+            ? transformI18n("system.success")
+            : transformI18n("system.fail")}
         </el-tag>
       )
     },
-    { label: transformI18n("system.loginBehavior"), prop: "behavior", minWidth: 100 },
-    { label: transformI18n("system.loginTime"), prop: "time", minWidth: 180,
-      formatter: ({ time }) => dayjs(time).format("YYYY-MM-DD HH:mm:ss") }
+    {
+      label: transformI18n("system.loginBehavior"),
+      prop: "behavior",
+      minWidth: 100
+    },
+    {
+      label: transformI18n("system.loginTime"),
+      prop: "time",
+      minWidth: 180,
+      formatter: ({ time }) => dayjs(time).format("YYYY-MM-DD HH:mm:ss")
+    }
   ];
 
   function handleSizeChange(val: number) {
@@ -81,7 +121,10 @@ export function useRole(tableRef: Ref) {
   /** 清空日志 */
   function clearAll() {
     clearLoginLogs().then(() => {
-      message(transformI18n("system.clearLog") + transformI18n("system.success"), { type: "success" });
+      message(
+        transformI18n("system.clearLog") + transformI18n("system.success"),
+        { type: "success" }
+      );
       onSearch();
     });
   }

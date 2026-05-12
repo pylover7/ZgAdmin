@@ -7,18 +7,22 @@ import {
   wrapperEnv,
   pathResolve,
   __APP_INFO__,
-  BACKEND_URL
+  BACKEND_URL,
+  projectRoot,
+  PROJECT_VERSION
 } from "./build/utils";
 
-export default ({ mode }: ConfigEnv): UserConfigExport => {
+export default async ({ mode }: ConfigEnv): Promise<UserConfigExport> => {
   const { VITE_CDN, VITE_PORT, VITE_COMPRESSION, VITE_PUBLIC_PATH } =
-    wrapperEnv(loadEnv(mode, root));
+    wrapperEnv(loadEnv(mode, projectRoot));
   return {
     base: VITE_PUBLIC_PATH,
     root,
     resolve: {
       alias
     },
+    // 环境变量读取项目根目录
+    envDir: projectRoot,
     // 服务端渲染
     server: {
       // 端口号
@@ -38,7 +42,7 @@ export default ({ mode }: ConfigEnv): UserConfigExport => {
       },
       allowedHosts: [".cnb.run"]
     },
-    plugins: getPluginsList(VITE_CDN, VITE_COMPRESSION),
+    plugins: await getPluginsList(VITE_CDN, VITE_COMPRESSION),
     // https://cn.vitejs.dev/config/dep-optimization-options.html#dep-optimization-options
     optimizeDeps: {
       include,
@@ -50,7 +54,7 @@ export default ({ mode }: ConfigEnv): UserConfigExport => {
       sourcemap: false,
       // 消除打包大小超过500kb警告
       chunkSizeWarningLimit: 4000,
-      rollupOptions: {
+      rolldownOptions: {
         input: {
           index: pathResolve("./index.html", import.meta.url)
         },
@@ -59,12 +63,13 @@ export default ({ mode }: ConfigEnv): UserConfigExport => {
           chunkFileNames: "static/js/[name]-[hash].js",
           entryFileNames: "static/js/[name]-[hash].js",
           assetFileNames: "static/[ext]/[name]-[hash].[ext]"
-        }
+        },
+        checks: { pluginTimings: false, toleratedTransform: false }
       }
     },
     define: {
       __INTLIFY_PROD_DEVTOOLS__: false,
-      __APP_INFO__: JSON.stringify(__APP_INFO__)
+      __APP_INFO__: JSON.stringify({ ...__APP_INFO__, PROJECT_VERSION })
     }
   };
 };

@@ -100,7 +100,7 @@ onMounted(() => {
 
 <template>
   <div v-loading="loading" element-loading-text="正在登录中...">
-    <Motion v-if="!route.query.code" class="-mt-2 -mb-2">
+    <Motion v-if="!route.query.code" class="-my-2">
       <div class="text-center mb-4">
         <h3 class="text-lg font-semibold mb-2">QQ账号登录</h3>
         <p class="text-gray-500 text-sm">使用QQ安全登录，无需记住密码</p>

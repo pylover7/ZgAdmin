@@ -18,7 +18,7 @@ class DepartmentController(CRUDBase[Department, DepartCreate, DepartUpdate]):
         """
         depart = user.department
         departFullName = ""
-        while depart is not None and depart.parentId != 0:
+        while depart is not None and depart.parentId not in (None, 0):
             departFullName = depart.name + departFullName
             depart = session.get(Department, depart.parentId)
         return departFullName
