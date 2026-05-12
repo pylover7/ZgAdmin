@@ -90,7 +90,7 @@ async def get_qq_access_token(code: str) -> QQAccessToken:
             )
         except httpx.RequestError as e:
             logger.error(f"QQ API请求失败: {str(e)}")
-            raise HTTPException(status_code=500, detail="QQ服务不可用")
+            raise HTTPException(status_code=500, detail="QQ服务不可用") from e
 
 
 async def get_qq_userinfo(access_token: str, openid: str) -> QQUserInfo:
@@ -132,7 +132,7 @@ async def get_qq_userinfo(access_token: str, openid: str) -> QQUserInfo:
             )
         except httpx.RequestError as e:
             logger.error(f"QQ用户信息API请求失败: {str(e)}")
-            raise HTTPException(status_code=500, detail="QQ服务不可用")
+            raise HTTPException(status_code=500, detail="QQ服务不可用") from e
 
 
 async def find_or_create_qq_user(session, qq_userinfo: QQUserInfo) -> User:
@@ -181,7 +181,7 @@ async def find_or_create_qq_user(session, qq_userinfo: QQUserInfo) -> User:
     except Exception as e:
         logger.error(f"创建或更新QQ用户失败: {str(e)}")
         session.rollback()
-        raise HTTPException(status_code=500, detail="用户信息保存失败")
+        raise HTTPException(status_code=500, detail="用户信息保存失败") from e
 
 
 def create_oauth_state(purpose: str = "qq_login") -> str:

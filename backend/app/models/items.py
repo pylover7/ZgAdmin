@@ -21,7 +21,7 @@ class ItemUpdate(ItemBase):
     title: str | None = Field(
         default=None,
         min_length=1,
-        max_length=255)  # type: ignore
+        max_length=255)
 
 
 # Database model, database table inferred from class name

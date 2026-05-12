@@ -9,5 +9,3 @@ defineOptions({
     <p>你好</p>
   </div>
 </template>
-
-<style lang="scss" scoped></style>

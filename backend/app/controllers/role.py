@@ -11,8 +11,8 @@ class RoleController(CRUDBase[Role, RoleCreate, RoleUpdate]):
     def __init__(self):
         super().__init__(Role)
 
-    async def updateMenus(self, session: Session, id: UUID, menuIds: list[UUID]):
-        role_obj = await self.get(session, id)
+    async def updateMenus(self, session: Session, pk: UUID, menuIds: list[UUID]):
+        role_obj = await self.get(session, pk)
         if not role_obj:
             return None
         role_obj.menus.clear()
@@ -24,8 +24,8 @@ class RoleController(CRUDBase[Role, RoleCreate, RoleUpdate]):
         session.add(role_obj)
         session.commit()
 
-    async def updateApis(self, session: Session, id: UUID, apiIds: list[UUID]):
-        role_obj = await self.get(session, id)
+    async def updateApis(self, session: Session, pk: UUID, apiIds: list[UUID]):
+        role_obj = await self.get(session, pk)
         if not role_obj:
             return None
         role_obj.apis.clear()

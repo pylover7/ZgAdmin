@@ -8,7 +8,7 @@ import { message } from "@/utils/message";
 import userAvatar from "@/assets/user.jpg";
 import { usePublicHooks } from "../../hooks";
 import { addDialog } from "@/components/ReDialog";
-import { $t, transformI18n } from "@/plugins/i18n";
+import { transformI18n } from "@/plugins/i18n";
 import type { FormItemProps, RoleFormItemProps } from "../utils/types";
 import {
   getKeyList,

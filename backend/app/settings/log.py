@@ -22,8 +22,10 @@ class Logger:
         self.logger.add(
             sink=sys.stderr,
             level="DEBUG",
-            format="<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> |"
-                   " <level>Logger: {extra[name]}</level> | <level>{message}</level>"
+            format="<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | "
+            "<level>{level: <8}</level> |"
+            " <level>Logger: {extra[name]}</level> | "
+            "<level>{message}</level>"
         )
         self.logger.add(
             sink=systemLogs,
@@ -32,7 +34,9 @@ class Logger:
             encoding="utf-8",
             retention="10 days",
             compression="zip",
-            format="<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | <level>{message}</level>",
+            format="<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | "
+            "<level>{level: <8}</level> | "
+            "<level>{message}</level>",
             filter=lambda record: record["extra"].get("name") == "system")
         self.logger.add(
             sink=loginLogs,
@@ -51,7 +55,9 @@ class Logger:
             encoding="utf-8",
             retention="10 days",
             compression="zip",
-            format="<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | {extra[user]} | <level>{message}</level>",
+            format="<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | "
+            "<level>{level: <8}</level> | "
+            "{extra[user]} | <level>{message}</level>",
             filter=lambda record: record["extra"].get("name") == "operation")
         self.sysLogger = self.logger.bind(name="system")
         self.loginLogger = self.logger.bind(name="login")

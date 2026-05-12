@@ -53,12 +53,13 @@ ignore-patterns = ["_test.py$", "_mock.py$"]             # 忽略测试模式文
 
 # 通用规则控制
 disable = """
-    C0114, C0115,
-    R0903,
+    C0114, C0115, C0116,
+    R0903, R0911, R0912, R0913, R0914, R0917,
     W1203,
     E0213,
     W0221,
-    E0611
+    E0611,
+    E1102, E1120
 """
 
 # 代码质量强化
@@ -96,5 +97,4 @@ min-public-methods = 1   # 类最少公共方法数
 
 # 类型提示增强
 [tool.pylint.typecheck]
-recommended = true
-ignore-missing-imports = false  # 强制类型导入检查
+generated-members = "sqlmodel.*,sqlalchemy.*"

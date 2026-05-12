@@ -1,11 +1,12 @@
-from sqlmodel import Session, create_engine, select
+from sqlmodel import Session, SQLModel, select
 from fastapi import FastAPI
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from app.controllers.user import userController
 from app.core.schedule import update_expired_orders
-from app.models import *
+from app.models import User, UserCreate, Api
 from app.settings.log import logger
+from app.settings import settings
 from app.utils.staticFileUtils import check_dir_exists
 from app.core import engine, DatabaseSession
 from app.seed import seed_all

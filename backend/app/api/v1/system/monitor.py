@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Query
 
-from app.core.dependency import DependUser, SessionDep
+from app.core.dependency import DependUser
 from app.models import Success, SuccessExtra
 from app.settings.log import loginLogs, operationLogs, systemLogs, logger
 from app.utils.localTime import convert_utc_to_local_time
@@ -41,9 +41,7 @@ async def get_login_logs(
             return SuccessExtra(data=logList, total=total,
                                 currentPage=currentPage, pageSize=pageSize)
         start_index = total - pageSize * (currentPage - 1)
-        end_index = start_index - pageSize
-        if end_index < 0:
-            end_index = 0
+        end_index = max(start_index - pageSize, 0)
         for i in range(start_index, end_index, -1):
             # 分割日志行
             parts = lines[i - 1].strip().split('|')
@@ -64,7 +62,7 @@ async def get_login_logs(
 
 
 @monitorRouter.get("/clearLoginLogs", summary="清除登录日志")
-async def clear_login_logs(session: SessionDep, current_user: DependUser):
+async def clear_login_logs(current_user: DependUser):
     with open(loginLogs, "w", encoding="utf-8") as f:
         f.write("")
     await logger.operationError(current_user.username, "清除登录日志")
@@ -112,9 +110,7 @@ async def get_operation_logs(
                                 currentPage=currentPage, pageSize=pageSize)
 
         start_index = total - pageSize * (currentPage - 1)
-        end_index = start_index - pageSize
-        if end_index < 0:
-            end_index = 0
+        end_index = max(start_index - pageSize, 0)
         for i in range(start_index, end_index, -1):
             # 分割日志行
             parts = lines[i - 1].strip().split('|')
@@ -139,7 +135,7 @@ async def get_operation_logs(
 
 
 @monitorRouter.get("/clearOperationLogs", summary="清除操作日志")
-async def clear_operation_logs(session: SessionDep, current_user: DependUser):
+async def clear_operation_logs(current_user: DependUser):
     with open(operationLogs, "w", encoding="utf-8") as f:
         f.write("")
     await logger.operationError(current_user.username, "清除操作日志")
@@ -182,9 +178,7 @@ async def get_system_logs(
                                 currentPage=currentPage, pageSize=pageSize)
 
         start_index = total - pageSize * (currentPage - 1)
-        end_index = start_index - pageSize
-        if end_index < 0:
-            end_index = 0
+        end_index = max(start_index - pageSize, 0)
         for i in range(start_index, end_index, -1):
             # 分割日志行
             parts = lines[i - 1].strip().split('|')
@@ -210,7 +204,7 @@ async def get_system_logs(
 
 
 @monitorRouter.get("/clearSystemLogs", summary="清除系统日志")
-async def clear_system_logs(session: SessionDep, current_user: DependUser):
+async def clear_system_logs(current_user: DependUser):
     with open(systemLogs, "w", encoding="utf-8") as f:
         f.write("")
     await logger.operationError(current_user.username, "清除系统日志")
