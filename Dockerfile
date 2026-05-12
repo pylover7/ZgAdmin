@@ -62,7 +62,7 @@ FROM python:3.13-slim
 
 # 安装nginx和其他必要工具和后端依赖
 RUN apt-get update && \
-  apt-get install -y nginx curl && \
+  apt-get install -y nginx && \
   pip install uv && \
   rm -rf /var/lib/apt/lists/*
 
@@ -88,7 +88,7 @@ EXPOSE 80 7001
 
 # 健康检查
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD curl -f http://localhost/api/v1/base/health || exit 1
+  CMD python3 -c "import urllib.request; urllib.request.urlopen('http://localhost/api/v1/base/health')" || exit 1
 
 # 启动命令
 CMD ["/start.sh"]

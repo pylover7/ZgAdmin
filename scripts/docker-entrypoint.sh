@@ -41,7 +41,7 @@ NGINX_PID=$!
 # 等待 nginx 就绪
 RETRIES=0
 MAX_RETRIES=30
-while ! curl -sf http://localhost/ >/dev/null 2>&1; do
+while ! python3 -c "import urllib.request; urllib.request.urlopen('http://localhost/')" 2>/dev/null; do
     RETRIES=$((RETRIES + 1))
     if [ "$RETRIES" -ge "$MAX_RETRIES" ]; then
         echo "[ENTRYPOINT] nginx 启动超时，退出"
@@ -59,7 +59,7 @@ BACKEND_PID=$!
 
 # 等待后端就绪
 RETRIES=0
-while ! curl -sf http://localhost:7001/api/v1/base/health >/dev/null 2>&1; do
+while ! python3 -c "import urllib.request; urllib.request.urlopen('http://localhost:7001/api/v1/base/health')" 2>/dev/null; do
     RETRIES=$((RETRIES + 1))
     if [ "$RETRIES" -ge "$MAX_RETRIES" ]; then
         echo "[ENTRYPOINT] 后端启动超时，退出"
