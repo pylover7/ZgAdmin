@@ -40,7 +40,7 @@ export default async ({ mode }: ConfigEnv): Promise<UserConfigExport> => {
       warmup: {
         clientFiles: ["./index.html", "./src/{views,components}/*"]
       },
-      allowedHosts: [".cnb.run"]
+      allowedHosts: [".cnb.space"]
     },
     plugins: await getPluginsList(VITE_CDN, VITE_COMPRESSION),
     // https://cn.vitejs.dev/config/dep-optimization-options.html#dep-optimization-options
