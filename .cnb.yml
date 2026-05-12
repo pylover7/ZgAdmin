@@ -26,7 +26,7 @@ $:
         - name: vscode
           options:
             onlyPreview: true
-            launch: bash scripts/preview.sh
+            launch: bash ./scripts/preview.sh
             daemon: true
       imports:
         - https://cnb.cool/pylover/key/-/blob/main/deepseek.yml
