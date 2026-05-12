@@ -59,8 +59,8 @@ $:
       runner:
         cpus: 8
       services:
-        - vscode
         - docker
+        - vscode
       imports:
         - https://cnb.cool/pylover/key/-/blob/main/deepseek.yml
         - https://cnb.cool/pylover/Tools/KeJi_Key/-/blob/main/tapd.yml
