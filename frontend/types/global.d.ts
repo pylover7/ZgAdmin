@@ -14,12 +14,13 @@ declare global {
       version: string;
       engines: {
         node: string;
-        pnpm: string;
+        bun: string;
       };
       dependencies: Recordable;
       devDependencies: Recordable;
     };
     lastBuildTime: string;
+    projectVersion: string;
   };
 
   /**

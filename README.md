@@ -1,6 +1,12 @@
 # PyTool
 
-全栈管理平台 — Python/FastAPI 后端 + Vue 3/TypeScript 前端，Docker 一键部署。
+管理平台模板 — Python/FastAPI 后端 + Vue 3/TypeScript 前端，Docker 一键部署。
+
+- 🔐 **完善的权限体系** — 用户/角色/菜单/部门多级权限，支持 JWT 鉴权
+- 🔑 **多种登录方式** — 账号密码、QQ 登录、微信登录
+- 📊 **实时系统监控** — 在线用户、登录日志、操作日志全方位追踪
+- 🌍 **国际化支持** — 中文 / English 无缝切换
+- 🐳 **一键部署** — Docker 多阶段构建，SQLite 零配置即用
 
 ## 技术栈
 

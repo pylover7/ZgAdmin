@@ -8,7 +8,8 @@ import {
   pathResolve,
   __APP_INFO__,
   BACKEND_URL,
-  projectRoot
+  projectRoot,
+  PROJECT_VERSION
 } from "./build/utils";
 
 export default async ({ mode }: ConfigEnv): Promise<UserConfigExport> => {
@@ -68,7 +69,7 @@ export default async ({ mode }: ConfigEnv): Promise<UserConfigExport> => {
     },
     define: {
       __INTLIFY_PROD_DEVTOOLS__: false,
-      __APP_INFO__: JSON.stringify(__APP_INFO__)
+      __APP_INFO__: JSON.stringify({ ...__APP_INFO__, PROJECT_VERSION })
     }
   };
 };

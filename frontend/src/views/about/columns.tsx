@@ -1,6 +1,20 @@
 export function useColumns() {
-  const { pkg, lastBuildTime } = __APP_INFO__;
+  const { pkg, lastBuildTime, projectVersion } = __APP_INFO__;
   const { version, engines } = pkg;
+  const appColums = [
+    {
+      label: "当前版本",
+      minWidth: 100,
+      cellRenderer: () => {
+        return (
+          <el-tag size="large" class="text-base!">
+            {projectVersion}
+          </el-tag>
+        );
+      }
+    }
+  ];
+
   const columns = [
     {
       label: "当前版本",
@@ -36,12 +50,12 @@ export function useColumns() {
       }
     },
     {
-      label: "推荐 pnpm 版本",
+      label: "推荐 bun 版本",
       minWidth: 140,
       cellRenderer: () => {
         return (
           <el-tag size="large" class="text-base!">
-            {engines.pnpm}
+            {engines.bun}
           </el-tag>
         );
       }
@@ -103,6 +117,7 @@ export function useColumns() {
   ];
 
   return {
-    columns
+    columns,
+    appColums
   };
 }
