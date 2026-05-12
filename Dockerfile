@@ -13,6 +13,11 @@ RUN npm install -g bun
 # 安装前端依赖
 RUN bun install --frozen-lockfile
 
+# 复制项目版本文件（构建时 vite 读取 projectRoot/VERSION）
+WORKDIR /app
+COPY VERSION .
+WORKDIR /app/frontend
+
 # 复制前端源代码
 COPY frontend/ ./
 
@@ -57,7 +62,7 @@ FROM python:3.13-slim
 
 # 安装nginx和其他必要工具和后端依赖
 RUN apt-get update && \
-  apt-get install -y nginx curl && \
+  apt-get install -y nginx && \
   pip install uv && \
   rm -rf /var/lib/apt/lists/*
 
@@ -74,25 +79,16 @@ COPY --from=backend /app /backend
 WORKDIR /backend
 RUN uv sync --frozen --no-dev
 
-# 创建启动脚本
-RUN echo '#!/bin/bash' > /start.sh && \
-  echo '# 启动nginx（前端）' >> /start.sh && \
-  echo 'nginx -g "daemon off;" &' >> /start.sh && \
-  echo '' >> /start.sh && \
-  echo '# 等待nginx启动' >> /start.sh && \
-  echo 'sleep 3' >> /start.sh && \
-  echo '' >> /start.sh && \
-  echo '# 启动Python后端' >> /start.sh && \
-  echo 'cd /backend' >> /start.sh && \
-  echo 'uv run python main.py' >> /start.sh && \
-  chmod +x /start.sh
+# 复制启动脚本
+COPY scripts/docker-entrypoint.sh /start.sh
+RUN chmod +x /start.sh
 
 # 暴露端口
 EXPOSE 80 7001
 
 # 健康检查
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD curl -f http://localhost/api/v1/base/health || exit 1
+  CMD python3 -c "import urllib.request; urllib.request.urlopen('http://localhost/api/v1/base/health')" || exit 1
 
 # 启动命令
 CMD ["/start.sh"]

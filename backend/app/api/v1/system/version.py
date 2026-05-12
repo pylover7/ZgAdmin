@@ -39,12 +39,3 @@ async def get_version_info():
     }
     logger.debug(f"版本信息: {data}")
     return Success(data=data)
-
-
-@versionRouter.get("/health", summary="健康检查")
-async def health_check():
-    return Success(data={
-        "status": "healthy",
-        "version": settings.VERSION,
-        "environment": settings.ENVIRONMENT
-    })

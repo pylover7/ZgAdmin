@@ -62,8 +62,8 @@ Object.keys(devDependencies).forEach(key => {
   <div>
     <el-card class="mb-4 box-card" shadow="never">
       <span>
-        ZgAdmin 是一款功能完善的管理平台模板 — Python/FastAPI 后端 + Vue
-        3/TypeScript 前端，Docker 一键部署。
+        ZgAdmin 是一款功能完善的管理平台模板 — Python/FastAPI 后端 + PureAdmin
+        前端，Docker 一键部署。
       </span>
     </el-card>
 
