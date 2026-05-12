@@ -13,6 +13,11 @@ RUN npm install -g bun
 # 安装前端依赖
 RUN bun install --frozen-lockfile
 
+# 复制项目版本文件（构建时 vite 读取 projectRoot/VERSION）
+WORKDIR /app
+COPY VERSION .
+WORKDIR /app/frontend
+
 # 复制前端源代码
 COPY frontend/ ./
 
@@ -74,18 +79,9 @@ COPY --from=backend /app /backend
 WORKDIR /backend
 RUN uv sync --frozen --no-dev
 
-# 创建启动脚本
-RUN echo '#!/bin/bash' > /start.sh && \
-  echo '# 启动nginx（前端）' >> /start.sh && \
-  echo 'nginx -g "daemon off;" &' >> /start.sh && \
-  echo '' >> /start.sh && \
-  echo '# 等待nginx启动' >> /start.sh && \
-  echo 'sleep 3' >> /start.sh && \
-  echo '' >> /start.sh && \
-  echo '# 启动Python后端' >> /start.sh && \
-  echo 'cd /backend' >> /start.sh && \
-  echo 'uv run python main.py' >> /start.sh && \
-  chmod +x /start.sh
+# 复制启动脚本
+COPY scripts/docker-entrypoint.sh /start.sh
+RUN chmod +x /start.sh
 
 # 暴露端口
 EXPOSE 80 7001
