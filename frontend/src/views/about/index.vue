@@ -74,7 +74,7 @@ Object.keys(devDependencies).forEach(key => {
         </div>
       </template>
       <el-scrollbar>
-        <PureDescriptions border :columns="appColums" :column="4" />
+        <PureDescriptions border :columns="appColums" :column="3" />
       </el-scrollbar>
     </el-card>
 

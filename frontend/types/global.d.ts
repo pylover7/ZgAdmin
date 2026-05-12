@@ -119,6 +119,8 @@ declare global {
         zoom?: number;
       };
     };
+    RepositoryUrl?: string;
+    IssuesUrl?: string;
   }
 
   /**
@@ -158,6 +160,8 @@ declare global {
       };
     };
     username?: string;
+    RepositoryUrl?: string;
+    IssuesUrl?: string;
   }
 
   /**
