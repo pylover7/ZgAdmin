@@ -2,4 +2,4 @@ from fastapi import APIRouter
 
 settingsRouter = APIRouter()
 
-__all__ = ["settingsRouter", "loginPublicRouter", "loginProtectedRouter"]
+__all__ = ["settingsRouter"]

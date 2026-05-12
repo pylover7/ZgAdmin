@@ -31,7 +31,7 @@ async def pay_setting(species: str):
 
 
 @paySetRouter.post("/set/{species}", summary="支付设置更新")
-async def pay_setting(species: str, data: dict):
+async def pay_setting_update(species: str, data: dict):
     match species:
         case "email":
             base_config.set_config("email", "host", data["host"])

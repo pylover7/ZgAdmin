@@ -38,7 +38,7 @@ async def create_user(
         return Success(msg="用户创建成功！")
     except Exception as e:
         await logger.systemError("系统管理", f"用户创建失败 [{data.username}]: {e}")
-        raise HTTPException(status_code=400, detail="用户创建失败！")
+        raise HTTPException(status_code=400, detail="用户创建失败！") from e
 
 
 @userRouter.post("/delete", summary="删除用户")
@@ -52,15 +52,15 @@ async def delete_user(
         return Success(msg="Deleted Successfully")
     except Exception as e:
         await logger.systemError("系统管理", f"用户删除失败: {e}")
-        raise HTTPException(status_code=400, detail="用户删除失败！")
+        raise HTTPException(status_code=400, detail="用户删除失败！") from e
 
 
 @userRouter.get("/get", summary="查看用户")
 async def get_user(
         session: SessionDep,
-        id: UUID = Query(..., description="用户ID"),
+        user_id: UUID = Query(..., description="用户ID"),
 ):
-    user_obj = await userController.get(session, id)
+    user_obj = await userController.get(session, user_id)
     if not user_obj:
         raise HTTPException(status_code=404, detail="用户不存在！")
     user_dict = await user_obj.to_dict(exclude_fields=["password"])
@@ -98,7 +98,7 @@ async def list_user(
     result = []
     for obj in user_objs:
         obj_dict = await obj.to_dict(exclude_fields=["password"])
-        obj_dict["roleIds"] = [item.id.__str__() for item in obj.roles]
+        obj_dict["roleIds"] = [str(item.id) for item in obj.roles]
         obj_dict["dept"] = await obj.department.to_dict() if obj.department else None
         result.append(obj_dict)
     return SuccessExtra(data=result, total=total,

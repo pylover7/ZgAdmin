@@ -63,9 +63,9 @@ def main():
         print()
         print("下一步:")
         print(f"  1. 在 backend/app/models/__init__.py 添加: from .{name} import *")
-        print(f"  2. 在 backend/app/api/v1/__init__.py 注册路由")
-        print(f"  3. 在 seed/data/menus.py 添加菜单项")
-        print(f"  4. 重启服务")
+        print("  2. 在 backend/app/api/v1/__init__.py 注册路由")
+        print("  3. 在 seed/data/menus.py 添加菜单项")
+        print("  4. 重启服务")
 
     else:
         print(f"未知命令: {cmd}")

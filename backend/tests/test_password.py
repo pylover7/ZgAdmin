@@ -62,7 +62,7 @@ class TestMD5Encrypt:
     
     def test_md5_encrypt_none_input(self):
         """测试None输入"""
-        result = md5_encrypt(None)  # type: ignore
+        result = md5_encrypt(None)
         assert result == ""
 
 
@@ -93,13 +93,13 @@ class TestVerifyPassword:
         """测试无效哈希值"""
         assert verify_password("test", "invalid_hash") is False
         assert verify_password("test", "$2b$12$invalid") is False
-        assert verify_password("test", None) is False  # type: ignore
+        assert verify_password("test", None) is False
     
     def test_verify_password_none_inputs(self):
         """测试None输入"""
-        assert verify_password(None, "hash") is False  # type: ignore
-        assert verify_password("password", None) is False  # type: ignore
-        assert verify_password(None, None) is False  # type: ignore
+        assert verify_password(None, "hash") is False
+        assert verify_password("password", None) is False
+        assert verify_password(None, None) is False 
     
     def test_verify_password_special_characters(self):
         """测试特殊字符密码"""

@@ -9,6 +9,7 @@ from app.settings.log import logger
 
 versionRouter = APIRouter()
 
+
 def _get_uv_version() -> str:
     """安全获取 uv 版本"""
     try:
@@ -16,12 +17,14 @@ def _get_uv_version() -> str:
             ["uv", "--version"],
             capture_output=True,
             text=True,
-            timeout=5
+            timeout=5,
+            check=False
         )
         return result.stdout.strip()
     except Exception as e:
         logger.debug(f"获取 uv 版本失败: {e}")
         return "unknown"
+
 
 @versionRouter.get("", summary="获取版本信息")
 async def get_version_info():

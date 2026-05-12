@@ -85,7 +85,7 @@ async def get_role_auth(session: SessionDep, data: BaseModel):
     #     "menus": [item.id.__str__() for item in role_obj.menus],
     #     "apis": [item.id.__str__() for item in role_obj.apis]
     # }
-    result = [item.id.__str__() for item in role_obj.menus]
+    result = [str(item.id) for item in role_obj.menus]
     return Success(msg="角色权限查询成功！", data=result)
 
 
@@ -97,4 +97,4 @@ async def update_role_auth(session: SessionDep, data: UpdateRoleAuth):
         return Success(msg="角色权限修改成功！")
     except Exception as e:
         await logger.systemError("系统管理", f"角色权限修改失败: {e}")
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e

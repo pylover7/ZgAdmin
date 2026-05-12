@@ -57,11 +57,11 @@ async def login_access_token(
     )
     if not user:
         return FailAuth(msg="用户名或密码错误！")
-    await userController.update_last_login(session=session, id=user.id)
+    await userController.update_last_login(session=session, pk=user.id)
     roles = [item.code for item in user.roles]
     try:
         depart = deptController.get_all_name(session, user)
-    except Exception as e:
+    except Exception:
         logger.debug("获取部门名称失败")
         depart = ""
     access_token_expires = timedelta(
@@ -135,7 +135,7 @@ async def refresh_token(refreshToken: refreshTokenSchema):
 
 @router.get("/userinfo", summary="查看用户信息")
 async def get_userinfo(session: SessionDep, current_user: DependUser):
-    user_obj = await userController.get(session=session, id=current_user.id)
+    user_obj = await userController.get(session=session, pk=current_user.id)
     if not user_obj:
         return FailAuth(msg="用户不存在或已被删除！")
     data = await user_obj.to_dict(exclude_fields=["password"])
@@ -206,7 +206,7 @@ async def update_user_password(
         session: SessionDep,
         req_in: UpdatePassword,
         current_user: DependUser):
-    user = await userController.get(session=session, id=current_user.id)
+    user = await userController.get(session=session, pk=current_user.id)
     if not user:
         return FailAuth(msg="用户不存在或已被删除！")
     verified = verify_password(req_in.current_password, user.password)
@@ -228,11 +228,9 @@ async def get_qq_auth_url():
         base_config.get_config("login", "qq_enabled", fallback="false").lower() == "true")
 
     if not qq_enabled:
-        from app.models.base import Fail
         return Fail(msg="QQ登录未启用")
 
     if not app_id:
-        from app.models.base import Fail
         return Fail(msg="QQ登录未配置")
 
     state = create_oauth_state()
@@ -254,19 +252,19 @@ async def get_qq_auth_url():
 
 
 @router.post("/qq/login", summary="QQ登录", dependencies=[DependRateLimit])
-async def qq_login(session: SessionDep, qq_login: QQLoginSchema):
+async def qq_login(session: SessionDep, qq_login_data: QQLoginSchema):
     """处理QQ登录回调"""
     try:
         # 验证输入参数
-        if not qq_login.code or not qq_login.state:
+        if not qq_login_data.code or not qq_login_data.state:
             return FailAuth(msg="授权参数不完整")
 
         # 验证state令牌（防CSRF）
-        if not verify_oauth_state(qq_login.state):
+        if not verify_oauth_state(qq_login_data.state):
             return FailAuth(msg="授权验证失败，请重新登录")
 
         # 1. 使用授权码获取access_token
-        token_data = await get_qq_access_token(qq_login.code)
+        token_data = await get_qq_access_token(qq_login_data.code)
 
         # 2. 获取用户信息
         user_info = await get_qq_userinfo(token_data.access_token, token_data.openid)
@@ -312,7 +310,7 @@ async def qq_login(session: SessionDep, qq_login: QQLoginSchema):
         )
 
         # 更新最后登录时间
-        await userController.update_last_login(session=session, id=user.id)
+        await userController.update_last_login(session=session, pk=user.id)
 
         return Success(data=data.model_dump())
 
