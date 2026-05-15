@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.models import Success
+from app.models import Success, Fail
 from app.settings.config import base_config
 
 # 公开接口：获取登录方式
@@ -128,4 +128,4 @@ async def update_login_config(data: dict):
 
         return Success(msg="保存成功！")
     except Exception as e:
-        return Success(msg="保存成功！", data={"error": str(e)})
+        return Fail(msg=f"保存失败： {str(e)}")

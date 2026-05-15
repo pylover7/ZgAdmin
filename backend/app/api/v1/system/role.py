@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from fastapi import APIRouter, HTTPException, Query
 from sqlalchemy import and_
 from sqlmodel import col
@@ -20,9 +22,10 @@ async def add_role(session: SessionDep, data: RoleCreate):
 
 
 @roleRouter.post("/delete", summary="删除角色")
-async def delete_role(session: SessionDep, data: list[str]):
+async def delete_role(session: SessionDep, data: list[UUID]):
     await roleController.delete(session, data)
     await logger.systemInfo("系统管理", f"删除角色: {data}")
+    return Success(msg="角色删除成功")
 
 
 @roleRouter.post("/list", summary="获取角色列表")

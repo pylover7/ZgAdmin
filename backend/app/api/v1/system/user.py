@@ -113,8 +113,10 @@ async def update_user(
     user = await userController.get(session, data.id)
     if not user:
         raise HTTPException(status_code=404, detail="用户不存在！")
-    if user.id != data.id:
-        raise HTTPException(status_code=400, detail="用户名已存在！")
+    if hasattr(data, 'username') and data.username:
+        existing = await userController.get_user_by_name(session, data.username)
+        if existing and existing.id != data.id:
+            raise HTTPException(status_code=400, detail="用户名已存在！")
     del data.username
     await userController.update(session, user.id, data)
     await logger.systemInfo("系统管理", f"更新用户信息: {user.username}")
