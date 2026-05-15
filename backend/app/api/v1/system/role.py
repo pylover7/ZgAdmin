@@ -64,6 +64,7 @@ async def role_all(session: SessionDep):
     result = [await item.to_dict() for item in role_obj]
     return Success(msg="角色列表查询成功！", data=result)
 
+
 @roleRouter.post("/update", summary="修改角色信息")
 async def update_role(session: SessionDep, data: RoleUpdate):
     await roleController.update(session, data.id, data)

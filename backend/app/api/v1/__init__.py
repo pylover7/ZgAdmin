@@ -33,7 +33,7 @@ v1_router.include_router(
     prefix="/monitor",
     dependencies=[DependPermission])
 v1_router.include_router(
-  payRouter,
-  prefix="/pay",
-  dependencies=[DependPermission]
+    payRouter,
+    prefix="/pay",
+    dependencies=[DependPermission]
 )

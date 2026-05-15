@@ -104,6 +104,7 @@ async def list_user(
     return SuccessExtra(data=result, total=total,
                         currentPage=currentPage, pageSize=pageSize)
 
+
 @userRouter.post("/getRolesIds", summary="获取用户角色 id 列表")
 async def get_user_roles_id_list(session: SessionDep, data: BaseModel):
     user_obj = await userController.get(session, data.id)
