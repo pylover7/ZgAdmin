@@ -51,6 +51,13 @@ export const getUserList = (
   });
 };
 
+/** 系统管理-用户管理-根据userId，获取对应角色id列表（userId：用户id） */
+export const getRoleIds = (id: string) => {
+  return http.request<Result>("post", userUrl("/getRolesIds"), {
+    data: { id }
+  });
+};
+
 /** 新增角色 */
 export const addRole = (data?: object) => {
   return http.request<Result>("post", roleUrl("/add"), { data });
@@ -74,11 +81,6 @@ export const updateRoleStatus = (data?: object) => {
 /** 系统管理-用户管理-获取所有角色列表 */
 export const getAllRoleList = () => {
   return http.request<Result>("get", roleUrl("/all"));
-};
-
-/** 系统管理-用户管理-根据userId，获取对应角色id列表（userId：用户id） */
-export const getRoleIds = (data?: object) => {
-  return http.request<Result>("post", "/list-role-ids", { data });
 };
 
 /** 获取系统管理-角色管理列表 */

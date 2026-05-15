@@ -64,7 +64,6 @@ async def role_all(session: SessionDep):
     result = [await item.to_dict() for item in role_obj]
     return Success(msg="角色列表查询成功！", data=result)
 
-
 @roleRouter.post("/update", summary="修改角色信息")
 async def update_role(session: SessionDep, data: RoleUpdate):
     await roleController.update(session, data.id, data)
@@ -74,7 +73,12 @@ async def update_role(session: SessionDep, data: RoleUpdate):
 
 @roleRouter.post("/updateStatus", summary="修改角色状态")
 async def update_role_status(session: SessionDep, data: UpdateRoleStatus):
-    await roleController.update(session, data.id, data)
+    role_obj = await roleController.get(session, data.id)
+    if not role_obj:
+        raise HTTPException(status_code=404, detail="角色不存在！")
+    role_obj.status = data.status
+    session.add(role_obj)
+    session.commit()
     await logger.systemInfo("系统管理", f"修改角色状态: {data.id} -> {data.status}")
     return Success(msg="角色状态修改成功！")
 
