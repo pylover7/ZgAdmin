@@ -150,11 +150,6 @@ export const getDeptList = () => {
   return http.request<Result>("get", deptUrl("/list"));
 };
 
-/** 获取系统监控-在线用户列表 */
-export const getOnlineLogsList = (data?: object) => {
-  return http.request<ResultTable>("post", "/online-logs", { data });
-};
-
 /** 删除登录日志 */
 export const deleteLoginLogs = (data?: string[]) => {
   return http.request<Result>("post", loginLogsUrl("/delete"), { data });
@@ -231,12 +226,7 @@ export const getSystemLogsList = (
 
 /** 删除全部系统日志 */
 export const clearSystemLogs = () => {
-  return http.request<Result>("post", systemLogsUrl("/clear"));
-};
-
-/** 获取系统监控-系统日志-根据 id 查日志详情 */
-export const getSystemLogsDetail = (data?: object) => {
-  return http.request<Result>("post", "/system-logs-detail", { data });
+  return http.request<Result>("get", systemLogsUrl("/clear"));
 };
 
 export const getSystemVersion = () => {
