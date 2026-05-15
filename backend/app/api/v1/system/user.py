@@ -111,7 +111,7 @@ async def get_user_roles_id_list(session: SessionDep, data: BaseModel):
     if user_obj is None:
         return Fail(msg="没有这个用户")
     result = [role.id for role in user_obj.roles]
-    return Success(msg="xxx", data=result)
+    return Success(msg="成功获取用户角色列表", data=result)
 
 
 @userRouter.post("/update", summary="更新用户")
