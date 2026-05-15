@@ -122,6 +122,8 @@ async def get_operation_logs(
                     level = 2
                 case "ERROR":
                     level = 0
+                case _:
+                    level = 0
 
             log_dict = {
                 "username": parts[2].strip(),
@@ -192,6 +194,8 @@ async def get_system_logs(
                     level = 2
                 case "ERROR":
                     level = 3
+                case _:
+                    level = 0
             # 构建字典
             log_dict = {
                 "systemTime": parts[0].strip(),
