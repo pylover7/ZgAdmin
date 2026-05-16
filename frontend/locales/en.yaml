@@ -193,6 +193,7 @@ menus:
   pureMindMap: Mind Map
   pureMenuOverflow: Menu Overflow Show Tooltip Text
   pureChildMenuOverflow: Child Menu Overflow Show Tooltip Text
+  zgNoticeSettings: Notice Manage
 status:
   pureLoad: Loading...
   pureMessage: Message
