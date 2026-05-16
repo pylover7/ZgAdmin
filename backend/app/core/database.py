@@ -1,6 +1,10 @@
+from pathlib import Path
+
 from sqlmodel import Session, SQLModel, select
 from fastapi import FastAPI
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from alembic.config import Config as AlembicConfig
+from alembic.command import upgrade
 
 from app.controllers.user import userController
 from app.core.schedule import update_expired_orders
@@ -35,7 +39,8 @@ def _sync_api_routes(app: FastAPI, session: Session):
 
 async def init_data(app: FastAPI) -> None:
     logger.info("初始化数据库...")
-    SQLModel.metadata.create_all(engine)
+    alembic_cfg = AlembicConfig(str(Path(__file__).resolve().parent.parent.parent / "alembic.ini"))
+    upgrade(alembic_cfg, "head")
     logger.info("检查静态文件目录...")
     check_dir_exists([settings.STATIC_PATH, settings.AVATAR_PATH, settings.GOODS_PATH])
 
