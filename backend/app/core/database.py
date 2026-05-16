@@ -39,8 +39,7 @@ def _sync_api_routes(app: FastAPI, session: Session):
 
 async def init_data(app: FastAPI) -> None:
     logger.info("初始化数据库...")
-    alembic_cfg = AlembicConfig(str(Path(__file__).resolve().parent.parent.parent / "alembic.ini"))
-    upgrade(alembic_cfg, "head")
+    SQLModel.metadata.create_all(engine)
     logger.info("检查静态文件目录...")
     check_dir_exists([settings.STATIC_PATH, settings.AVATAR_PATH, settings.GOODS_PATH])
 

@@ -10,6 +10,8 @@ from app.core.database import init_data
 from app.core.exceptions import SettingNotFound
 from app.core.init import make_middlewares, register_routers, register_exceptions
 from app.settings import settings
+from app.settings.log import logger
+
 
 
 def custom_generate_unique_id(route: APIRoute) -> str:
