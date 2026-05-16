@@ -23,11 +23,7 @@ $:
         cpus: 8
       services:
         - docker
-        - name: vscode
-          options:
-            onlyPreview: true
-            launch: bash ./scripts/preview.sh
-            daemon: true
+        - vscode    
       imports:
         - https://cnb.cool/pylover/key/-/blob/main/deepseek.yml
         - https://cnb.cool/pylover/Tools/KeJi_Key/-/blob/main/tapd.yml
@@ -60,7 +56,11 @@ $:
         cpus: 8
       services:
         - docker
-        - vscode
+        - name: vscode
+          options:
+            onlyPreview: true
+            launch: bash ./scripts/preview.sh
+            daemon: true
       imports:
         - https://cnb.cool/pylover/key/-/blob/main/deepseek.yml
         - https://cnb.cool/pylover/Tools/KeJi_Key/-/blob/main/tapd.yml
