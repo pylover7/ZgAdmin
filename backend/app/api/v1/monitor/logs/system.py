@@ -19,7 +19,7 @@ async def delete_system_logs(
     return Success(msg="系统日志删除成功！")
 
 
-@systemRouter.post("/clear")
+@systemRouter.get("/clear")
 async def clear_system_logs(
     session: SessionDep,
 ):

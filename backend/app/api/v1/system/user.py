@@ -9,7 +9,7 @@ from sqlmodel import col, and_, select
 
 from app.core.dependency import SessionDep
 from app.controllers.user import userController
-from app.models.base import Success, SuccessExtra
+from app.models.base import BaseModel, Success, SuccessExtra, Fail
 from app.models.user import UserCreate, UserUpdate, User, UserFiter, UserResetPwd, UserAvatar, UpdateStatus, \
     UpdateUserRoles
 from app.models.role import Role
@@ -105,6 +105,15 @@ async def list_user(
                         currentPage=currentPage, pageSize=pageSize)
 
 
+@userRouter.post("/getRolesIds", summary="获取用户角色 id 列表")
+async def get_user_roles_id_list(session: SessionDep, data: BaseModel):
+    user_obj = await userController.get(session, data.id)
+    if user_obj is None:
+        return Fail(msg="没有这个用户")
+    result = [role.id for role in user_obj.roles]
+    return Success(msg="成功获取用户角色列表", data=result)
+
+
 @userRouter.post("/update", summary="更新用户")
 async def update_user(
         session: SessionDep,
@@ -113,8 +122,10 @@ async def update_user(
     user = await userController.get(session, data.id)
     if not user:
         raise HTTPException(status_code=404, detail="用户不存在！")
-    if user.id != data.id:
-        raise HTTPException(status_code=400, detail="用户名已存在！")
+    if hasattr(data, 'username') and data.username:
+        existing = await userController.get_user_by_name(session, data.username)
+        if existing and existing.id != data.id:
+            raise HTTPException(status_code=400, detail="用户名已存在！")
     del data.username
     await userController.update(session, user.id, data)
     await logger.systemInfo("系统管理", f"更新用户信息: {user.username}")

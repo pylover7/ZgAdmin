@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from fastapi import APIRouter, HTTPException, Query
 from sqlalchemy import and_
 from sqlmodel import col
@@ -20,9 +22,10 @@ async def add_role(session: SessionDep, data: RoleCreate):
 
 
 @roleRouter.post("/delete", summary="删除角色")
-async def delete_role(session: SessionDep, data: list[str]):
+async def delete_role(session: SessionDep, data: list[UUID]):
     await roleController.delete(session, data)
     await logger.systemInfo("系统管理", f"删除角色: {data}")
+    return Success(msg="角色删除成功")
 
 
 @roleRouter.post("/list", summary="获取角色列表")
@@ -71,7 +74,12 @@ async def update_role(session: SessionDep, data: RoleUpdate):
 
 @roleRouter.post("/updateStatus", summary="修改角色状态")
 async def update_role_status(session: SessionDep, data: UpdateRoleStatus):
-    await roleController.update(session, data.id, data)
+    role_obj = await roleController.get(session, data.id)
+    if not role_obj:
+        raise HTTPException(status_code=404, detail="角色不存在！")
+    role_obj.status = data.status
+    session.add(role_obj)
+    session.commit()
     await logger.systemInfo("系统管理", f"修改角色状态: {data.id} -> {data.status}")
     return Success(msg="角色状态修改成功！")
 

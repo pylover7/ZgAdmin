@@ -1,5 +1,6 @@
 workspace:
   launch:
     button:
-      name: 工具箱
-      description: 开启！！！
+      name: 项目演示
+      description: 启动演示项目
+    autoOpenWebIDE: true
