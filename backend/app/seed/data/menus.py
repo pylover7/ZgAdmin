@@ -18,7 +18,8 @@ DEFAULT_MENUS = [
              "icon": "fluent:clover-48-regular", "rank": 3},
             {
                 "menuType": 0,
-                "name": "menus.zgNoticeSettings",
+                "title": "menus.zgNoticeSettings",
+                "name": "SystemNotice",
                 "path": "/system/notice",
                 "component": "system/notice/index",
                 "icon": "ri:notification-3-line",
