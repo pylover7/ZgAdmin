@@ -18,6 +18,7 @@ class NoticeCreate(SQLModel):
     content: str = Field(default="", description="通知内容")
     type: int = Field(default=0, description="通知类型：0-系统, 1-业务, 2-公告")
     level: str = Field(default="info", description="通知级别：info/warning/important")
+    status: int = Field(default=0, description="0-草稿, 1-已发布")
 
 
 # ─── 更新 ───

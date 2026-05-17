@@ -58,6 +58,7 @@ function hoverDescription(event, description) {
       'border-0 border-solid border-[#f0f0f0] dark:border-[#303030]',
       { 'border-b': !isLast }
     ]"
+    style="cursor: pointer"
   >
     <el-avatar
       v-if="noticeItem.avatar"

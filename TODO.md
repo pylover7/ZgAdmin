@@ -120,13 +120,13 @@ Phase 0 (立即) → Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 →
 
 - [x] 创建 `frontend/src/api/notice.ts` 通知 API 封装（7 个方法与后端一一对应）
 - [x] 创建 `frontend/src/views/system/notice/index.vue` 通知管理页（CRUD 表格 + 发布/编辑弹窗）
-- [ ] 改造 `frontend/src/layout/components/lay-notice/` 铃铛组件：
+- [x] 改造 `frontend/src/layout/components/lay-notice/` 铃铛组件：
   - `data.ts` 中 `noticesData` 从 API 实时拉取（调用 `getUnreadNotices()`）
   - "通知" tab 对接 `/notice/unread`
   - "标记已读" 对接 `/notice/read`（调用 `markNoticeRead()`）
   - "全部已读" 对接 `/notice/readAll`（调用 `markAllRead()`）
   - "查看更多" 跳转到通知管理页
-- [ ] 铃铛红点实时显示未读数（定时轮询 `/notice/unread`，30s 间隔）
+- [x] 铃铛红点实时显示未读数（定时轮询 `/notice/unread`，30s 间隔）
 - [ ] 🔄 国际化：`locales/zh-CN.yaml` 和 `locales/en.yaml` 补充通知相关翻译键
 
 ---

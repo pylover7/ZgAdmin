@@ -22,7 +22,7 @@ const typeMap: Record<number, string> = {
 };
 
 const typeTagType: Record<number, string> = {
-  0: "",
+  0: "primary",
   1: "success",
   2: "warning"
 };
