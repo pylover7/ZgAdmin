@@ -46,48 +46,48 @@ function onFullscreen() {
       :model="form"
       class="search-form bg-bg_color w-full pl-8 pt-3 overflow-auto"
     >
-      <el-form-item label="通知标题：" prop="title">
+      <el-form-item :label="$t('system.notice.title') + '：'" prop="title">
         <el-input
           v-model="form.title"
-          placeholder="请输入通知标题"
+          :placeholder="$t('system.notice.enterTitle')"
           clearable
           class="w-45!"
         />
       </el-form-item>
-      <el-form-item label="通知类型：" prop="type">
+      <el-form-item :label="$t('system.notice.type') + '：'" prop="type">
         <el-select
           v-model="form.type"
-          placeholder="请选择通知类型"
+          :placeholder="$t('system.notice.selectType')"
           clearable
           class="w-45!"
         >
-          <el-option label="系统通知" :value="0" />
-          <el-option label="业务通知" :value="1" />
-          <el-option label="公告" :value="2" />
+          <el-option :label="$t('system.notice.sysNotice')" :value="0" />
+          <el-option :label="$t('system.notice.bizNotice')" :value="1" />
+          <el-option :label="$t('system.notice.announce')" :value="2" />
         </el-select>
       </el-form-item>
-      <el-form-item label="通知级别：" prop="level">
+      <el-form-item :label="$t('system.notice.level') + '：'" prop="level">
         <el-select
           v-model="form.level"
-          placeholder="请选择通知级别"
+          :placeholder="$t('system.notice.selectLevel')"
           clearable
           class="w-45!"
         >
-          <el-option label="普通" value="info" />
-          <el-option label="警告" value="warning" />
-          <el-option label="重要" value="important" />
+          <el-option :label="$t('system.notice.info')" value="info" />
+          <el-option :label="$t('system.notice.warn')" value="warning" />
+          <el-option :label="$t('system.notice.important')" value="important" />
         </el-select>
       </el-form-item>
-      <el-form-item label="状态：" prop="status">
+      <el-form-item :label="$t('system.notice.status') + '：'" prop="status">
         <el-select
           v-model="form.status"
-          placeholder="请选择状态"
+          :placeholder="$t('system.notice.selectStatus')"
           clearable
           class="w-45!"
           @change="onSearch"
         >
-          <el-option label="草稿" :value="0" />
-          <el-option label="已发布" :value="1" />
+          <el-option :label="$t('system.notice.draft')" :value="0" />
+          <el-option :label="$t('system.notice.published')" :value="1" />
         </el-select>
       </el-form-item>
       <el-form-item>
@@ -97,16 +97,16 @@ function onFullscreen() {
           :loading="loading"
           @click="onSearch"
         >
-          搜索
+          {{ $t("system.search") }}
         </el-button>
         <el-button :icon="useRenderIcon(Refresh)" @click="resetForm(formRef)">
-          重置
+          {{ $t("system.reset") }}
         </el-button>
       </el-form-item>
     </el-form>
 
     <PureTableBar
-      title="通知管理"
+      :title="$t('menus.zgNoticeSettings')"
       :columns="columns"
       :tableRef="tableRef?.getTableRef()"
       @refresh="onSearch"
@@ -118,7 +118,7 @@ function onFullscreen() {
           :icon="useRenderIcon(AddFill)"
           @click="openDialog()"
         >
-          发布通知
+          {{ $t("system.notice.publishNotice") }}
         </el-button>
         <el-button
           type="danger"
@@ -126,7 +126,7 @@ function onFullscreen() {
           :disabled="selectedIds.length === 0"
           @click="handleBatchDelete"
         >
-          批量删除
+          {{ $t("system.batchDelete") }}
         </el-button>
       </template>
       <template v-slot="{ size, dynamicColumns }">
@@ -158,12 +158,12 @@ function onFullscreen() {
               type="primary"
               :size="size"
               :icon="useRenderIcon(EditPen)"
-              @click="openDialog('修改', row)"
+              @click="openDialog($t('system.edit'), row)"
             >
-              修改
+              {{ $t("system.edit") }}
             </el-button>
             <el-popconfirm
-              title="确认删除所选数据？"
+              :title="$t('system.deleteConfirm')"
               @confirm="handleDelete(row)"
             >
               <template #reference>
@@ -174,7 +174,7 @@ function onFullscreen() {
                   :size="size"
                   :icon="useRenderIcon(Delete)"
                 >
-                  删除
+                  {{ $t("system.delete") }}
                 </el-button>
               </template>
             </el-popconfirm>

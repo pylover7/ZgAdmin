@@ -394,3 +394,33 @@ system:
   appId: App ID
   appKey: App Key
   redirectUri: 回调地址
+  notice:
+    title: 通知标题
+    type: 通知类型
+    level: 通知级别
+    content: 通知内容
+    status: 通知状态
+    sysNotice: 系统通知
+    bizNotice: 业务通知
+    announce: 公告
+    sys: 系统
+    biz: 业务
+    info: 普通
+    warn: 警告
+    important: 重要
+    draft: 草稿
+    published: 已发布
+    publishNotice: 发布通知
+    enterTitle: 请输入通知标题
+    selectType: 请选择通知类型
+    selectLevel: 请选择通知级别
+    enterContent: 请输入通知内容
+    selectStatus: 请选择状态
+    titleRequired: 通知标题为必填项
+    typeRequired: 请选择通知类型
+    levelRequired: 请选择通知级别
+    atLeastOne: 请至少选择一条数据
+    batchDeleteSuccess: 批量删除成功
+    deleteSuccess: 删除成功
+    deleteNoticeConfirm: 确认删除该通知？
+    noticeLabel: 通知

@@ -1,3 +1,5 @@
+import { transformI18n } from "@/plugins/i18n";
+
 export interface ListItem {
   avatar: string;
   title: string;
@@ -46,11 +48,11 @@ const levelMap: Record<
   important: "danger"
 };
 
-/** type 编号 → 中文名（用于 extra 标签） */
+/** type 编号 → i18n key（用于 extra 标签） */
 const typeLabel: Record<number, string> = {
-  0: "系统",
-  1: "业务",
-  2: "公告"
+  0: "system.notice.sys",
+  1: "system.notice.biz",
+  2: "system.notice.announce"
 };
 
 /** 将后端通知转为前端展示格式 */
@@ -62,7 +64,7 @@ export function transformNotice(item: ApiNotice): ListItem {
     type: String(item.type),
     description: item.content,
     status: levelMap[item.level] || "info",
-    extra: typeLabel[item.type] || "",
+    extra: typeLabel[item.type] ? transformI18n(typeLabel[item.type]) : "",
     noticeId: item.id
   };
 }

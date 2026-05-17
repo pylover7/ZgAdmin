@@ -2,6 +2,7 @@ import dayjs from "dayjs";
 import editForm from "../form.vue";
 import { message } from "@/utils/message";
 import { addDialog } from "@/components/ReDialog";
+import { transformI18n } from "@/plugins/i18n";
 import type { FormItemProps } from "./types";
 import type { PaginationProps } from "@pureadmin/table";
 import { deviceDetection } from "@pureadmin/utils";
@@ -14,11 +15,11 @@ import {
 import { reactive, ref, onMounted, h } from "vue";
 import { paginationConf } from "@/config";
 
-// ─── 映射表 ───
+// ─── 映射表（值存 i18n key） ───
 const typeMap: Record<number, string> = {
-  0: "系统通知",
-  1: "业务通知",
-  2: "公告"
+  0: "system.notice.sysNotice",
+  1: "system.notice.bizNotice",
+  2: "system.notice.announce"
 };
 
 const typeTagType: Record<number, string> = {
@@ -28,9 +29,9 @@ const typeTagType: Record<number, string> = {
 };
 
 const levelMap: Record<string, string> = {
-  info: "普通",
-  warning: "警告",
-  important: "重要"
+  info: "system.notice.info",
+  warning: "system.notice.warn",
+  important: "system.notice.important"
 };
 
 const levelTagType: Record<string, string> = {
@@ -40,8 +41,8 @@ const levelTagType: Record<string, string> = {
 };
 
 const statusMap: Record<number, string> = {
-  0: "草稿",
-  1: "已发布"
+  0: "system.notice.draft",
+  1: "system.notice.published"
 };
 
 const statusTagType: Record<number, string> = {
@@ -66,46 +67,52 @@ export function useNotice() {
   const columns: TableColumnList = [
     { type: "selection", fixed: "left" },
     { label: "#", type: "index", minWidth: 60 },
-    { label: "通知标题", prop: "title", minWidth: 160 },
     {
-      label: "通知类型",
+      label: transformI18n("system.notice.title"),
+      prop: "title",
+      minWidth: 160
+    },
+    {
+      label: transformI18n("system.notice.type"),
       prop: "type",
       minWidth: 100,
       cellRenderer: ({ row }) => (
         <el-tag type={typeTagType[row.type]}>
-          {typeMap[row.type] ?? "未知"}
+          {transformI18n(typeMap[row.type]) ??
+            transformI18n("system.notice.type")}
         </el-tag>
       )
     },
     {
-      label: "通知级别",
+      label: transformI18n("system.notice.level"),
       prop: "level",
       minWidth: 100,
       cellRenderer: ({ row }) => (
         <el-tag type={levelTagType[row.level] ?? "info"}>
-          {levelMap[row.level] ?? row.level}
+          {transformI18n(levelMap[row.level]) ?? row.level}
         </el-tag>
       )
     },
     {
-      label: "通知状态",
+      label: transformI18n("system.notice.status"),
       prop: "status",
       minWidth: 90,
       cellRenderer: ({ row }) => (
         <el-tag type={statusTagType[row.status]}>
-          {statusMap[row.status] ?? "未知"}
+          {transformI18n(statusMap[row.status]) ??
+            transformI18n("system.notice.status")}
         </el-tag>
       )
     },
     {
-      label: "创建时间",
+      label: transformI18n("system.createTime"),
       prop: "created_at",
       minWidth: 170,
       formatter: ({ created_at }) =>
         dayjs(created_at).format("YYYY-MM-DD HH:mm:ss")
     },
     {
-      label: "操作",
+      label: transformI18n("system.operation"),
       fixed: "right",
       width: 160,
       slot: "operation"
@@ -154,10 +161,13 @@ export function useNotice() {
     onSearch();
   };
 
-  function openDialog(title = "新增", row?: FormItemProps) {
-    const isAdd = title === "新增";
+  function openDialog(
+    title = transformI18n("system.add"),
+    row?: FormItemProps
+  ) {
+    const isAdd = title === transformI18n("system.add");
     addDialog({
-      title: `${title}通知`,
+      title: `${title}${transformI18n("system.notice.noticeLabel")}`,
       props: {
         formInline: {
           id: row?.id ?? "",
@@ -178,7 +188,10 @@ export function useNotice() {
         const FormRef = formRef.value.getRef();
         const curData = options.props.formInline as FormItemProps;
         function chores() {
-          message(`${title}成功: ${curData.title}`, { type: "success" });
+          message(
+            `${title}${transformI18n("system.success")}: ${curData.title}`,
+            { type: "success" }
+          );
           done();
           onSearch();
         }
@@ -211,7 +224,10 @@ export function useNotice() {
   function handleDelete(row) {
     deleteNotice([row.id]).then(res => {
       if (res.success) {
-        message(`删除成功: ${row.title}`, { type: "success" });
+        message(
+          `${transformI18n("system.notice.deleteSuccess")}: ${row.title}`,
+          { type: "success" }
+        );
         onSearch();
       }
     });
@@ -219,12 +235,14 @@ export function useNotice() {
 
   function handleBatchDelete() {
     if (selectedIds.value.length === 0) {
-      message("请至少选择一条数据", { type: "warning" });
+      message(transformI18n("system.notice.atLeastOne"), { type: "warning" });
       return;
     }
     deleteNotice(selectedIds.value).then(res => {
       if (res.success) {
-        message("批量删除成功", { type: "success" });
+        message(transformI18n("system.notice.batchDeleteSuccess"), {
+          type: "success"
+        });
         selectedIds.value = [];
         onSearch();
       }

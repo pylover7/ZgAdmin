@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { formRules } from "./utils/rule";
+import { useFormRules } from "./utils/rule";
 import { FormProps } from "./utils/types";
 
 const props = withDefaults(defineProps<FormProps>(), {
@@ -16,6 +16,7 @@ const props = withDefaults(defineProps<FormProps>(), {
 
 const ruleFormRef = ref();
 const newFormInline = ref(props.formInline);
+const formRules = useFormRules();
 
 function getRef() {
   return ruleFormRef.value;
@@ -31,53 +32,53 @@ defineExpose({ getRef });
     :rules="formRules"
     label-width="82px"
   >
-    <el-form-item label="通知标题" prop="title">
+    <el-form-item :label="$t('system.notice.title')" prop="title">
       <el-input
         v-model="newFormInline.title"
         clearable
-        placeholder="请输入通知标题"
+        :placeholder="$t('system.notice.enterTitle')"
         maxlength="200"
         show-word-limit
       />
     </el-form-item>
 
-    <el-form-item label="通知类型" prop="type">
+    <el-form-item :label="$t('system.notice.type')" prop="type">
       <el-select
         v-model="newFormInline.type"
-        placeholder="请选择通知类型"
+        :placeholder="$t('system.notice.selectType')"
         class="w-full"
       >
-        <el-option label="系统通知" :value="0" />
-        <el-option label="业务通知" :value="1" />
-        <el-option label="公告" :value="2" />
+        <el-option :label="$t('system.notice.sysNotice')" :value="0" />
+        <el-option :label="$t('system.notice.bizNotice')" :value="1" />
+        <el-option :label="$t('system.notice.announce')" :value="2" />
       </el-select>
     </el-form-item>
 
-    <el-form-item label="通知级别" prop="level">
+    <el-form-item :label="$t('system.notice.level')" prop="level">
       <el-select
         v-model="newFormInline.level"
-        placeholder="请选择通知级别"
+        :placeholder="$t('system.notice.selectLevel')"
         class="w-full"
       >
-        <el-option label="普通" value="info" />
-        <el-option label="警告" value="warning" />
-        <el-option label="重要" value="important" />
+        <el-option :label="$t('system.notice.info')" value="info" />
+        <el-option :label="$t('system.notice.warn')" value="warning" />
+        <el-option :label="$t('system.notice.important')" value="important" />
       </el-select>
     </el-form-item>
 
-    <el-form-item label="通知内容">
+    <el-form-item :label="$t('system.notice.content')">
       <el-input
         v-model="newFormInline.content"
-        placeholder="请输入通知内容"
+        :placeholder="$t('system.notice.enterContent')"
         type="textarea"
         :rows="4"
       />
     </el-form-item>
 
-    <el-form-item label="通知状态">
+    <el-form-item :label="$t('system.notice.status')">
       <el-radio-group v-model="newFormInline.status">
-        <el-radio :value="0">草稿</el-radio>
-        <el-radio :value="1">已发布</el-radio>
+        <el-radio :value="0">{{ $t("system.notice.draft") }}</el-radio>
+        <el-radio :value="1">{{ $t("system.notice.published") }}</el-radio>
       </el-radio-group>
     </el-form-item>
   </el-form>

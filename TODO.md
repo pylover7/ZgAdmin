@@ -127,7 +127,7 @@ Phase 0 (立即) → Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 →
   - "全部已读" 对接 `/notice/readAll`（调用 `markAllRead()`）
   - "查看更多" 跳转到通知管理页
 - [x] 铃铛红点实时显示未读数（定时轮询 `/notice/unread`，30s 间隔）
-- [ ] 🔄 国际化：`locales/zh-CN.yaml` 和 `locales/en.yaml` 补充通知相关翻译键
+- [x] 🔄 国际化：`locales/zh-CN.yaml` 和 `locales/en.yaml` 补充通知相关翻译键
 
 ---
 
