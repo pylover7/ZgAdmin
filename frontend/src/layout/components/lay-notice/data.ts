@@ -1,5 +1,3 @@
-import { $t } from "@/plugins/i18n";
-
 export interface ListItem {
   avatar: string;
   title: string;
@@ -34,7 +32,8 @@ export interface ApiNotice {
 /** 后端 /notice/unread 返回结构 */
 export interface UnreadResult {
   count: number;
-  list: ApiNotice[];
+  notify: ApiNotice[]; // type=0,2 → 通知 Tab
+  message: ApiNotice[]; // type=1 → 消息 Tab
 }
 
 /** level → el-tag type 映射 */

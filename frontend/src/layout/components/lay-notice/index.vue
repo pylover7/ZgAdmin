@@ -21,6 +21,12 @@ const notices = ref<TabItem[]>([
     name: "status.pureNotify",
     list: [],
     emptyText: "status.pureNoNotify"
+  },
+  {
+    key: "2",
+    name: "status.pureMessage",
+    list: [],
+    emptyText: "status.pureNoMessage"
   }
 ]);
 
@@ -52,12 +58,20 @@ async function fetchUnread() {
     const { data } = await getUnreadNotices();
     const result = data as unknown as UnreadResult;
     unreadCount.value = result.count;
+
+    // 通知 Tab
     const notifyTab = notices.value.find(item => item.key === "1");
     if (notifyTab) {
-      notifyTab.list = (result.list || []).map(transformNotice);
+      notifyTab.list = (result.notify || []).map(transformNotice);
     }
+    // 消息 Tab
+    const messageTab = notices.value.find(item => item.key === "2");
+    if (messageTab) {
+      messageTab.list = (result.message || []).map(transformNotice);
+    }
+    // 待办 Tab — 暂无数据源，保持空
   } catch {
-    // 静默处理，避免影响用户体验
+    // 静默处理
   }
 }
 

@@ -66,9 +66,23 @@ async def delete_notice(session: SessionDep, data: list[UUID]):
 @noticeRouter.get("/unread", summary="当前用户未读通知")
 async def get_unread_notices(session: SessionDep, current_user: DependUser):
     count = await noticeController.get_unread_count(session, current_user.id)
-    items = await noticeController.get_unread_list(session, current_user.id, limit=10)
-    result = [await obj.to_dict() for obj in items]
-    return Success(data={"count": count, "list": result})
+    items = await noticeController.get_unread_list(session, current_user.id, limit=20)
+    
+    # 按 type 分组：0,2 → 通知；1 → 消息
+    notify_list = []
+    message_list = []
+    for item in items:
+        d = await item.to_dict()
+        if item.type == 1:
+            message_list.append(d)
+        else:
+            notify_list.append(d)
+    
+    return Success(data={
+        "count": count,
+        "notify": notify_list,
+        "message": message_list
+    })
 
 
 @noticeRouter.post("/read", summary="标记单条已读")
