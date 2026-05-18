@@ -52,20 +52,20 @@ Phase 0 (立即) → Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 →
 
 ### 0.1 后端 Bug
 
-- [ ] `pay/setting.py`：`pay_setting_update` 的 `wechat` 分支补充 `set_config` 实现
-- [ ] `pay/test.py`：发送邮件测试接口加 `DependPermission` 鉴权 ⚠️ 安全
-- [ ] `settings/login.py`：`update_login_config` 异常时 `Success(msg="保存成功！")` 改为 `Fail`
-- [ ] `system/role.py`：`delete_role` 补充缺失的 `return` 语句
-- [ ] `system/user.py`：`update_user` 逻辑修正 — `if user.id != data.id` 永远不会为 True（先查了 `data.id` 再判断）
-- [ ] `RateLimiter` 限流器：从纯内存存储改为 Redis 存储（多进程/多容器部署兼容）⚠️ 架构
+- [x] `pay/setting.py`：`pay_setting_update` 的 `wechat` 分支补充 `set_config` 实现
+- [x] `pay/test.py`：发送邮件测试接口加 `DependPermission` 鉴权 ⚠️ 安全
+- [x] `settings/login.py`：`update_login_config` 异常时 `Success(msg="保存成功！")` 改为 `Fail`
+- [x] `system/role.py`：`delete_role` 补充缺失的 `return` 语句
+- [x] `system/user.py`：`update_user` 逻辑修正 — `if user.id != data.id` 永远不会为 True（先查了 `data.id` 再判断）
+- [x] `RateLimiter` 限流器：从纯内存存储改为 Redis 存储（多进程/多容器部署兼容）⚠️ 架构
 
 ### 0.2 前端 Bug
 
-- [ ] `api/system.ts`：`getRoleIds` 路径 `/list-role-ids` → `/system/role/list-role-ids`
-- [ ] `api/system.ts`：`getOnlineLogsList` 路径 `/online-logs` → 修正为正确路径
-- [ ] `api/system.ts`：`getSystemLogsDetail` 路径 `/system-logs-detail` → 修正为正确路径
-- [ ] `api/system.ts`：`clearSystemLogs` 请求方法 `POST` → `GET`（与后端一致）
-- [ ] 通知铃铛组件：`data.ts` 中硬编码数据替换为动态数据（为 Phase 2 通知系统铺路）
+- [x] `api/system.ts`：`getRoleIds` 路径 `/list-role-ids` → `/system/role/list-role-ids`
+- [x] `api/system.ts`：`getOnlineLogsList` 路径 `/online-logs` → 修正为正确路径
+- [x] `api/system.ts`：`getSystemLogsDetail` 路径 `/system-logs-detail` → 修正为正确路径
+- [x] `api/system.ts`：`clearSystemLogs` 请求方法 `POST` → `GET`（与后端一致）
+- [x] 通知铃铛组件：`data.ts` 中硬编码数据替换为动态数据（为 Phase 2 通知系统铺路）
 
 ---
 
@@ -82,13 +82,13 @@ Phase 0 (立即) → Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 →
 - **文件日志**：`system/monitor.py` 直接读写 `.log` 文件
 - **数据库日志**：`monitor/logs/` 下 SQLModel `LoginLog / OperationLog / SystemLog`
 
-- [ ] 最终确认统一方案为"保留数据库日志，废弃文件日志"
-- [ ] `app/settings/log.py` 的 logger 增加数据库 handler（登录日志、操作日志、系统日志分别写对应表）
-- [ ] `system/monitor.py` 中基于文件读写的接口标记 `@deprecated`，保留一个版本过渡期
-- [ ] 确认前端 `api/system.ts` 所有日志 API 指向 `monitor/logs/*` 数据库接口
-- [ ] 确认 `monitor/logs/login|operation|system` 三个前端页面对接数据库接口正确
-- [ ] 过渡期结束后删除 `system/monitor.py` 中 `getLoginLogs / getOperationLogs / getSystemLogs` 及对应 `clear*`
-- [ ] 生成 Alembic 迁移脚本（如需新增日志表字段）
+- [x] 最终确认统一方案为"保留数据库日志，废弃文件日志"
+- [x] `app/settings/log.py` 的 logger 增加数据库 handler（登录日志、操作日志、系统日志分别写对应表）
+- [x] `system/monitor.py` 中基于文件读写的接口标记 `@deprecated`，保留一个版本过渡期
+- [x] 确认前端 `api/system.ts` 所有日志 API 指向 `monitor/logs/*` 数据库接口
+- [x] 确认 `monitor/logs/login|operation|system` 三个前端页面对接数据库接口正确
+- [x] 过渡期结束后删除 `system/monitor.py` 中 `getLoginLogs / getOperationLogs / getSystemLogs` 及对应 `clear*`
+- [x] 生成 Alembic 迁移脚本（如需新增日志表字段）
 
 ---
 
@@ -100,31 +100,34 @@ Phase 0 (立即) → Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 →
 
 ### 2.1 后端通知模块
 
-- [ ] 创建 `Notice` 数据模型（`backend/app/models/notice.py`）：标题、内容、类型（系统/业务/公告）、发送人、接收方式、创建时间
-- [ ] 创建 `NoticeRead` 关联模型（多对多，通知 ↔ 用户已读状态）
-- [ ] 🔄 生成 Alembic 迁移脚本并执行
-- [ ] 创建 `NoticeController`（`backend/app/controllers/notice.py`）
-- [ ] 创建通知 API 路由（`backend/app/api/v1/system/notice.py`）：
-  - `POST /notice/add` — 发布通知（写入操作日志）
-  - `POST /notice/list` — 通知列表（分页、按类型/已读状态筛选）
+- [x] 创建 `Notice` 数据模型（`backend/app/models/notice.py`）：标题、内容、类型（系统/业务/公告）、级别、状态（草稿/已发布）、创建人
+- [x] 创建 `NoticeRead` 关联模型（多对多，通知 ↔ 用户已读状态）
+- [x] 创建 `NoticeController`（`backend/app/controllers/notice.py`）：CRUD + 未读计数 + 未读列表 + 标记已读 + 全部已读
+- [x] 创建通知 API 路由（`backend/app/api/v1/system/notice.py`）：
+  - `POST /notice/add` — 发布通知
+  - `POST /notice/list` — 通知列表（分页、按类型/级别/状态筛选）
   - `POST /notice/update` — 编辑通知
-  - `POST /notice/delete` — 删除通知（软删除）
-  - `GET /notice/unread` — 当前用户未读数量
+  - `POST /notice/delete` — 删除通知
+  - `GET /notice/unread` — 当前用户未读通知
   - `POST /notice/read` — 标记单条已读
   - `POST /notice/readAll` — 全部标记已读
-- [ ] 注册路由到 `v1_router`
+- [x] 注册路由到 `v1_router`（`systemRouter.include_router(noticeRouter, prefix="/notice")`）
+- [x] 🔒 补充权限：`/list`、`/update`、`/delete` 三个接口添加 `DependUser` 依赖
+- [x] 🔄 生成 Alembic 迁移脚本并执行
+- [x] `seed/data/menus.py` 新增通知管理菜单项（系统管理下子菜单）
 
 ### 2.2 前端通知功能
 
-- [ ] 创建 `frontend/src/api/notice.ts` 通知 API 封装
-- [ ] 创建 `frontend/src/views/system/notice/index.vue` 通知管理页（CRUD 表格 + 发布/编辑弹窗）
-- [ ] 改造 `frontend/src/layout/components/lay-notice/` 铃铛组件：
-  - `data.ts` 中 `noticesData` 从 API 实时拉取
+- [x] 创建 `frontend/src/api/notice.ts` 通知 API 封装（7 个方法与后端一一对应）
+- [x] 创建 `frontend/src/views/system/notice/index.vue` 通知管理页（CRUD 表格 + 发布/编辑弹窗）
+- [x] 改造 `frontend/src/layout/components/lay-notice/` 铃铛组件：
+  - `data.ts` 中 `noticesData` 从 API 实时拉取（调用 `getUnreadNotices()`）
   - "通知" tab 对接 `/notice/unread`
-  - "标记已读" 对接 `/notice/read`
+  - "标记已读" 对接 `/notice/read`（调用 `markNoticeRead()`）
+  - "全部已读" 对接 `/notice/readAll`（调用 `markAllRead()`）
   - "查看更多" 跳转到通知管理页
-- [ ] 铃铛红点实时显示未读数（定时轮询 `/notice/unread`，30s 间隔）
-- [ ] `seed/data/menus.py` 新增通知管理菜单项
+- [x] 铃铛红点实时显示未读数（定时轮询 `/notice/unread`，30s 间隔）
+- [x] 🔄 国际化：`locales/zh-CN.yaml` 和 `locales/en.yaml` 补充通知相关翻译键
 
 ---
 

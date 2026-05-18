@@ -16,6 +16,15 @@ DEFAULT_MENUS = [
             {"menuType": 0, "title": "menus.pureSystemMenu", "name": "SystemMenu",
              "path": "/system/menu", "component": "system/menu/index",
              "icon": "fluent:clover-48-regular", "rank": 3},
+            {
+                "menuType": 0,
+                "title": "menus.zgNoticeSettings",
+                "name": "SystemNotice",
+                "path": "/system/notice",
+                "component": "system/notice/index",
+                "icon": "ri:notification-3-line",
+                "rank": 500,
+            }
         ],
     },
     {
@@ -40,9 +49,15 @@ DEFAULT_MENUS = [
             {"menuType": 0, "title": "menus.pureGenSettings", "name": "GenSettings",
              "path": "/settings/general", "component": "settings/general/index",
              "icon": "ri:code-line", "rank": 1},
-            {"menuType": 0, "title": "menus.pureLoginSettings", "name": "LoginSettings",
-             "path": "/settings/login", "component": "settings/login/index",
-             "icon": "ri:settings-2-line", "rank": 2},
+            {
+                "menuType": 0, 
+                "title": "menus.pureLoginSettings", 
+                "name": "LoginSettings",
+                "path": "/settings/login", 
+                "component": "settings/login/index",
+                "icon": "ri:settings-2-line", 
+                "rank": 2
+            },
         ],
     },
 ]
