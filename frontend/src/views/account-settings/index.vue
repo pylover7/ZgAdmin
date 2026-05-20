@@ -1,8 +1,6 @@
 <script setup lang="ts">
-import { getMine } from "@/api/user";
 import { useRouter } from "vue-router";
 import { ref, onBeforeMount } from "vue";
-import { ReText } from "@/components/ReText";
 import Profile from "./components/Profile.vue";
 import Preferences from "./components/Preferences.vue";
 import SecurityLog from "./components/SecurityLog.vue";
@@ -28,10 +26,6 @@ onBeforeMount(() => {
   useDataThemeChange().dataThemeChange($storage.layout?.themeMode);
 });
 
-const userInfo = ref({
-  username: "",
-  nickname: ""
-});
 const panes = [
   {
     key: "profile",
@@ -59,13 +53,6 @@ const panes = [
   }
 ];
 const witchPane = ref("profile");
-
-getMine().then(res => {
-  if (res?.data) {
-    userInfo.value.nickname = res.data.nickname || "";
-    userInfo.value.username = res.data.username || "";
-  }
-});
 </script>
 
 <template>
@@ -85,16 +72,6 @@ getMine().then(res => {
           >
             <IconifyIconOffline :icon="leftLine" />
             <span class="ml-2">返回</span>
-          </div>
-        </div>
-        <div class="flex items-center ml-8 my-4">
-          <div class="flex flex-col max-w-32.5">
-            <ReText class="font-bold self-baseline!">
-              {{ userInfo.nickname }}
-            </ReText>
-            <ReText class="self-baseline!" type="info">
-              {{ userInfo.username }}
-            </ReText>
           </div>
         </div>
         <el-menu-item

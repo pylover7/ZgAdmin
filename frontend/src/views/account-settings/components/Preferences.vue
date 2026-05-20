@@ -38,7 +38,6 @@ async function loadPreferences() {
       }
     }
   }
-
 }
 
 async function onChange(val: boolean, item: (typeof list.value)[0]) {
