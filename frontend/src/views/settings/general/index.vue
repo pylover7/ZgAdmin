@@ -4,6 +4,7 @@ import { ElMessage, ElMessageBox } from "element-plus";
 import type { FormInstance, FormRules } from "element-plus";
 import { Setting, Tools, Document } from "@element-plus/icons-vue";
 import { transformI18n } from "@/plugins/i18n";
+import { getConfig, setConfig } from "@/config";
 import {
   getGeneralConfig,
   updateGeneralConfig,
@@ -92,6 +93,19 @@ const handleSave = async () => {
       transformI18n("system.save") + transformI18n("system.success")
     );
     initialForm.value = JSON.parse(JSON.stringify(generalForm));
+
+    // 同步更新全局配置，使标题、语言等实时生效
+    const currentConfig = getConfig();
+    currentConfig.Title = generalForm.site_name;
+    currentConfig.Locale = generalForm.default_lang;
+    currentConfig.SiteDesc = generalForm.site_desc;
+    currentConfig.Logo = generalForm.logo;
+    currentConfig.Copyright = generalForm.copyright;
+    currentConfig.Icp = generalForm.icp;
+    setConfig(currentConfig);
+
+    // 更新浏览器标签页标题
+    document.title = generalForm.site_name;
   } catch (error) {
     if (error !== false) {
       ElMessage.error(
@@ -296,11 +310,11 @@ onMounted(() => {
   }
 
   .logo-preview {
-    margin-top: 8px;
+    display: inline-block;
     padding: 8px;
+    margin-top: 8px;
     background: var(--el-fill-color-light);
     border-radius: 4px;
-    display: inline-block;
 
     .image-error {
       display: flex;

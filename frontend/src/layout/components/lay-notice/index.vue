@@ -184,18 +184,23 @@ onBeforeUnmount(() => {
   100% {
     transform-origin: top;
   }
+
   15% {
     transform: rotateZ(10deg);
   }
+
   30% {
     transform: rotateZ(-10deg);
   }
+
   45% {
     transform: rotateZ(5deg);
   }
+
   60% {
     transform: rotateZ(-5deg);
   }
+
   75% {
     transform: rotateZ(2deg);
   }
@@ -228,9 +233,11 @@ onBeforeUnmount(() => {
   :deep(.el-tabs__header) {
     margin: 0;
   }
+
   :deep(.el-tabs__nav-wrap)::after {
     height: 1px;
   }
+
   :deep(.el-tabs__nav-wrap) {
     padding: 0 36px;
   }

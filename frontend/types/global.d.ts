@@ -121,6 +121,10 @@ declare global {
     };
     RepositoryUrl?: string;
     IssuesUrl?: string;
+    SiteDesc?: string;
+    Logo?: string;
+    Copyright?: string;
+    Icp?: string;
   }
 
   /**
@@ -162,6 +166,10 @@ declare global {
     username?: string;
     RepositoryUrl?: string;
     IssuesUrl?: string;
+    SiteDesc?: string;
+    Logo?: string;
+    Copyright?: string;
+    Icp?: string;
   }
 
   /**

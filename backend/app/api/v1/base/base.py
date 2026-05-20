@@ -309,7 +309,6 @@ async def get_login_logs(
     return SuccessExtra(data=list_data, total=total, currentPage=currentPage, pageSize=pageSize)
 
 
-
 @router.get("/qq/auth-url", summary="获取QQ授权链接")
 async def get_qq_auth_url():
     """获取QQ登录授权URL"""

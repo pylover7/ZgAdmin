@@ -50,12 +50,12 @@ DEFAULT_MENUS = [
              "path": "/settings/general", "component": "settings/general/index",
              "icon": "ri:code-line", "rank": 1},
             {
-                "menuType": 0, 
-                "title": "menus.pureLoginSettings", 
+                "menuType": 0,
+                "title": "menus.pureLoginSettings",
                 "name": "LoginSettings",
-                "path": "/settings/login", 
+                "path": "/settings/login",
                 "component": "settings/login/index",
-                "icon": "ri:settings-2-line", 
+                "icon": "ri:settings-2-line",
                 "rank": 2
             },
         ],
