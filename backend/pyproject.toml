@@ -1,5 +1,5 @@
 [project]
-name = "PyTool"
+name = "ZgAdmin"
 version = "0.0.3"
 description = "A tool made by Python"
 readme = "../README.md"

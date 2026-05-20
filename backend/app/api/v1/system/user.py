@@ -1,5 +1,3 @@
-import time
-from pathlib import Path
 from uuid import UUID
 
 from fastapi import APIRouter, Query
@@ -10,13 +8,11 @@ from sqlmodel import col, and_, select
 from app.core.dependency import SessionDep
 from app.controllers.user import userController
 from app.models.base import BaseModel, Success, SuccessExtra, Fail
-from app.models.user import UserCreate, UserUpdate, User, UserFiter, UserResetPwd, UserAvatar, UpdateStatus, \
+from app.models.user import UserCreate, UserUpdate, User, UserFiter, UserResetPwd, UpdateStatus, \
     UpdateUserRoles
 from app.models.role import Role
 from app.settings.log import logger
-from app.settings import settings
-from app.utils import base_decode
-from app.utils.password import get_password_hash, md5_encrypt
+from app.utils.password import get_password_hash
 
 userRouter = APIRouter()
 
@@ -130,31 +126,6 @@ async def update_user(
     await userController.update(session, user.id, data)
     await logger.systemInfo("系统管理", f"更新用户信息: {user.username}")
     return Success(msg="用户信息更新成功！")
-
-
-@userRouter.post("/updateAvatar", summary="更新用户头像")
-async def update_avatar(
-        session: SessionDep,
-        data: UserAvatar,
-):
-    user = await userController.get(session, data.id)
-    if not user:
-        raise HTTPException(status_code=404, detail="用户不存在！")
-    avatar_name = f"{
-        md5_encrypt(
-            str(
-                user.id))}_{
-        time.time_ns()}.{
-                    data.avatar.base64.split(';')[0].split('/')[
-                        -1]}"
-    avatar_path = Path.joinpath(Path(settings.AVATAR_PATH), avatar_name)
-    with open(avatar_path, "wb") as f:
-        imgData = base_decode(data.avatar.base64.split(",")[1])
-        f.write(imgData)
-    user.avatar = avatar_name
-    session.add(user)
-    session.commit()
-    return Success(msg="用户头像信息更新成功！")
 
 
 @userRouter.post("/updateRoles", summary="更新用户角色")

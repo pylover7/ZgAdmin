@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# PyTool — 预览脚本
+# ZgAdmin — 预览脚本
 # 用法: ./scripts/preview.sh
 # 说明: 前端运行在 8686 端口，后端使用 SQLite 数据库（零配置即用）
 # ==============================================================================
@@ -92,7 +92,7 @@ trap cleanup SIGINT SIGTERM EXIT
 # ──────────────────────── 后端（SQLite） ──────────────────────────────────────
 run_backend() {
     banner "═══════════════════════════════════════════════════════════════"
-    banner "  PyTool 后端 (SQLite)  http://localhost:${BACKEND_PORT}"
+    banner "  ZgAdmin 后端 (SQLite)  http://localhost:${BACKEND_PORT}"
     banner "═══════════════════════════════════════════════════════════════"
     release_port "$BACKEND_PORT"
     log_step "安装后端依赖..."
@@ -111,7 +111,7 @@ run_backend() {
 # ──────────────────────── 前端（8686 端口） ────────────────────────────────────
 run_frontend() {
     banner "═══════════════════════════════════════════════════════════════"
-    banner "  PyTool 前端 (Vue 3 + Vite)  http://localhost:${FRONTEND_PORT}"
+    banner "  ZgAdmin 前端 (Vue 3 + Vite)  http://localhost:${FRONTEND_PORT}"
     banner "═══════════════════════════════════════════════════════════════"
     release_port "$FRONTEND_PORT"
     log_step "安装前端依赖..."
@@ -133,7 +133,7 @@ main() {
 
     echo ""
     banner "═══════════════════════════════════════════════════════════════"
-    banner "  PyTool 预览模式已启动"
+    banner "  ZgAdmin 预览模式已启动"
     banner "═══════════════════════════════════════════════════════════════"
     echo ""
     echo -e "  前端: ${GREEN}http://localhost:${FRONTEND_PORT}${NC}"

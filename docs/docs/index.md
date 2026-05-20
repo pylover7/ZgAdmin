@@ -2,7 +2,7 @@
 layout: home
 
 hero:
-  name: "PyTool"
+  name: "ZgAdmin"
   text: "全栈管理平台模板"
   tagline: Python/FastAPI + Vue 3/TypeScript，克隆即用，改配置就上线
   actions:
@@ -11,7 +11,7 @@ hero:
       link: /guide/quick-start
     - theme: alt
       text: GitHub
-      link: https://github.com/pylover7/PyTool
+      link: https://github.com/pylover7/ZgAdmin
 
 features:
   - title: 一键启动

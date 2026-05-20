@@ -3,9 +3,10 @@ import urllib.parse
 from datetime import timedelta, datetime
 # from uuid import uuid4
 
-from fastapi import APIRouter, Request, HTTPException
+from fastapi import APIRouter, Request, HTTPException, Query
 # from fastapi.websockets import WebSocketState
 from sqlalchemy.orm import selectinload
+from sqlalchemy import func
 from sqlmodel import select, col
 from jwt.exceptions import ExpiredSignatureError
 # from wechatpayv3 import WeChatPayType
@@ -15,9 +16,10 @@ from app.controllers.user import userController
 from app.settings.log import logger
 from app.models.login import CredentialsSchema, JWTPayload, JWTOut, refreshTokenSchema, \
     JWTReOut, QQLoginSchema
+from app.models.logs import LoginLog
 from app.core.dependency import DependUser, DependRateLimit, SessionDep
-from app.models import Api, Menu, Role, User, UpdatePassword
-from app.models.base import Fail, Success, FailAuth
+from app.models import Api, Menu, Role, User, UpdatePassword, UpdateProfile, UpdatePreferences
+from app.models.base import Fail, Success, FailAuth, SuccessExtra
 from app.settings import settings
 from app.settings.config import base_config
 from app.utils import menuTree
@@ -73,7 +75,7 @@ async def login_access_token(
 
     data = JWTOut(
         username=user.username,
-        avatar=user.avatar or "",
+        nickname=user.nickname or "",
         depart=depart,
         roles=roles,
         accessToken=create_access_token(
@@ -218,6 +220,96 @@ async def update_user_password(
     return Success(msg="修改成功")
 
 
+@router.post("/updateProfile", summary="更新用户资料")
+async def update_user_profile(
+        session: SessionDep,
+        req_in: UpdateProfile,
+        current_user: DependUser):
+    user = await userController.get(session=session, pk=current_user.id)
+    if not user:
+        return FailAuth(msg="用户不存在或已被删除！")
+    update_data = req_in.model_dump(exclude_unset=True)
+    if not update_data:
+        return Fail(msg="没有需要更新的字段")
+    for key, value in update_data.items():
+        setattr(user, key, value)
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+    data = await user.to_dict(exclude_fields=["password"])
+    return Success(data=data, msg="更新成功")
+
+
+@router.get("/preferences", summary="获取用户偏好设置")
+async def get_user_preferences(
+        session: SessionDep,
+        current_user: DependUser):
+    user = await userController.get(session=session, pk=current_user.id)
+    if not user:
+        return FailAuth(msg="用户不存在或已被删除！")
+    prefs = user.preferences or {}
+    default_prefs = {
+        "notify_account": True,
+        "notify_system": True,
+        "notify_task": True,
+    }
+    default_prefs.update(prefs)
+    return Success(data=default_prefs)
+
+
+@router.post("/updatePreferences", summary="更新用户偏好设置")
+async def update_user_preferences(
+        session: SessionDep,
+        req_in: UpdatePreferences,
+        current_user: DependUser):
+    user = await userController.get(session=session, pk=current_user.id)
+    if not user:
+        return FailAuth(msg="用户不存在或已被删除！")
+    current_prefs = user.preferences or {}
+    update_data = req_in.model_dump(exclude_unset=True)
+    current_prefs.update(update_data)
+    user.preferences = current_prefs
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+    prefs = user.preferences or {}
+    default_prefs = {
+        "notify_account": True,
+        "notify_system": True,
+        "notify_task": True,
+    }
+    default_prefs.update(prefs)
+    return Success(data=default_prefs, msg="更新成功")
+
+
+@router.get("/loginLogs", summary="获取登录日志")
+async def get_login_logs(
+        session: SessionDep,
+        current_user: DependUser,
+        pageSize: int = Query(default=10, ge=1, le=100),
+        currentPage: int = Query(default=1, ge=1)):
+    user = await userController.get(session=session, pk=current_user.id)
+    if not user:
+        return FailAuth(msg="用户不存在或已被删除！")
+    offset = (currentPage - 1) * pageSize
+    count_stmt = select(func.count()).select_from(LoginLog).where(
+        LoginLog.username == user.username
+    )
+    total = session.exec(count_stmt).one()
+    stmt = select(LoginLog).where(
+        LoginLog.username == user.username
+    ).order_by(LoginLog.time.desc()).offset(offset).limit(pageSize)
+    logs = session.exec(stmt).all()
+    list_data = []
+    for log in logs:
+        item = await log.to_dict()
+        item["summary"] = item.pop("behavior", "")
+        item["operatingTime"] = item.pop("time", "")
+        list_data.append(item)
+    return SuccessExtra(data=list_data, total=total, currentPage=currentPage, pageSize=pageSize)
+
+
+
 @router.get("/qq/auth-url", summary="获取QQ授权链接")
 async def get_qq_auth_url():
     """获取QQ登录授权URL"""
@@ -287,7 +379,7 @@ async def qq_login(session: SessionDep, qq_login_data: QQLoginSchema):
 
         data = JWTOut(
             username=user.username,
-            avatar=user.avatar or user.qq_avatar or "",
+            nickname=user.nickname or "",
             depart=depart,
             roles=roles,
             accessToken=create_access_token(

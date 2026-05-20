@@ -19,8 +19,6 @@ import { type DataInfo, setToken, removeToken, userKey } from "@/utils/auth";
 
 export const useUserStore = defineStore("pure-user", {
   state: (): userType => ({
-    // 头像
-    avatar: storageLocal().getItem<DataInfo<number>>(userKey)?.avatar ?? "",
     // 用户名
     username: storageLocal().getItem<DataInfo<number>>(userKey)?.username ?? "",
     // 昵称
@@ -40,10 +38,6 @@ export const useUserStore = defineStore("pure-user", {
     loginDay: 7
   }),
   actions: {
-    /** 存储头像 */
-    SET_AVATAR(avatar: string) {
-      this.avatar = avatar;
-    },
     /** 存储用户名 */
     SET_USERNAME(username: string) {
       this.username = username;

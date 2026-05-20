@@ -57,7 +57,7 @@ class Settings(BaseSettings):
             self.FRONTEND_HOST
         ]
 
-    PROJECT_NAME: str = "PyTool"
+    PROJECT_NAME: str = "ZgAdmin"
     PROJECT_DESCRIPTION: str = "一个开源的在线工具箱"
 
     @computed_field
@@ -71,7 +71,6 @@ class Settings(BaseSettings):
             return "unknown"
     STATIC_PATH: str = str(
         Path(__file__).parent.parent.parent.joinpath("static"))
-    AVATAR_PATH: str = str(Path(STATIC_PATH).joinpath("avatar"))
     GOODS_PATH: str = str(Path(STATIC_PATH).joinpath("goods"))
     CONFIG_PATH: str = str(
         Path(__file__).parent.parent.parent.joinpath("config"))
@@ -89,7 +88,7 @@ class Settings(BaseSettings):
     DB_PORT: int = 5432
     DB_USER: str = "postgres"
     DB_PASSWORD: str = "test"
-    DB_PATH: str = "pytool.sqlite"
+    DB_PATH: str = "zgadmin.sqlite"
 
     @computed_field
     @property

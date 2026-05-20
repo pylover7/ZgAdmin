@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# PyTool — Docker 生产环境入口脚本
+# ZgAdmin — Docker 生产环境入口脚本
 # 职责：启动 nginx（前端）+ FastAPI 后端，管理进程生命周期与信号
 # ==============================================================================
 set -eo pipefail
@@ -71,7 +71,7 @@ done
 echo "[ENTRYPOINT] 后端已就绪"
 
 echo "[ENTRYPOINT] =============================="
-echo "[ENTRYPOINT] PyTool 已启动"
+echo "[ENTRYPOINT] ZgAdmin 已启动"
 echo "[ENTRYPOINT] 前端: http://localhost"
 echo "[ENTRYPOINT] 后端: http://localhost:7001"
 echo "[ENTRYPOINT] =============================="

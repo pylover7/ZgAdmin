@@ -33,4 +33,4 @@ def db_engine(
         case _:
             return f"sqlite:////{
                 Path(__file__).parent.parent.parent.joinpath(
-                    "static", "pytool.sqlite")}"
+                    "static", "zgadmin.sqlite")}"

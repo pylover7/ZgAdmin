@@ -3,9 +3,10 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 from pydantic import EmailStr
+from sqlalchemy import Column, JSON
 from sqlmodel import Field, Relationship, SQLModel
 
-from .base import BaseModel, TimestampMixin, Image
+from .base import BaseModel, TimestampMixin
 from .link import UserRoleLink
 from .department import Department
 
@@ -65,15 +66,11 @@ class UserBase(BaseModel):
 
 
 class User(UserBase, TimestampMixin, table=True):
-    avatar: str = Field(
-        default=None,
-        max_length=255,
-        nullable=True,
-        description="头像文件名称")
     last_login: datetime = Field(
         default=None,
         nullable=True,
         description="最后登录时间")
+    preferences: dict | None = Field(default=None, sa_column=Column(JSON, nullable=True))
     department: Department | None = Relationship(back_populates="users")
 
     roles: list["Role"] = Relationship(
@@ -117,13 +114,22 @@ class UserResetPwd(BaseModel):
     newPwd: str
 
 
-class UserAvatar(BaseModel):
-    avatar: Image
-
-
 class UpdateStatus(BaseModel):
     status: int
 
 
 class UpdateUserRoles(BaseModel):
     roleIds: list[str]
+
+
+class UpdateProfile(SQLModel):
+    nickname: str | None = Field(default=None, max_length=30)
+    email: EmailStr | None = Field(default=None)
+    phone: str | None = Field(default=None, max_length=20)
+    remark: str | None = Field(default=None, max_length=500)
+
+
+class UpdatePreferences(SQLModel):
+    notify_account: bool | None = Field(default=None)
+    notify_system: bool | None = Field(default=None)
+    notify_task: bool | None = Field(default=None)

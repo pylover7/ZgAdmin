@@ -4,7 +4,9 @@ import type { ResultTable } from "@/types";
 import type {
   UserInfoResult,
   RefreshTokenResult,
-  UserResult
+  UserResult,
+  UpdateProfileParams,
+  UserPreferences
 } from "@/types/user";
 import type { loginResult } from "@/types/login";
 
@@ -23,13 +25,42 @@ export const refreshTokenApi = (data?: object) => {
 };
 
 /** 账户设置-个人信息 */
-export const getMine = (data?: object) => {
-  return http.request<UserInfoResult>("get", "/mine", { data });
+export const getMine = () => {
+  return http.request<UserInfoResult>("get", baseUrl("/userinfo"));
+};
+
+/** 更新个人资料 */
+export const updateProfile = (data: UpdateProfileParams) => {
+  return http.request("post", baseUrl("/updateProfile"), { data });
+};
+
+/** 修改密码 */
+export const updatePassword = (data: {
+  current_password: string;
+  new_password: string;
+}) => {
+  return http.request("post", baseUrl("/updatePwd"), { data });
+};
+
+/** 获取用户偏好 */
+export const getPreferences = () => {
+  return http.request<{ success: boolean; data: UserPreferences }>(
+    "get",
+    baseUrl("/preferences")
+  );
+};
+
+/** 更新用户偏好 */
+export const updatePreferences = (data: Partial<UserPreferences>) => {
+  return http.request("post", baseUrl("/updatePreferences"), { data });
 };
 
 /** 账户设置-个人安全日志 */
-export const getMineLogs = (data?: object) => {
-  return http.request<ResultTable>("get", "/mine-logs", { data });
+export const getMineLogs = (params?: {
+  pageSize?: number;
+  currentPage?: number;
+}) => {
+  return http.request<ResultTable>("get", baseUrl("/loginLogs"), { params });
 };
 
 /** 获取QQ授权链接 */

@@ -1,4 +1,4 @@
-# PyTool
+# ZgAdmin
 
 管理平台模板 — Python/FastAPI 后端 + Vue 3/TypeScript 前端，Docker 一键部署。
 
@@ -91,7 +91,7 @@ uv run alembic upgrade head --sql
 ### 拉取镜像
 
 ```bash
-docker pull docker.cnb.cool/pylover/pytool
+docker pull docker.cnb.cool/pylover/zgadmin
 ```
 
 ### Docker Compose（推荐）
@@ -113,10 +113,10 @@ docker compose logs -f       # 查看日志
 
 ```bash
 docker run -d \
-  --name pytool-app \
+  --name zgadmin-app \
   -p 80:80 \
   -p 7001:7001 \
-  docker.cnb.cool/pylover/pytool
+  docker.cnb.cool/pylover/zgadmin
 ```
 
 ## 配置

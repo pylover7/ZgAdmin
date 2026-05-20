@@ -60,12 +60,6 @@ function hoverDescription(event, description) {
     ]"
     style="cursor: pointer"
   >
-    <el-avatar
-      v-if="noticeItem.avatar"
-      :size="30"
-      :src="noticeItem.avatar"
-      class="notice-container-avatar"
-    />
     <div class="notice-container-text">
       <div class="notice-text-title text-[#000000d9] dark:text-white">
         <el-tooltip
@@ -129,11 +123,6 @@ function hoverDescription(event, description) {
   padding: 12px 0;
 
   // border-bottom: 1px solid #f0f0f0;
-
-  .notice-container-avatar {
-    margin-right: 16px;
-    background: #fff;
-  }
 
   .notice-container-text {
     display: flex;

@@ -358,7 +358,7 @@ onMounted(async () => {
       Copyright © 2025-present
       <a
         class="hover:text-primary!"
-        href="https://cnb.cool/pylover/PyTool"
+        href="https://cnb.cool/pylover/ZgAdmin"
         target="_blank"
       >
         &nbsp;{{ title }}

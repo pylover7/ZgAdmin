@@ -1,7 +1,6 @@
 import { transformI18n } from "@/plugins/i18n";
 
 export interface ListItem {
-  avatar: string;
   title: string;
   datetime: string;
   type: string;
@@ -58,7 +57,6 @@ const typeLabel: Record<number, string> = {
 /** 将后端通知转为前端展示格式 */
 export function transformNotice(item: ApiNotice): ListItem {
   return {
-    avatar: "",
     title: item.title,
     datetime: item.created_at,
     type: String(item.type),

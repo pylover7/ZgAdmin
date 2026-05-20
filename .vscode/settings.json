@@ -95,11 +95,11 @@
     "zsh": {
       "path": "/bin/zsh"
     },
-    "启动 PyTool": {
+    "启动 ZgAdmin": {
       "path": "/bin/zsh",
       "args": ["-c", "zsh /workspace/scripts/start.sh dev"],
-      "name": "Start PyTool",
-      "description": "Terminal profile that runs start.sh to launch PyTool"
+      "name": "Start ZgAdmin",
+      "description": "Terminal profile that runs start.sh to launch ZgAdmin"
     },
     "版本号同步": {
       "path": "/bin/zsh",
@@ -138,7 +138,7 @@
       "driver": "SQLite",
       "name": "test",
       "group": "test",
-      "database": "${workspaceFolder:workspace}/backend/static/pytool.sqlite"
+      "database": "${workspaceFolder:workspace}/backend/static/zgadmin.sqlite"
     }
   ],
   "sqltools.useNodeRuntime": true,

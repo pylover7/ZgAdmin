@@ -9,8 +9,6 @@ export interface DataInfo<T> {
   expires: T;
   /** 用于调用刷新accessToken的接口时所需的token */
   refreshToken: string;
-  /** 头像 */
-  avatar?: string;
   /** 用户名 */
   username?: string;
   /** 昵称 */
@@ -68,8 +66,7 @@ export function setToken(data: DataInfo<Date>) {
       : {}
   );
 
-  function setUserKey({ avatar, username, nickname, roles, permissions }) {
-    useUserStoreHook().SET_AVATAR(avatar);
+  function setUserKey({ username, nickname, roles, permissions }) {
     useUserStoreHook().SET_USERNAME(username);
     useUserStoreHook().SET_NICKNAME(nickname);
     useUserStoreHook().SET_ROLES(roles);
@@ -77,7 +74,6 @@ export function setToken(data: DataInfo<Date>) {
     storageLocal().setItem(userKey, {
       refreshToken,
       expires,
-      avatar,
       username,
       nickname,
       roles,
@@ -88,15 +84,12 @@ export function setToken(data: DataInfo<Date>) {
   if (data.username && data.roles) {
     const { username, roles } = data;
     setUserKey({
-      avatar: data?.avatar ?? "",
       username,
       nickname: data?.nickname ?? "",
       roles,
       permissions: data?.permissions ?? []
     });
   } else {
-    const avatar =
-      storageLocal().getItem<DataInfo<number>>(userKey)?.avatar ?? "";
     const username =
       storageLocal().getItem<DataInfo<number>>(userKey)?.username ?? "";
     const nickname =
@@ -106,7 +99,6 @@ export function setToken(data: DataInfo<Date>) {
     const permissions =
       storageLocal().getItem<DataInfo<number>>(userKey)?.permissions ?? [];
     setUserKey({
-      avatar,
       username,
       nickname,
       roles,

@@ -1,6 +1,4 @@
 export type UserInfo = {
-  /** 头像 */
-  avatar: string;
   /** 用户名 */
   username: string;
   /** 昵称 */
@@ -9,8 +7,23 @@ export type UserInfo = {
   email: string;
   /** 联系电话 */
   phone: string;
-  /** 简介 */
-  description: string;
+  /** QQ头像 */
+  qq_avatar?: string;
+  /** 简介（对应后端 remark） */
+  remark: string;
+};
+
+export type UpdateProfileParams = {
+  nickname?: string;
+  email?: string;
+  phone?: string;
+  remark?: string;
+};
+
+export type UserPreferences = {
+  notify_account: boolean;
+  notify_system: boolean;
+  notify_task: boolean;
 };
 
 export type UserResult = {
@@ -18,8 +31,6 @@ export type UserResult = {
   msg: string;
   success: boolean;
   data: {
-    /** 头像 */
-    avatar: string;
     /** 用户名 */
     username: string;
     /** 昵称 */
