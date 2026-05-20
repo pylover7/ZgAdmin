@@ -21,7 +21,7 @@ class Logger:
             " <level>Logger: {extra[name]}</level> | "
             "<level>{message}</level>"
         )
-        
+
         self.sysLogger = self.logger.bind(name="system")
         self.loginLogger = self.logger.bind(name="login")
         self.operationLogger = self.logger.bind(name="operation")

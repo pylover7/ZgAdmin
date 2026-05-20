@@ -24,7 +24,8 @@ import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 import { useTranslationLang } from "@/layout/hooks/useTranslationLang";
 import { useDataThemeChange } from "@/layout/hooks/useDataThemeChange";
 import { getLoginMethods } from "@/api/user";
-import type { loginType, loginResult } from "@/types/login";
+import type { loginType } from "@/types/login";
+import { getConfig } from "@/config";
 
 import dayIcon from "@/assets/svg/day.svg?component";
 import darkIcon from "@/assets/svg/dark.svg?component";
@@ -54,6 +55,9 @@ const loginMethods = ref<loginType>({
   qq: { enabled: false },
   wechat: { enabled: false }
 });
+const TITLE = getConfig("Title");
+const COPYRIGHT = getConfig("Copyright");
+const ICP = getConfig("Icp");
 
 // 计算可用的登录方式（根据配置过滤）
 const availableOperates = computed(() => {
@@ -355,14 +359,26 @@ onMounted(async () => {
     <div
       class="w-full flex-c absolute bottom-3 text-sm text-[rgba(0,0,0,0.6)] dark:text-[rgba(220,220,242,0.8)]"
     >
-      Copyright © 2025-present
-      <a
-        class="hover:text-primary!"
-        href="https://cnb.cool/pylover/ZgAdmin"
-        target="_blank"
-      >
-        &nbsp;{{ title }}
-      </a>
+      <span v-if="COPYRIGHT">{{ COPYRIGHT }}</span>
+      <span v-else>
+        Copyright © 2025-present
+        <a
+          class="hover:text-primary!"
+          href="https://cnb.cool/pylover/Tools/ZgAdmin"
+          target="_blank"
+        >
+          &nbsp;{{ TITLE }}
+        </a>
+      </span>
+      <span v-if="ICP" class="ml-2">
+        <a
+          class="hover:text-primary!"
+          href="https://beian.miit.gov.cn/"
+          target="_blank"
+        >
+          {{ ICP }}
+        </a>
+      </span>
     </div>
   </div>
 </template>

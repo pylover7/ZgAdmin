@@ -67,7 +67,7 @@ async def delete_notice(session: SessionDep, data: list[UUID]):
 async def get_unread_notices(session: SessionDep, current_user: DependUser):
     count = await noticeController.get_unread_count(session, current_user.id)
     items = await noticeController.get_unread_list(session, current_user.id, limit=20)
-    
+
     # 按 type 分组：0,2 → 通知；1 → 消息
     notify_list = []
     message_list = []
@@ -77,7 +77,7 @@ async def get_unread_notices(session: SessionDep, current_user: DependUser):
             message_list.append(d)
         else:
             notify_list.append(d)
-    
+
     return Success(data={
         "count": count,
         "notify": notify_list,
