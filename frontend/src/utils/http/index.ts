@@ -75,7 +75,8 @@ class PureHttp {
         const whiteList = [
           "/refreshToken",
           "/accessToken",
-          "/settings/login/methods"
+          "/settings/login/methods",
+          "/settings/general/info"
         ];
         // 使用路径后缀匹配，避免误判（如 /settings/login 会被 /login 误匹配）
         const isWhitelistUrl = whiteList.some(url => config.url.endsWith(url));

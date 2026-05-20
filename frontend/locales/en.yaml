@@ -381,6 +381,10 @@ system:
     siteName: Site Name
     siteDesc: Description
     logo: Logo
+    defaultLang: Default Language
+    enableEmail: Enable Email
+    copyright: Copyright
+    icp: ICP License
   loginSettings:
     title: Login Settings
     qqConfig: QQ Login

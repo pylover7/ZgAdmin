@@ -387,6 +387,10 @@ system:
     siteName: 站点名称
     siteDesc: 站点描述
     logo: Logo
+    defaultLang: 默认语言
+    enableEmail: 启用邮件
+    copyright: 版权信息
+    icp: 备案号
   loginSettings:
     title: 登录设置
     qqConfig: QQ登录配置

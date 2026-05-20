@@ -66,3 +66,46 @@ export const getLoginConfig = () => {
 export const updateLoginConfig = (data: LoginConfig) => {
   return http.request<Result>("post", settingsUrl("/login"), { data });
 };
+
+// ─── 通用设置相关 ───
+
+/** 站点基本信息（公开） */
+export interface SiteInfo {
+  site_name: string;
+  site_desc: string;
+  logo: string;
+  default_lang: string;
+  copyright: string;
+  icp: string;
+}
+
+/** 通用设置配置（管理员） */
+export interface GeneralConfig {
+  site_name: string;
+  site_desc: string;
+  logo: string;
+  default_lang: string;
+  enable_email: boolean;
+  copyright: string;
+  icp: string;
+}
+
+/** 通用设置表单规则 */
+export type GeneralConfigRules = {
+  [K in keyof GeneralConfig]?: FormItemRule[];
+};
+
+/** 获取站点基本信息（公开接口） */
+export const getSiteInfo = () => {
+  return http.request<Result>("get", settingsUrl("/general/info"));
+};
+
+/** 获取通用设置（管理员接口） */
+export const getGeneralConfig = () => {
+  return http.request<Result>("get", settingsUrl("/general"));
+};
+
+/** 更新通用设置 */
+export const updateGeneralConfig = (data: GeneralConfig) => {
+  return http.request<Result>("post", settingsUrl("/general"), { data });
+};
