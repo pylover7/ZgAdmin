@@ -32,9 +32,9 @@ class UserController(CRUDBase[User, UserCreate, UserUpdate]):
         session.refresh(db_obj)
         return db_obj
 
-    async def update(self, session: Session, id: UUID,
+    async def update(self, session: Session, pk: UUID,
                      obj_in: UserUpdate) -> User | None:
-        db_user = session.get(User, id)
+        db_user = session.get(User, pk)
         if db_user is None:
             return None
         user_data = obj_in.model_dump(exclude_unset=True)
@@ -83,7 +83,7 @@ class UserController(CRUDBase[User, UserCreate, UserUpdate]):
             result = verify_password(credentials.password, user.password)
             if not result:
                 raise HTTPException(status_code=400, detail="用户名或密码错误")
-        except Exception:
+        except Exception as exc:
             await logger.loginFail(
                 username=user.username,
                 ip=request.client.host if request.client else "unknown",
@@ -92,7 +92,7 @@ class UserController(CRUDBase[User, UserCreate, UserUpdate]):
                 browser=sysBro.browser,
                 behavior=0
             )
-            raise HTTPException(status_code=400, detail="用户名或密码错误")
+            raise HTTPException(status_code=400, detail="用户名或密码错误") from exc
         if user.is_superuser:  # 超级管理员不验证状态
             await logger.loginSuccess(
                 username=user.username,
@@ -118,9 +118,9 @@ class UserController(CRUDBase[User, UserCreate, UserUpdate]):
         )
         return user
 
-    async def update_last_login(self, session: Session, id: UUID):
-        user = session.get(User, id)
-        user.last_login = now(0)  # type: ignore
+    async def update_last_login(self, session: Session, pk: UUID):
+        user = session.get(User, pk)
+        user.last_login = now(0)
         session.add(user)
         session.commit()
         session.refresh(user)

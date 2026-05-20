@@ -23,6 +23,7 @@ def make_middlewares():
         Middleware(
             CORSMiddleware,
             allow_origins=settings.all_cors_origins,
+            allow_origin_regex=r"https?://.*\.cnb\.space",
             allow_credentials=True,
             allow_methods=["*"],
             allow_headers=["*"],

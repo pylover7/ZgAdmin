@@ -1,5 +1,4 @@
 """代码生成器 — 从模板生成完整 CRUD 模块"""
-import re
 from pathlib import Path
 
 BACKEND = Path(__file__).parent.parent.parent  # /workspace/backend/

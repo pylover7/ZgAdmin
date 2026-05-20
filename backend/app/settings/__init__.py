@@ -20,7 +20,7 @@ from app.settings.database import db_engine
 def parse_cors(v: Any) -> list[str] | str:
     if isinstance(v, str) and not v.startswith("["):
         return [i.strip() for i in v.split(",")]
-    elif isinstance(v, list | str):
+    if isinstance(v, list | str):
         return v
     raise ValueError(v)
 
@@ -50,7 +50,7 @@ class Settings(BaseSettings):
         list[AnyUrl] | list[str] | str, BeforeValidator(parse_cors)
     ] = ["*"]
 
-    @computed_field  # type: ignore[prop-decorator]
+    @computed_field
     @property
     def all_cors_origins(self) -> list[str]:
         return [str(origin).rstrip("/") for origin in self.BACKEND_CORS_ORIGINS] + [
@@ -60,7 +60,7 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "PyTool"
     PROJECT_DESCRIPTION: str = "一个开源的在线工具箱"
 
-    @computed_field  # type: ignore[prop-decorator]
+    @computed_field
     @property
     def VERSION(self) -> str:
         """从 VERSION 文件读取版本号"""
@@ -69,12 +69,12 @@ class Settings(BaseSettings):
             return version_file.read_text().strip()
         except Exception:
             return "unknown"
-    STATIC_PATH: str = Path(
-        __file__).parent.parent.parent.joinpath("static").__str__()
-    AVATAR_PATH: str = Path(STATIC_PATH).joinpath("avatar").__str__()
-    GOODS_PATH: str = Path(STATIC_PATH).joinpath("goods").__str__()
-    CONFIG_PATH: str = Path(
-        __file__).parent.parent.parent.joinpath("config").__str__()
+    STATIC_PATH: str = str(
+        Path(__file__).parent.parent.parent.joinpath("static"))
+    AVATAR_PATH: str = str(Path(STATIC_PATH).joinpath("avatar"))
+    GOODS_PATH: str = str(Path(STATIC_PATH).joinpath("goods"))
+    CONFIG_PATH: str = str(
+        Path(__file__).parent.parent.parent.joinpath("config"))
 
     SENTRY_DSN: HttpUrl | None = None
 
@@ -91,7 +91,7 @@ class Settings(BaseSettings):
     DB_PASSWORD: str = "test"
     DB_PATH: str = "pytool.sqlite"
 
-    @computed_field  # type: ignore[prop-decorator]
+    @computed_field
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> str:
         return db_engine(
@@ -120,7 +120,7 @@ class Settings(BaseSettings):
 
     EMAIL_RESET_TOKEN_EXPIRE_HOURS: int = 48
 
-    @computed_field  # type: ignore[prop-decorator]
+    @computed_field
     @property
     def emails_enabled(self) -> bool:
         return bool(self.SMTP_HOST and self.EMAILS_FROM_EMAIL)
@@ -221,4 +221,4 @@ class Settings(BaseSettings):
     }
 
 
-settings = Settings()  # type: ignore
+settings = Settings()

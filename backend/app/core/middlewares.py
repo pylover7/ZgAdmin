@@ -20,16 +20,16 @@ class SimpleBaseMiddleware:
         await response(request.scope, request.receive, send)
         await self.after_request(request)
 
-    async def before_request(self, request: Request):
+    async def before_request(self, _request: Request):
         return self.app
 
-    async def after_request(self, request: Request):
+    async def after_request(self, _request: Request):
         return None
 
 
 class BackGroundTaskMiddleware(SimpleBaseMiddleware):
-    async def before_request(self, request):
+    async def before_request(self, _request):
         await BgTasks.init_bg_tasks_obj()
 
-    async def after_request(self, request):
+    async def after_request(self, _request):
         await BgTasks.execute_tasks()

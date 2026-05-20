@@ -51,6 +51,13 @@ export const getUserList = (
   });
 };
 
+/** 系统管理-用户管理-根据userId，获取对应角色id列表（userId：用户id） */
+export const getRoleIds = (id: string) => {
+  return http.request<Result>("post", userUrl("/getRolesIds"), {
+    data: { id }
+  });
+};
+
 /** 新增角色 */
 export const addRole = (data?: object) => {
   return http.request<Result>("post", roleUrl("/add"), { data });
@@ -74,11 +81,6 @@ export const updateRoleStatus = (data?: object) => {
 /** 系统管理-用户管理-获取所有角色列表 */
 export const getAllRoleList = () => {
   return http.request<Result>("get", roleUrl("/all"));
-};
-
-/** 系统管理-用户管理-根据userId，获取对应角色id列表（userId：用户id） */
-export const getRoleIds = (data?: object) => {
-  return http.request<Result>("post", "/list-role-ids", { data });
 };
 
 /** 获取系统管理-角色管理列表 */
@@ -146,11 +148,6 @@ export const updateDept = (data?: object) => {
 /** 获取系统管理-部门管理列表 */
 export const getDeptList = () => {
   return http.request<Result>("get", deptUrl("/list"));
-};
-
-/** 获取系统监控-在线用户列表 */
-export const getOnlineLogsList = (data?: object) => {
-  return http.request<ResultTable>("post", "/online-logs", { data });
 };
 
 /** 删除登录日志 */
@@ -229,12 +226,7 @@ export const getSystemLogsList = (
 
 /** 删除全部系统日志 */
 export const clearSystemLogs = () => {
-  return http.request<Result>("post", systemLogsUrl("/clear"));
-};
-
-/** 获取系统监控-系统日志-根据 id 查日志详情 */
-export const getSystemLogsDetail = (data?: object) => {
-  return http.request<Result>("post", "/system-logs-detail", { data });
+  return http.request<Result>("get", systemLogsUrl("/clear"));
 };
 
 export const getSystemVersion = () => {

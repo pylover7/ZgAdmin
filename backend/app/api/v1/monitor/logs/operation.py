@@ -22,7 +22,7 @@ async def delete_operation_logs(
 
 @operationRouter.get("/clear")
 async def clear_operation_logs(
-    session: SessionDep,  # type: ignore
+    session: SessionDep,
 ):
     await operationLogController.delete_all(session)
     return Success(msg="操作日志清空成功！")

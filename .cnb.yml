@@ -22,8 +22,8 @@ $:
       runner:
         cpus: 8
       services:
-        - vscode
         - docker
+        - vscode    
       imports:
         - https://cnb.cool/pylover/key/-/blob/main/deepseek.yml
         - https://cnb.cool/pylover/Tools/KeJi_Key/-/blob/main/tapd.yml
@@ -43,6 +43,30 @@ $:
           script: docker images
         - name: docker push
           script: docker push ${IMAGE_TAG}
+  
+  web_trigger_vscode:
+    - docker:
+        image: docker.cnb.cool/pylover/tools/zgadmin:env
+        volumes:
+            - ./backend/.venv:rw
+            - ./backend/static:rw
+            - ./frontend/node_modules:rw
+            - ./docs/node_modules:rw
+      runner:
+        cpus: 8
+      services:
+        - docker
+        - name: vscode
+          options:
+            onlyPreview: true
+            launch: bash ./scripts/preview.sh
+            daemon: true
+      imports:
+        - https://cnb.cool/pylover/key/-/blob/main/deepseek.yml
+        - https://cnb.cool/pylover/Tools/KeJi_Key/-/blob/main/tapd.yml
+      stages:
+        - name: ls
+          script: ls -la
 
   tag_push:
     - services:

@@ -19,7 +19,7 @@ class MenuCreate(SQLModel):
     menuType: int = Field(
         default=0,
         description="菜单类型（0代表菜单、1代表iframe、2代表外链、3代表按钮）")
-    title: str = Field(max_length=20, description="菜单名称")
+    title: str = Field(max_length=50, description="菜单名称")
     name: str = Field(max_length=50, description="路由名称必须唯一")
     path: str = Field(max_length=100, description="菜单路径")
     component: str = Field(max_length=100, nullable=True, description="组件")

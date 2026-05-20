@@ -2,7 +2,7 @@ import editForm from "../form.vue";
 import { handleTree } from "@/utils/tree";
 import { message } from "@/utils/message";
 import { addMenu, deleteMenu, getMenuList, updateMenu } from "@/api/system";
-import { $t, transformI18n } from "@/plugins/i18n";
+import { transformI18n } from "@/plugins/i18n";
 import { addDialog } from "@/components/ReDialog";
 import { reactive, ref, onMounted, h } from "vue";
 import type { FormItemProps } from "../utils/types";

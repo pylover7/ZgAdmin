@@ -62,6 +62,30 @@ cd frontend && bun run typecheck     # TS + Vue 类型检查
 cd frontend && bun run lint          # ESLint + Prettier + Stylelint
 ```
 
+### 数据迁移
+
+```bash
+cd backend
+
+# 生成迁移脚本（根据模型变更自动检测）
+uv run alembic revision --autogenerate -m "add xxx column"
+
+# 执行迁移到最新版本
+uv run alembic upgrade head
+
+# 回退一个版本
+uv run alembic downgrade -1
+
+# 查看当前迁移状态
+uv run alembic current
+
+# 查看迁移历史
+uv run alembic history
+
+# 生成 SQL 而不执行（离线模式）
+uv run alembic upgrade head --sql
+```
+
 ## Docker 部署
 
 ### 拉取镜像

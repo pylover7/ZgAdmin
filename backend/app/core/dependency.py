@@ -1,10 +1,11 @@
 from uuid import UUID
 import time
 import asyncio
-import jwt
 from collections.abc import Generator
-from sqlmodel import Session
 from typing import Annotated
+
+import jwt
+from sqlmodel import Session
 from fastapi import Depends, Header, HTTPException, Request
 
 from app.controllers.user import userController
@@ -46,10 +47,10 @@ class AuthControl:
                 if not item.status:
                     raise HTTPException(status_code=400, detail="用户已被禁用")
             return user
-        except jwt.DecodeError:
-            raise HTTPException(status_code=401, detail="无效的Token")
-        except jwt.ExpiredSignatureError:
-            raise HTTPException(status_code=401, detail="登录已过期")
+        except jwt.DecodeError as exc:
+            raise HTTPException(status_code=401, detail="无效的Token") from exc
+        except jwt.ExpiredSignatureError as exc:
+            raise HTTPException(status_code=401, detail="登录已过期") from exc
 
 
 class PermissionControl:
@@ -76,10 +77,9 @@ class PermissionControl:
             raise HTTPException(
                 status_code=403,
                 detail=f"Permission denied method:{method} path:{path}")
-        else:
-            logger.debug(
-                f"已允许用户 {
-                    current_user.username} 访问 {method} {path} 接口")
+        logger.debug(
+            f"已允许用户 {
+                current_user.username} 访问 {method} {path} 接口")
 
 
 DependAuth = Depends(AuthControl.is_authed)

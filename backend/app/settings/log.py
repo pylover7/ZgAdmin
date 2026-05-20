@@ -1,5 +1,4 @@
 import sys
-from pathlib import Path
 
 from loguru import logger as loguru_logger
 from sqlmodel import Session
@@ -9,11 +8,6 @@ from app.models.logs import LoginLogCreate, OperationLogCreate, SystemLogCreate
 from app.core import engine
 from app.settings import settings
 
-loginLogs = Path(__file__).parent.parent.parent.joinpath("logs", "login.log")
-systemLogs = Path(__file__).parent.parent.parent.joinpath("logs", "system.log")
-operationLogs = Path(__file__).parent.parent.parent.joinpath(
-    "logs", "operation.log")
-
 
 class Logger:
     def __init__(self):
@@ -22,37 +16,12 @@ class Logger:
         self.logger.add(
             sink=sys.stderr,
             level="DEBUG",
-            format="<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> |"
-                   " <level>Logger: {extra[name]}</level> | <level>{message}</level>"
+            format="<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | "
+            "<level>{level: <8}</level> |"
+            " <level>Logger: {extra[name]}</level> | "
+            "<level>{message}</level>"
         )
-        self.logger.add(
-            sink=systemLogs,
-            level="DEBUG",
-            rotation="10 MB",
-            encoding="utf-8",
-            retention="10 days",
-            compression="zip",
-            format="<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | <level>{message}</level>",
-            filter=lambda record: record["extra"].get("name") == "system")
-        self.logger.add(
-            sink=loginLogs,
-            level="SUCCESS",
-            rotation="10 MB",
-            encoding="utf-8",
-            retention="10 days",
-            compression="zip",
-            format="<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | {extra[user]} | "
-            "{extra[ip]} | {extra[address]} | {extra[system]} | {extra[browser]} | <level>{message}</level>",
-            filter=lambda record: record["extra"].get("name") == "login")
-        self.logger.add(
-            sink=operationLogs,
-            level="INFO",
-            rotation="10 MB",
-            encoding="utf-8",
-            retention="10 days",
-            compression="zip",
-            format="<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | {extra[user]} | <level>{message}</level>",
-            filter=lambda record: record["extra"].get("name") == "operation")
+        
         self.sysLogger = self.logger.bind(name="system")
         self.loginLogger = self.logger.bind(name="login")
         self.operationLogger = self.logger.bind(name="operation")

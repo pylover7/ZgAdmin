@@ -12,7 +12,7 @@ async def pay_setting(species: str):
         case "email":
             result = {
                 "host": base_config.get_config("email", "host"),
-                "port": int(base_config.get_config("email", "port")),
+                "port": int(base_config.get_config("email", "port") or 0),
                 "username": base_config.get_config("email", "username"),
                 "sender": base_config.get_config("email", "sender"),
             }
@@ -31,7 +31,7 @@ async def pay_setting(species: str):
 
 
 @paySetRouter.post("/set/{species}", summary="支付设置更新")
-async def pay_setting(species: str, data: dict):
+async def pay_setting_update(species: str, data: dict):
     match species:
         case "email":
             base_config.set_config("email", "host", data["host"])
@@ -40,3 +40,12 @@ async def pay_setting(species: str, data: dict):
             base_config.set_config("email", "password", data["password"])
             base_config.set_config("email", "sender", data["sender"])
             return Success(msg="设置成功！")
+        case "wechat":
+            base_config.set_config("wechat", "appid", data["appid"])
+            base_config.set_config("wechat", "mchid", data["mchid"])
+            base_config.set_config("wechat", "key", data["key"])
+            base_config.set_config("wechat", "notify_url", data["notify_url"])
+            base_config.set_config("wechat", "cert_path", data["cert_path"])
+            return Success(msg="设置成功！")
+        case _:
+            return Success(code=400, msg=f"不支持的设置类型: {species}")

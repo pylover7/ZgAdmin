@@ -1,7 +1,7 @@
 """幂等种子数据导入器 — 只创建缺失的数据，重复运行安全"""
 from sqlmodel import Session, select
 
-from app.models import Menu, Department, DepartCreate
+from app.models import Menu, Department
 from app.settings.log import logger
 from .data.menus import DEFAULT_MENUS
 from .data.departments import DEFAULT_DEPARTMENTS

@@ -193,6 +193,7 @@ menus:
   pureMindMap: Mind Map
   pureMenuOverflow: Menu Overflow Show Tooltip Text
   pureChildMenuOverflow: Child Menu Overflow Show Tooltip Text
+  zgNoticeSettings: Notice Manage
 status:
   pureLoad: Loading...
   pureMessage: Message
@@ -387,3 +388,33 @@ system:
   appId: App ID
   appKey: App Key
   redirectUri: Redirect URI
+  notice:
+    title: Notice Title
+    type: Notice Type
+    level: Notice Level
+    content: Content
+    status: Status
+    sysNotice: System Notice
+    bizNotice: Business Notice
+    announce: Announcement
+    sys: System
+    biz: Business
+    info: Info
+    warn: Warning
+    important: Important
+    draft: Draft
+    published: Published
+    publishNotice: Publish Notice
+    enterTitle: Enter notice title
+    selectType: Select notice type
+    selectLevel: Select notice level
+    enterContent: Enter notice content
+    selectStatus: Select status
+    titleRequired: Notice title is required
+    typeRequired: Please select notice type
+    levelRequired: Please select notice level
+    atLeastOne: Please select at least one item
+    batchDeleteSuccess: Batch delete successful
+    deleteSuccess: Deleted successfully
+    deleteNoticeConfirm: Confirm to delete this notice?
+    noticeLabel: Notice
