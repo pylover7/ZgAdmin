@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { reactive, ref } from "vue";
 import { message } from "@/utils/message";
-import { type UserInfo, getMine } from "@/api/user";
+import { getMine, updateProfile } from "@/api/user";
 import type { FormInstance, FormRules } from "element-plus";
 import { deviceDetection } from "@pureadmin/utils";
 
@@ -9,17 +9,19 @@ defineOptions({
   name: "Profile"
 });
 
+const loading = ref(false);
 const userInfoFormRef = ref<FormInstance>();
 
 const userInfos = reactive({
   nickname: "",
   email: "",
   phone: "",
-  description: ""
+  remark: ""
 });
 
-const rules = reactive<FormRules<UserInfo>>({
-  nickname: [{ required: true, message: "昵称必填", trigger: "blur" }]
+const rules = reactive<FormRules>({
+  nickname: [{ required: true, message: "昵称必填", trigger: "blur" }],
+  email: [{ required: true, message: "邮箱必填", trigger: "blur" }]
 });
 
 function queryEmail(queryString, callback) {
@@ -42,12 +44,24 @@ function queryEmail(queryString, callback) {
   callback(results);
 }
 
-// 更新信息
 const onSubmit = async (formEl: FormInstance) => {
-  await formEl.validate((valid, fields) => {
+  if (!formEl) return;
+  await formEl.validate(async (valid, fields) => {
     if (valid) {
-      console.log(userInfos);
-      message("更新信息成功", { type: "success" });
+      loading.value = true;
+      try {
+        await updateProfile({
+          nickname: userInfos.nickname,
+          email: userInfos.email,
+          phone: userInfos.phone,
+          remark: userInfos.remark
+        });
+        message("更新信息成功", { type: "success" });
+      } catch {
+        message("更新信息失败", { type: "error" });
+      } finally {
+        loading.value = false;
+      }
     } else {
       console.log("error submit!", fields);
     }
@@ -55,7 +69,12 @@ const onSubmit = async (formEl: FormInstance) => {
 };
 
 getMine().then(res => {
-  Object.assign(userInfos, res.data);
+  if (res?.data) {
+    userInfos.nickname = res.data.nickname || "";
+    userInfos.email = res.data.email || "";
+    userInfos.phone = res.data.phone || "";
+    userInfos.remark = res.data.remark || "";
+  }
 });
 </script>
 
@@ -90,7 +109,7 @@ getMine().then(res => {
       </el-form-item>
       <el-form-item label="简介">
         <el-input
-          v-model="userInfos.description"
+          v-model="userInfos.remark"
           placeholder="请输入简介"
           type="textarea"
           :autosize="{ minRows: 6, maxRows: 8 }"
@@ -98,7 +117,11 @@ getMine().then(res => {
           show-word-limit
         />
       </el-form-item>
-      <el-button type="primary" @click="onSubmit(userInfoFormRef)">
+      <el-button
+        type="primary"
+        :loading="loading"
+        @click="onSubmit(userInfoFormRef)"
+      >
         更新信息
       </el-button>
     </el-form>

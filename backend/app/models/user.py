@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 from pydantic import EmailStr
+from sqlalchemy import Column, JSON
 from sqlmodel import Field, Relationship, SQLModel
 
 from .base import BaseModel, TimestampMixin
@@ -69,6 +70,7 @@ class User(UserBase, TimestampMixin, table=True):
         default=None,
         nullable=True,
         description="最后登录时间")
+    preferences: dict | None = Field(default=None, sa_column=Column(JSON, nullable=True))
     department: Department | None = Relationship(back_populates="users")
 
     roles: list["Role"] = Relationship(
@@ -118,3 +120,16 @@ class UpdateStatus(BaseModel):
 
 class UpdateUserRoles(BaseModel):
     roleIds: list[str]
+
+
+class UpdateProfile(SQLModel):
+    nickname: str | None = Field(default=None, max_length=30)
+    email: EmailStr | None = Field(default=None)
+    phone: str | None = Field(default=None, max_length=20)
+    remark: str | None = Field(default=None, max_length=500)
+
+
+class UpdatePreferences(SQLModel):
+    notify_account: bool | None = Field(default=None)
+    notify_system: bool | None = Field(default=None)
+    notify_task: bool | None = Field(default=None)

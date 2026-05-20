@@ -4,6 +4,7 @@ import { getMineLogs } from "@/api/user";
 import { reactive, ref, onMounted } from "vue";
 import { deviceDetection } from "@pureadmin/utils";
 import type { PaginationProps } from "@pureadmin/table";
+import { paginationConf } from "@/config";
 
 defineOptions({
   name: "SecurityLog"
@@ -11,13 +12,7 @@ defineOptions({
 
 const loading = ref(true);
 const dataList = ref([]);
-const pagination = reactive<PaginationProps>({
-  total: 0,
-  pageSize: 10,
-  currentPage: 1,
-  background: true,
-  layout: "prev, pager, next"
-});
+const pagination = reactive<PaginationProps>({ ...paginationConf });
 const columns: TableColumnList = [
   {
     label: "详情",
@@ -49,21 +44,33 @@ const columns: TableColumnList = [
     prop: "operatingTime",
     minWidth: 180,
     formatter: ({ operatingTime }) =>
-      dayjs(operatingTime).format("YYYY-MM-DD HH:mm:ss")
+      operatingTime ? dayjs(operatingTime).format("YYYY-MM-DD HH:mm:ss") : ""
   }
 ];
 
 async function onSearch() {
   loading.value = true;
-  const { data } = await getMineLogs();
-  dataList.value = data.list;
-  pagination.total = data.total;
-  pagination.pageSize = data.pageSize;
-  pagination.currentPage = data.currentPage;
+  getMineLogs({
+    pageSize: pagination.pageSize,
+    currentPage: pagination.currentPage
+  })
+    .then(res => {
+      dataList.value = res.data;
+      pagination.total = res.total;
+    })
+    .finally(() => {
+      loading.value = false;
+    });
+}
 
-  setTimeout(() => {
-    loading.value = false;
-  }, 200);
+function handleSizeChange(val: number) {
+  pagination.pageSize = val;
+  onSearch();
+}
+
+function handleCurrentChange(val: number) {
+  pagination.currentPage = val;
+  onSearch();
 }
 
 onMounted(() => {
@@ -81,6 +88,8 @@ onMounted(() => {
       :data="dataList"
       :columns="columns"
       :pagination="pagination"
+      @page-size-change="handleSizeChange"
+      @page-current-change="handleCurrentChange"
     />
   </div>
 </template>
