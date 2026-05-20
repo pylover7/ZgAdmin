@@ -1,6 +1,4 @@
 export type UserInfo = {
-  /** 头像 */
-  avatar: string;
   /** 用户名 */
   username: string;
   /** 昵称 */
@@ -18,8 +16,6 @@ export type UserResult = {
   msg: string;
   success: boolean;
   data: {
-    /** 头像 */
-    avatar: string;
     /** 用户名 */
     username: string;
     /** 昵称 */

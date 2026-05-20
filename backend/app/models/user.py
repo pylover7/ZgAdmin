@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from pydantic import EmailStr
 from sqlmodel import Field, Relationship, SQLModel
 
-from .base import BaseModel, TimestampMixin, Image
+from .base import BaseModel, TimestampMixin
 from .link import UserRoleLink
 from .department import Department
 
@@ -65,11 +65,6 @@ class UserBase(BaseModel):
 
 
 class User(UserBase, TimestampMixin, table=True):
-    avatar: str = Field(
-        default=None,
-        max_length=255,
-        nullable=True,
-        description="头像文件名称")
     last_login: datetime = Field(
         default=None,
         nullable=True,
@@ -115,10 +110,6 @@ class UserFiter(BaseModel):
 
 class UserResetPwd(BaseModel):
     newPwd: str
-
-
-class UserAvatar(BaseModel):
-    avatar: Image
 
 
 class UpdateStatus(BaseModel):

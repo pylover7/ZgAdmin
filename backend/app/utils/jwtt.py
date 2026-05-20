@@ -149,8 +149,6 @@ async def find_or_create_qq_user(session, qq_userinfo: QQUserInfo) -> User:
                 user.nickname = qq_userinfo.nickname
             if qq_userinfo.avatar:
                 user.qq_avatar = qq_userinfo.avatar
-                if not user.avatar:
-                    user.avatar = qq_userinfo.avatar
             session.add(user)
             session.commit()
             session.refresh(user)
@@ -166,7 +164,6 @@ async def find_or_create_qq_user(session, qq_userinfo: QQUserInfo) -> User:
             qq_openid=qq_userinfo.openid,
             qq_nickname=qq_userinfo.nickname,
             qq_avatar=qq_userinfo.avatar,
-            avatar=qq_userinfo.avatar,
             status=1,
             is_superuser=False
         )

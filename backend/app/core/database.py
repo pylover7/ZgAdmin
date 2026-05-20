@@ -41,7 +41,7 @@ async def init_data(app: FastAPI) -> None:
     logger.info("初始化数据库...")
     SQLModel.metadata.create_all(engine)
     logger.info("检查静态文件目录...")
-    check_dir_exists([settings.STATIC_PATH, settings.AVATAR_PATH, settings.GOODS_PATH])
+    check_dir_exists([settings.STATIC_PATH, settings.GOODS_PATH])
 
     with DatabaseSession() as session:
         # 种子数据：部门、菜单

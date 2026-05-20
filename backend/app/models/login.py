@@ -20,7 +20,6 @@ class JWTReOut(SQLModel):
 
 class JWTOut(SQLModel):
     username: str
-    avatar: str
     depart: str
     roles: list[str]
     accessToken: str

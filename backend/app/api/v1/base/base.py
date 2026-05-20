@@ -73,7 +73,6 @@ async def login_access_token(
 
     data = JWTOut(
         username=user.username,
-        avatar=user.avatar or "",
         depart=depart,
         roles=roles,
         accessToken=create_access_token(
@@ -287,7 +286,6 @@ async def qq_login(session: SessionDep, qq_login_data: QQLoginSchema):
 
         data = JWTOut(
             username=user.username,
-            avatar=user.avatar or user.qq_avatar or "",
             depart=depart,
             roles=roles,
             accessToken=create_access_token(

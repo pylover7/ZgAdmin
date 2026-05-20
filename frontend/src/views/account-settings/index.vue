@@ -29,7 +29,6 @@ onBeforeMount(() => {
 });
 
 const userInfo = ref({
-  avatar: "",
   username: "",
   nickname: ""
 });
@@ -86,8 +85,7 @@ getMine().then(res => {
           </div>
         </div>
         <div class="flex items-center ml-8 my-4">
-          <el-avatar :size="48" :src="userInfo.avatar" />
-          <div class="ml-4 flex flex-col max-w-32.5">
+          <div class="flex flex-col max-w-32.5">
             <ReText class="font-bold self-baseline!">
               {{ userInfo.nickname }}
             </ReText>

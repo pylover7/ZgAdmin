@@ -71,7 +71,6 @@ class Settings(BaseSettings):
             return "unknown"
     STATIC_PATH: str = str(
         Path(__file__).parent.parent.parent.joinpath("static"))
-    AVATAR_PATH: str = str(Path(STATIC_PATH).joinpath("avatar"))
     GOODS_PATH: str = str(Path(STATIC_PATH).joinpath("goods"))
     CONFIG_PATH: str = str(
         Path(__file__).parent.parent.parent.joinpath("config"))
