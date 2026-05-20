@@ -1,10 +1,10 @@
-"""PyTool CLI — 代码生成与项目管理工具
+"""ZgAdmin CLI — 代码生成与项目管理工具
 用法: uv run python -m app.cli <命令>
 """
 import sys
 from .generate import generate_module
 
-HELP = """PyTool CLI
+HELP = """ZgAdmin CLI
 
 命令:
   generate-module <name> --fields <定义> [--menu <菜单名>]

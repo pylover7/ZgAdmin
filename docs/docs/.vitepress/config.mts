@@ -1,7 +1,7 @@
 import { defineConfig } from 'vitepress'
 
 export default defineConfig({
-  title: "PyTool",
+  title: "ZgAdmin",
   description: "全栈管理平台模板 — FastAPI + Vue 3",
   themeConfig: {
     nav: [
@@ -21,7 +21,7 @@ export default defineConfig({
     ],
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/pylover7/PyTool' }
+      { icon: 'github', link: 'https://github.com/pylover7/ZgAdmin' }
     ]
   }
 })

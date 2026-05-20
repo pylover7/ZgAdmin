@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# PyTool — 一键启动脚本
+# ZgAdmin — 一键启动脚本
 # 用法: ./scripts/start.sh [dev|backend|frontend|sync|stop|status]
 # ==============================================================================
 set -euo pipefail
@@ -130,7 +130,7 @@ trap cleanup SIGINT SIGTERM EXIT
 # ──────────────────────── 后端 ────────────────────────────────────────────────
 run_backend() {
     banner "═══════════════════════════════════════════════════════════════"
-    banner "  PyTool 后端 (FastAPI)  http://localhost:${BACKEND_PORT}"
+    banner "  ZgAdmin 后端 (FastAPI)  http://localhost:${BACKEND_PORT}"
     banner "═══════════════════════════════════════════════════════════════"
     release_port "$BACKEND_PORT"
     log_step "安装后端依赖..."
@@ -144,7 +144,7 @@ run_backend() {
 # ──────────────────────── 前端 ────────────────────────────────────────────────
 run_frontend() {
     banner "═══════════════════════════════════════════════════════════════"
-    banner "  PyTool 前端 (Vue 3 + Vite)  http://localhost:${FRONTEND_PORT}"
+    banner "  ZgAdmin 前端 (Vue 3 + Vite)  http://localhost:${FRONTEND_PORT}"
     banner "═══════════════════════════════════════════════════════════════"
     release_port "$FRONTEND_PORT"
     log_step "安装前端依赖..."
@@ -174,7 +174,7 @@ sync_deps() {
 # ──────────────────────── 状态 ────────────────────────────────────────────────
 show_status() {
     echo ""
-    banner "PyTool 服务状态"
+    banner "ZgAdmin 服务状态"
     echo ""
     if port_in_use "$BACKEND_PORT"; then
         echo -e "  ${GREEN}●${NC} 后端: 运行中 (端口 $BACKEND_PORT)"
@@ -192,7 +192,7 @@ show_status() {
 # ──────────────────────── 帮助 ────────────────────────────────────────────────
 show_help() {
     echo ""
-    banner "PyTool — 启动脚本"
+    banner "ZgAdmin — 启动脚本"
     echo ""
     echo "用法: ./scripts/start.sh [命令]"
     echo ""
@@ -225,7 +225,7 @@ main() {
             run_backend; run_frontend
             echo ""
             banner "═══════════════════════════════════════════════════════════════"
-            banner "  PyTool 已启动"
+            banner "  ZgAdmin 已启动"
             banner "═══════════════════════════════════════════════════════════════"
             echo ""
             echo -e "  前端: ${GREEN}http://localhost:${FRONTEND_PORT}${NC}"

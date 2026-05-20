@@ -24,7 +24,7 @@ FIRST_SUPERUSER_PASSWORD=my-new-password
 删除数据库后重启生效：
 
 ```bash
-rm backend/static/pytool.sqlite
+rm backend/static/zgadmin.sqlite
 ./scripts/start.sh
 ```
 

@@ -1,7 +1,7 @@
 services:
-  pytool:
+  zgadmin:
     image: docker.cnb.cool/pylover/tools/zgadmin
-    container_name: pytool-app
+    container_name: zgadmin-app
     ports:
       - "7000:80"
     restart: unless-stopped
@@ -12,11 +12,11 @@ services:
       # - DB_SCHEME=postgresql
       # - DB_SERVER=postgres
       # - DB_PORT=5432
-      # - DB_PATH=pytool
-      # - DB_USER=pytool
+      # - DB_PATH=zgadmin
+      # - DB_USER=zgadmin
       # - DB_PASSWORD=changethis
     volumes:
-      - pytool_data:/backend/static
+      - zgadmin_data:/backend/static
     depends_on:
       postgres:
         condition: service_healthy
@@ -30,16 +30,16 @@ services:
 
   postgres:
     image: postgres:16-alpine
-    container_name: pytool-db
+    container_name: zgadmin-db
     restart: unless-stopped
     environment:
-      - POSTGRES_USER=pytool
+      - POSTGRES_USER=zgadmin
       - POSTGRES_PASSWORD=changethis
-      - POSTGRES_DB=pytool
+      - POSTGRES_DB=zgadmin
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U pytool"]
+      test: ["CMD-SHELL", "pg_isready -U zgadmin"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -48,5 +48,5 @@ services:
       - postgres
 
 volumes:
-  pytool_data:
+  zgadmin_data:
   pgdata:
