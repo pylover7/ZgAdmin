@@ -47,7 +47,8 @@ const list = ref([
     title: "账户密码",
     illustrate: "当前密码强度：强",
     button: "修改",
-    action: "password"
+    action: "password",
+    disabled: false
   },
   {
     title: "密保手机",

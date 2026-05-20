@@ -140,13 +140,13 @@ Phase 0 (立即) → Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 →
 > **分支**：`feat/account-settings`
 > **风险**：🟢 低 — 主要是 API 对接修正，无新增模型。
 
-- [ ] `getMine` API 指向 `/mine` 但后端无此路由 → 改为指向 `/api/v1/base/userinfo`
-- [ ] 头像上传统一对接 `updateAvatar` 接口（复用 Phase 5 文件管理模块）
-- [ ] 昵称 / 邮箱 / 手机号编辑保存功能
-- [ ] `getMineLogs` API 指向 `/mine-logs` 但后端无此路由 → 后端新增当前用户安全日志查询接口
-- [ ] `Preferences.vue` 扩展：语言偏好、通知偏好设置项
-- [ ] 后端存储用户偏好到数据库
-- [ ] 🔄 用户偏好表生成 Alembic 迁移脚本
+- [x] `getMine` API 指向 `/mine` 但后端无此路由 → 改为指向 `/api/v1/base/userinfo`
+- [x] 头像上传统一对接 `updateAvatar` 接口（复用 Phase 5 文件管理模块）
+- [x] 昵称 / 邮箱 / 手机号编辑保存功能
+- [x] `getMineLogs` API 指向 `/mine-logs` 但后端无此路由 → 后端新增当前用户安全日志查询接口
+- [x] `Preferences.vue` 扩展：语言偏好、通知偏好设置项
+- [x] 后端存储用户偏好到数据库
+- [x] 🔄 用户偏好表生成 Alembic 迁移脚本
 
 ### 3.2 通用设置页面
 
