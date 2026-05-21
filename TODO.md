@@ -153,10 +153,10 @@ Phase 0 (立即) → Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 →
 > **分支**：`feat/general-settings`
 > **风险**：🟢 低 — 新增页面 + 接口，独立模块。
 
-- [ ] 设计"通用设置"页面布局（`settings/general/index.vue`）
-- [ ] 后端新增 `GET/POST /api/v1/settings/general` 接口（站点名称、Logo、描述、默认语言等）
-- [ ] 🔄 生成 Alembic 迁移脚本（新增 settings 配置表）
-- [ ] 表单校验 + 保存交互
+- [x] 设计"通用设置"页面布局（`settings/general/index.vue`）
+- [x] 后端新增 `GET/POST /api/v1/settings/general` 接口（站点名称、Logo、描述、默认语言等）
+- [x] 🔄 生成 Alembic 迁移脚本（新增 settings 配置表）
+- [x] 表单校验 + 保存交互
 
 ### 3.3 仪表盘真实数据
 
@@ -167,7 +167,7 @@ Phase 0 (立即) → Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 →
 - [ ] 前端 `data.ts` 中 `chartData / barChartData / progressData / tableData` 改为 API 拉取
 - [ ] "上周/本周"切换联动真实数据查询
 
-### 3.4 在线用户管理
+### 3.4 ~~在线用户管理~~
 
 > **分支**：`feat/online-users`
 > **风险**：🟡 中 — 依赖 Redis；强制下线需处理 WebSocket / Token 失效。
