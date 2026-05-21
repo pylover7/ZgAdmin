@@ -367,6 +367,27 @@ system:
     loginLog: Login Log
     operationLog: Operation Log
     systemLog: System Log
+    load: Load
+    cpu: CPU
+    memory: Memory
+    disk: Disk
+    network: Network
+    diskIO: Disk IO
+    load1: 1 min
+    load5: 5 min
+    load15: 15 min
+    cores: Cores
+    status: Status
+    cpuFreq: Frequency
+    physicalCores: Physical
+    logicalCores: Logical
+    total: Total
+    used: Used
+    available: Available
+    cached: Cached
+    buffers: Buffers
+    free: Free
+    shared: Shared
   settings:
     title: System Settings
     general: General

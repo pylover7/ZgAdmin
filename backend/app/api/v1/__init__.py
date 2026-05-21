@@ -41,3 +41,8 @@ v1_router.include_router(
     prefix="/pay",
     dependencies=[DependPermission]
 )
+v1_router.include_router(
+    monitorRouter,
+    prefix="/monitor",
+    dependencies=[DependPermission]
+)

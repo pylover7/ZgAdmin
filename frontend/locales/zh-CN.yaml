@@ -373,6 +373,27 @@ system:
     loginLog: 登录日志
     operationLog: 操作日志
     systemLog: 系统日志
+    load: 负载
+    cpu: CPU
+    memory: 内存
+    disk: 磁盘
+    network: 网络流量
+    diskIO: 磁盘IO
+    load1: 1分钟
+    load5: 5分钟
+    load15: 15分钟
+    cores: 核心数
+    status: 状态
+    cpuFreq: 频率
+    physicalCores: 物理核心
+    logicalCores: 逻辑核心
+    total: 总计
+    used: 已用
+    available: 可用
+    cached: 缓存
+    buffers: 缓冲
+    free: 空闲
+    shared: 共享
   settings:
     title: 系统设置
     general: 通用设置
