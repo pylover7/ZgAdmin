@@ -394,6 +394,9 @@ system:
     buffers: 缓冲
     free: 空闲
     shared: 共享
+    pause: 暂停刷新
+    resume: 恢复刷新
+    fetchError: 数据获取失败，请稍后重试
   settings:
     title: 系统设置
     general: 通用设置

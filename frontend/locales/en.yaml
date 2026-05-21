@@ -388,6 +388,9 @@ system:
     buffers: Buffers
     free: Free
     shared: Shared
+    pause: Pause refresh
+    resume: Resume refresh
+    fetchError: Failed to fetch data, please retry later
   settings:
     title: System Settings
     general: General

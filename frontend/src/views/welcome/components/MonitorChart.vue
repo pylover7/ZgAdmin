@@ -19,14 +19,21 @@ const theme = computed(() => (isDark.value ? "dark" : "light"));
 const chartRef = ref();
 const { setOptions } = useECharts(chartRef, { theme, renderer: "svg" });
 
-const prevFirstTime = ref<number | null>(null);
+const chartInited = ref(false);
+
+// #5: 尊重 prefers-reduced-motion
+const prefersReducedMotion = computed(() => {
+  if (typeof window === "undefined") return false;
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+});
 
 const updateChart = () => {
-  if (!props.data.length) return;
+  if (!props.data.length) {
+    chartInited.value = false;
+    return;
+  }
 
-  const firstTime = props.data[0]?.time;
-  const isFirstRender = prevFirstTime.value === null;
-  const isReset = !isFirstRender && prevFirstTime.value !== firstTime;
+  const animDuration = prefersReducedMotion.value ? 0 : 300;
 
   const xData = props.data.map(p => {
     const d = new Date(p.time);
@@ -51,8 +58,8 @@ const updateChart = () => {
   }));
 
   setOptions({
-    clear: isFirstRender || isReset,
-    animationDurationUpdate: 300,
+    clear: !chartInited.value,
+    animationDurationUpdate: animDuration,
     animationEasingUpdate: "linear",
     tooltip: {
       trigger: "axis",
@@ -97,7 +104,7 @@ const updateChart = () => {
       boundaryGap: false,
       axisLine: { lineStyle: { color: isDark.value ? "#444" : "#ddd" } },
       axisLabel: {
-        color: isDark.value ? "#888" : "#999",
+        color: isDark.value ? "#a0a0a0" : "#999",
         fontSize: 10,
         interval: "auto" as any,
         showMaxLabel: true,
@@ -108,7 +115,7 @@ const updateChart = () => {
     yAxis: {
       type: "value",
       axisLabel: {
-        color: isDark.value ? "#888" : "#999",
+        color: isDark.value ? "#a0a0a0" : "#999",
         fontSize: 10,
         formatter: (v: number) => {
           if (v >= 1048576) return (v / 1048576).toFixed(0) + "MB";
@@ -122,7 +129,7 @@ const updateChart = () => {
     },
     series: seriesList as any
   });
-  prevFirstTime.value = firstTime ?? null;
+  chartInited.value = true;
 };
 
 watch(
@@ -135,5 +142,55 @@ onMounted(() => updateChart());
 </script>
 
 <template>
-  <div ref="chartRef" :style="{ width: '100%', height }" />
+  <div class="monitor-chart-wrap">
+    <!-- #7: 空状态反馈 -->
+    <div v-if="!data.length" class="chart-empty">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="40"
+        height="40"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="empty-icon"
+      >
+        <path d="M3 3v18h18" />
+        <path d="M7 16l4-8 4 4 4-6" opacity="0.4" />
+      </svg>
+      <span class="empty-text">No data yet</span>
+    </div>
+    <div
+      v-show="data.length"
+      ref="chartRef"
+      :style="{ width: '100%', height }"
+    />
+  </div>
 </template>
+
+<style lang="scss" scoped>
+.monitor-chart-wrap {
+  position: relative;
+}
+
+.chart-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: v-bind(height);
+  color: var(--el-text-color-secondary);
+  gap: 8px;
+}
+
+.empty-icon {
+  opacity: 0.4;
+}
+
+.empty-text {
+  font-size: 13px;
+  opacity: 0.6;
+}
+</style>

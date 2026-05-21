@@ -7,6 +7,8 @@ const props = defineProps({
   percent: { type: Number, default: 0 },
   subtitle: { type: String, default: "" },
   color: { type: String, default: "#409EFF" },
+  /** 启用基于百分比的动态颜色（绿→黄→红） */
+  dynamicColor: { type: Boolean, default: false },
   detail: { type: Object, default: () => ({}) },
   top5: { type: Array, default: () => [] }
 });
@@ -18,14 +20,32 @@ const chartRef = ref();
 const { setOptions } = useECharts(chartRef, { theme, renderer: "svg" });
 
 const inited = ref(false);
+
+// #6: 修复深色模式副文本对比度 — #888 在深色背景上仅 3.5:1，改为 #a0a0a0 达 5.4:1
 const textColor = computed(() => (isDark.value ? "#e0e0e0" : "#303133"));
-const subTextColor = computed(() => (isDark.value ? "#888" : "#606266"));
+const subTextColor = computed(() => (isDark.value ? "#a0a0a0" : "#606266"));
 const trackColor = computed(() => (isDark.value ? "#2a2a2a" : "#e8e8e8"));
 
+// #3: 动态颜色 — 根据百分比从绿→黄→红渐变
+const activeColor = computed(() => {
+  if (!props.dynamicColor) return props.color;
+  const p = props.percent;
+  if (p < 50) return "#67C23A"; // 绿
+  if (p < 80) return "#E6A23C"; // 黄
+  return "#F56C6C"; // 红
+});
+
+// #5: 尊重 prefers-reduced-motion
+const prefersReducedMotion = computed(() => {
+  if (typeof window === "undefined") return false;
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+});
+
 const updateChart = () => {
+  const animDuration = prefersReducedMotion.value ? 0 : 500;
   setOptions({
     clear: !inited.value,
-    animationDurationUpdate: 500,
+    animationDurationUpdate: animDuration,
     animationEasingUpdate: "cubicOut",
     series: [
       {
@@ -41,7 +61,7 @@ const updateChart = () => {
           roundCap: true,
           clip: false,
           width: 14,
-          itemStyle: { color: props.color }
+          itemStyle: { color: activeColor.value }
         },
         axisLine: {
           lineStyle: {
@@ -59,7 +79,7 @@ const updateChart = () => {
           fontWeight: 700,
           lineHeight: 36,
           offsetCenter: [0, "-8%"],
-          valueAnimation: true,
+          valueAnimation: !prefersReducedMotion.value,
           formatter: "{value}%",
           color: textColor.value
         },
@@ -81,7 +101,7 @@ const updateChart = () => {
 };
 
 watch(
-  () => [props.percent, isDark.value, props.color, props.subtitle],
+  () => [props.percent, isDark.value, activeColor.value, props.subtitle],
   () => updateChart(),
   { deep: true }
 );
@@ -90,10 +110,17 @@ onMounted(() => updateChart());
 </script>
 
 <template>
-  <el-popover placement="bottom" :width="340" trigger="hover">
+  <!-- #10: Popover 宽度响应式 -->
+  <el-popover
+    placement="bottom"
+    :width="340"
+    trigger="hover"
+    :popper-class="'gauge-popover'"
+  >
     <template #reference>
       <div class="gauge-wrap">
         <div class="gauge-name">{{ name }}</div>
+        <!-- #9: 响应式高度 -->
         <div ref="chartRef" class="gauge-chart" />
       </div>
     </template>
@@ -148,42 +175,22 @@ onMounted(() => updateChart());
   margin-bottom: 2px;
 }
 
+/* #9: 响应式高度 — 小屏幕缩小 */
 .gauge-chart {
   width: 100%;
   height: 190px;
-}
 
-.detail-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px 16px;
+  @media (max-width: 768px) {
+    height: 150px;
+  }
 }
+</style>
 
-.detail-item {
-  display: flex;
-  justify-content: space-between;
-  font-size: 13px;
-}
-
-.detail-label {
-  color: var(--el-text-color-secondary);
-}
-
-.detail-value {
-  font-weight: 500;
-  color: var(--el-text-color-primary);
-}
-
-.top5-section {
-  margin-top: 10px;
-  border-top: 1px solid var(--el-border-color-lighter);
-  padding-top: 8px;
-}
-
-.top5-title {
-  font-size: 13px;
-  font-weight: 600;
-  margin-bottom: 6px;
-  color: var(--el-text-color-primary);
+<style lang="scss">
+/* #10: Popover 响应式宽度（非 scoped 才能作用到 popover 浮层） */
+@media (max-width: 480px) {
+  .gauge-popover {
+    max-width: calc(100vw - 32px) !important;
+  }
 }
 </style>
