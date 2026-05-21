@@ -23,7 +23,7 @@ const error = ref("");
 
 // ─── 系统状态 ───
 const status = reactive<SystemStatus>({
-  load: { load1: 0, load5: 0, load15: 0, status: "", cores: 0 },
+  load: { load1: 0, load5: 0, load15: 0, status: "", cores: 0, percent: 0 },
   cpu: {
     percent: 0,
     freq: "",
@@ -54,10 +54,6 @@ const ifaceList = computed(() => Object.keys(networkData));
 const diskList = computed(() => Object.keys(diskIOData));
 
 // ─── 仪表盘配置 ───
-const loadPercent = computed(() => {
-  const cores = status.load.cores || 1;
-  return Math.min(Math.round((status.load.load1 / cores) * 100), 100);
-});
 
 const cpuDetail = computed(() => ({
   [t("system.monitor.cpuFreq")]: status.cpu.freq,
@@ -219,7 +215,7 @@ onUnmounted(() => {
         <el-card shadow="hover" class="gauge-card-wrap">
           <SystemGauge
             :name="t('system.monitor.load')"
-            :percent="loadPercent"
+            :percent="status.load.percent"
             :subtitle="status.load.status"
             color="#E6A23C"
             :dynamic-color="true"

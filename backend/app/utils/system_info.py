@@ -37,7 +37,7 @@ def _load_status(load1: float, cores: int) -> str:
     return "过载"
 
 
-LoadInfo = namedtuple("LoadInfo", ["load1", "load5", "load15", "status", "cores"])
+LoadInfo = namedtuple("LoadInfo", ["load1", "load5", "load15", "status", "cores", "percent"])
 CpuInfo = namedtuple("CpuInfo", ["percent", "freq", "per_cpu", "physical_cores", "logical_cores"])
 MemoryInfo = namedtuple(
     "MemoryInfo",
@@ -52,27 +52,87 @@ def _get_host_cpu_count() -> int:
 
     Docker 容器中 os.getloadavg() 返回的是宿主机的负载均值，
     但 os.cpu_count() 可能只返回容器限制的 CPU 数，
-    导致负载百分比计算失真。通过读取 /proc/cpuinfo 获取真实核心数。
+    导致负载百分比计算失真。通过多个来源取最大值，最大限度避免低估。
     """
+    counts: list[int] = []
+
+    # 来源 1: /proc/cpuinfo（cgroup v2 下可能被截断）
     try:
         with open("/proc/cpuinfo") as f:
             count = sum(1 for line in f if line.startswith("processor"))
             if count > 0:
-                return count
+                counts.append(count)
     except (FileNotFoundError, OSError):
         pass
-    return os.cpu_count() or 1
+
+    # 来源 2: /sys/devices/system/cpu/present（通常不被命名空间化）
+    try:
+        with open("/sys/devices/system/cpu/present") as f:
+            content = f.read().strip()
+            max_id = 0
+            for part in content.split(","):
+                part = part.strip()
+                if "-" in part:
+                    max_id = max(max_id, int(part.split("-")[1]))
+                elif part.isdigit():
+                    max_id = max(max_id, int(part))
+            counts.append(max_id + 1)
+    except (FileNotFoundError, OSError, ValueError):
+        pass
+
+    # 来源 3: os.cpu_count()
+    count = os.cpu_count()
+    if count:
+        counts.append(count)
+
+    return max(counts) if counts else 1
 
 
-def get_load_info() -> LoadInfo:
+def _is_container_cpu_limited() -> bool:
+    """检测是否在具有 CPU 限制的容器中运行。
+
+    当容器有 cgroup CPU 配额时，os.getloadavg() 仍返回宿主机负载，
+    但可见 CPU 数量可能只是容器配额，导致 load1/cores 失真。
+    """
+    # cgroup v2
+    try:
+        with open("/sys/fs/cgroup/cpu.max") as f:
+            parts = f.read().strip().split()
+            if parts and parts[0] != "max":
+                return True
+    except (FileNotFoundError, OSError, IndexError):
+        pass
+
+    # cgroup v1
+    try:
+        with open("/sys/fs/cgroup/cpu/cpu.cfs_quota_us") as f:
+            quota = int(f.read().strip())
+            if quota > 0:
+                return True
+    except (FileNotFoundError, OSError, ValueError):
+        pass
+
+    return False
+
+
+def get_load_info(cpu_percent: float | None = None) -> LoadInfo:
     cores = _get_host_cpu_count()
     try:
         load1, load5, load15 = os.getloadavg()
     except OSError:
         load1 = load5 = load15 = 0.0
+
+    # 容器有 CPU 限制时，os.getloadavg() 返回宿主机负载，
+    # load1/cores 不再可靠，改用 psutil.cpu_percent()（容器感知）
+    if _is_container_cpu_limited() and cpu_percent is not None:
+        percent = round(cpu_percent, 1)
+    else:
+        percent = min(round(load1 / cores * 100, 1), 100) if cores else 0
+
     status = _load_status(load1, cores)
     return LoadInfo(load1=round(load1, 2), load5=round(load5, 2),
-                    load15=round(load15, 2), status=status, cores=cores)
+                    load15=round(load15, 2), status=status, cores=cores,
+                    percent=percent)
 
 
 def get_cpu_info() -> CpuInfo:

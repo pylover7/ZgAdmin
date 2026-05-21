@@ -1,6 +1,7 @@
 import time
 from collections import deque
 
+import psutil
 from fastapi import APIRouter, Query
 
 from app.models import Success
@@ -26,7 +27,8 @@ HISTORY_MAX = 60
 
 @systemMonitorRouter.get("/status")
 async def system_status():
-    load = get_load_info()
+    cpu_pct = psutil.cpu_percent(interval=0)
+    load = get_load_info(cpu_percent=cpu_pct)
     cpu = get_cpu_info()
     mem = get_memory_info()
     disk = get_disk_info()
@@ -34,7 +36,7 @@ async def system_status():
     return Success(data={
         "load": {
             "load1": load.load1, "load5": load.load5, "load15": load.load15,
-            "status": load.status, "cores": load.cores,
+            "status": load.status, "cores": load.cores, "percent": load.percent,
         },
         "cpu": {
             "percent": cpu.percent, "freq": cpu.freq,

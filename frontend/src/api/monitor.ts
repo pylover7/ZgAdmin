@@ -18,6 +18,7 @@ export interface LoadInfo {
   load15: number;
   status: string;
   cores: number;
+  percent: number;
 }
 
 export interface CpuInfo {
