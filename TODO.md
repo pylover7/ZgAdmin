@@ -163,9 +163,9 @@ Phase 0 (立即) → Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 →
 > **分支**：`feat/dashboard-data`
 > **风险**：🟢 低 — 替换硬编码数据为 API 调用。
 
-- [ ] 后端新增 `GET /api/v1/base/dashboard` 统计接口（用户总数、今日新增、在线人数、系统负载等）
-- [ ] 前端 `data.ts` 中 `chartData / barChartData / progressData / tableData` 改为 API 拉取
-- [ ] "上周/本周"切换联动真实数据查询
+- [x] 后端新增 `GET /api/v1/base/dashboard` 统计接口（用户总数、今日新增、在线人数、系统负载等）
+- [x] 前端 `data.ts` 中 `chartData / barChartData / progressData / tableData` 改为 API 拉取
+- [x] "上周/本周"切换联动真实数据查询
 
 ### 3.4 ~~在线用户管理~~
 
