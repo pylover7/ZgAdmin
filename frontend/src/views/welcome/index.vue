@@ -17,6 +17,17 @@ defineOptions({ name: "Welcome" });
 
 const { t } = useI18n();
 
+// ─── 工具函数 ───
+const formatBytes = (b: number) => {
+  const units = ["B", "KB", "MB", "GB", "TB"];
+  let i = 0;
+  while (b >= 1024 && i < units.length - 1) {
+    b /= 1024;
+    i++;
+  }
+  return `${b.toFixed(2)} ${units[i]}`;
+};
+
 // ─── 加载与错误状态 (#1, #2) ───
 const loading = ref(true);
 const error = ref("");
@@ -81,10 +92,10 @@ const networkChartData = computed<HistoryPoint[]>(() => {
   return networkData[selectedIface.value].history || [];
 });
 
-const networkSeries = [
-  { key: "sent_speed", name: "Upload", color: "#67C23A" },
-  { key: "recv_speed", name: "Download", color: "#409EFF" }
-];
+const networkSeries = computed(() => [
+  { key: "sent_speed", name: t("system.monitor.upload"), color: "#67C23A" },
+  { key: "recv_speed", name: t("system.monitor.download"), color: "#409EFF" }
+]);
 
 // ─── 磁盘IO图表 ───
 const selectedDisk = ref("");
@@ -93,14 +104,13 @@ const diskIOChartData = computed<HistoryPoint[]>(() => {
   return diskIOData[selectedDisk.value].history || [];
 });
 
-const diskIOSeries = [
-  { key: "read_speed", name: "Read", color: "#E6A23C" },
-  { key: "write_speed", name: "Write", color: "#F56C6C" }
-];
+const diskIOSeries = computed(() => [
+  { key: "read_speed", name: t("system.monitor.read"), color: "#E6A23C" },
+  { key: "write_speed", name: t("system.monitor.write"), color: "#F56C6C" }
+]);
 
-// ─── 轮询 + 暂停 (#4) ───
+// ─── 轮询 ───
 let timer: ReturnType<typeof setInterval> | null = null;
-const paused = ref(false);
 
 const fetchStatus = async () => {
   try {
@@ -155,19 +165,6 @@ const fetchAll = async () => {
   if (loading.value) loading.value = false;
 };
 
-const togglePause = () => {
-  paused.value = !paused.value;
-  if (paused.value) {
-    if (timer) {
-      clearInterval(timer);
-      timer = null;
-    }
-  } else {
-    fetchAll();
-    timer = setInterval(fetchAll, 3000);
-  }
-};
-
 onMounted(() => {
   fetchAll();
   timer = setInterval(fetchAll, 3000);
@@ -210,64 +207,78 @@ onUnmounted(() => {
     </div>
 
     <!-- 系统状态区 -->
-    <el-row v-else :gutter="16" class="gauge-row">
-      <el-col :xs="12" :sm="12" :md="6">
-        <el-card shadow="hover" class="gauge-card-wrap">
-          <SystemGauge
-            :name="t('system.monitor.load')"
-            :percent="status.load.percent"
-            :subtitle="status.load.status"
-            color="#E6A23C"
-            :dynamic-color="true"
-            :detail="{
-              [t('system.monitor.load1')]: String(status.load.load1),
-              [t('system.monitor.load5')]: String(status.load.load5),
-              [t('system.monitor.load15')]: String(status.load.load15),
-              [t('system.monitor.cores')]: String(status.load.cores)
-            }"
-          />
-        </el-card>
-      </el-col>
-      <el-col :xs="12" :sm="12" :md="6">
-        <el-card shadow="hover" class="gauge-card-wrap">
-          <SystemGauge
-            :name="t('system.monitor.cpu')"
-            :percent="status.cpu.percent"
-            :subtitle="status.cpu.freq"
-            color="#409EFF"
-            :dynamic-color="true"
-            :detail="cpuDetail"
-            :top5="status.top_cpu"
-          />
-        </el-card>
-      </el-col>
-      <el-col :xs="12" :sm="12" :md="6">
-        <el-card shadow="hover" class="gauge-card-wrap">
-          <SystemGauge
-            :name="t('system.monitor.memory')"
-            :percent="status.memory.percent"
-            :subtitle="`${status.memory.used} / ${status.memory.total}`"
-            color="#67C23A"
-            :dynamic-color="true"
-            :detail="memDetail"
-          />
-        </el-card>
-      </el-col>
-      <el-col :xs="12" :sm="12" :md="6">
-        <el-card shadow="hover" class="gauge-card-wrap">
-          <SystemGauge
-            :name="t('system.monitor.disk')"
-            :percent="status.disk.percent"
-            :subtitle="`${status.disk.used} / ${status.disk.total}`"
-            color="#F56C6C"
-            :dynamic-color="true"
-            :detail="diskDetail"
-          />
-        </el-card>
-      </el-col>
-    </el-row>
+    <template v-else>
+      <div class="section-title">
+        <span class="section-bar" />
+        <span class="section-label">{{
+          t("system.monitor.systemStatus")
+        }}</span>
+      </div>
+      <el-row :gutter="12" class="gauge-row">
+        <el-col :xs="12" :sm="12" :md="6">
+          <el-card shadow="hover" class="gauge-card-wrap">
+            <SystemGauge
+              :name="t('system.monitor.load')"
+              :percent="status.load.percent"
+              :subtitle="status.load.status"
+              color="#E6A23C"
+              :dynamic-color="true"
+              :detail="{
+                [t('system.monitor.load1')]: String(status.load.load1),
+                [t('system.monitor.load5')]: String(status.load.load5),
+                [t('system.monitor.load15')]: String(status.load.load15),
+                [t('system.monitor.cores')]: String(status.load.cores)
+              }"
+            />
+          </el-card>
+        </el-col>
+        <el-col :xs="12" :sm="12" :md="6">
+          <el-card shadow="hover" class="gauge-card-wrap">
+            <SystemGauge
+              :name="t('system.monitor.cpu')"
+              :percent="status.cpu.percent"
+              :subtitle="status.cpu.freq"
+              color="#409EFF"
+              :dynamic-color="true"
+              :detail="cpuDetail"
+              :top5="status.top_cpu"
+            />
+          </el-card>
+        </el-col>
+        <el-col :xs="12" :sm="12" :md="6">
+          <el-card shadow="hover" class="gauge-card-wrap">
+            <SystemGauge
+              :name="t('system.monitor.memory')"
+              :percent="status.memory.percent"
+              :subtitle="`${status.memory.used} / ${status.memory.total}`"
+              color="#67C23A"
+              :dynamic-color="true"
+              :detail="memDetail"
+            />
+          </el-card>
+        </el-col>
+        <el-col :xs="12" :sm="12" :md="6">
+          <el-card shadow="hover" class="gauge-card-wrap">
+            <SystemGauge
+              :name="t('system.monitor.disk')"
+              :percent="status.disk.percent"
+              :subtitle="`${status.disk.used} / ${status.disk.total}`"
+              color="#F56C6C"
+              :dynamic-color="true"
+              :detail="diskDetail"
+            />
+          </el-card>
+        </el-col>
+      </el-row>
+    </template>
 
     <!-- 监控图表区 -->
+    <div class="section-title">
+      <span class="section-bar" />
+      <span class="section-label">
+        {{ t("system.monitor.realtimeMonitor") }}
+      </span>
+    </div>
     <el-card shadow="hover" class="chart-card">
       <el-tabs v-model="activeTab">
         <el-tab-pane :label="t('system.monitor.network')" name="network">
@@ -275,7 +286,7 @@ onUnmounted(() => {
             <el-select
               v-model="selectedIface"
               size="small"
-              style="width: 160px"
+              style="width: 140px"
             >
               <el-option
                 v-for="iface in ifaceList"
@@ -285,12 +296,11 @@ onUnmounted(() => {
               />
             </el-select>
             <span v-if="networkData[selectedIface]" class="speed-info">
-              <!-- #8: SVG 图标替代 Unicode 箭头 -->
-              <span class="speed-item upload">
+              <span class="speed-badge upload">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  width="14"
-                  height="14"
+                  width="12"
+                  height="12"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -303,11 +313,11 @@ onUnmounted(() => {
                 </svg>
                 {{ networkData[selectedIface].sent_speed }}
               </span>
-              <span class="speed-item download">
+              <span class="speed-badge download">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  width="14"
-                  height="14"
+                  width="12"
+                  height="12"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -320,17 +330,15 @@ onUnmounted(() => {
                 </svg>
                 {{ networkData[selectedIface].recv_speed }}
               </span>
+              <span class="speed-badge">
+                {{ t("system.monitor.totalSent") }}:
+                {{ formatBytes(networkData[selectedIface].bytes_sent) }}
+              </span>
+              <span class="speed-badge">
+                {{ t("system.monitor.totalRecv") }}:
+                {{ formatBytes(networkData[selectedIface].bytes_recv) }}
+              </span>
             </span>
-            <!-- #4: 暂停按钮 -->
-            <el-button
-              :icon="paused ? 'VideoPlay' : 'VideoPause'"
-              size="small"
-              circle
-              :title="
-                paused ? t('system.monitor.resume') : t('system.monitor.pause')
-              "
-              @click="togglePause"
-            />
           </div>
           <MonitorChart
             :data="networkChartData"
@@ -341,16 +349,15 @@ onUnmounted(() => {
 
         <el-tab-pane :label="t('system.monitor.diskIO')" name="disk-io">
           <div class="chart-header">
-            <el-select v-model="selectedDisk" size="small" style="width: 160px">
+            <el-select v-model="selectedDisk" size="small" style="width: 140px">
               <el-option v-for="d in diskList" :key="d" :label="d" :value="d" />
             </el-select>
             <span v-if="diskIOData[selectedDisk]" class="speed-info">
-              <!-- #8: SVG 图标替代 R/W -->
-              <span class="speed-item read">
+              <span class="speed-badge read">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  width="14"
-                  height="14"
+                  width="12"
+                  height="12"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -363,11 +370,11 @@ onUnmounted(() => {
                 </svg>
                 {{ diskIOData[selectedDisk].read_speed }}
               </span>
-              <span class="speed-item write">
+              <span class="speed-badge write">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  width="14"
-                  height="14"
+                  width="12"
+                  height="12"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -380,16 +387,6 @@ onUnmounted(() => {
                 {{ diskIOData[selectedDisk].write_speed }}
               </span>
             </span>
-            <!-- #4: 暂停按钮 -->
-            <el-button
-              :icon="paused ? 'VideoPlay' : 'VideoPause'"
-              size="small"
-              circle
-              :title="
-                paused ? t('system.monitor.resume') : t('system.monitor.pause')
-              "
-              @click="togglePause"
-            />
           </div>
           <MonitorChart
             :data="diskIOChartData"
@@ -409,6 +406,28 @@ onUnmounted(() => {
 
 .error-alert {
   margin-bottom: 12px;
+}
+
+/* 区域标题 */
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  margin-top: 8px;
+}
+
+.section-bar {
+  width: 4px;
+  height: 16px;
+  border-radius: 2px;
+  background: var(--el-color-primary);
+}
+
+.section-label {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--el-text-color-primary);
 }
 
 .gauge-row {
@@ -459,49 +478,66 @@ onUnmounted(() => {
 }
 
 .gauge-card-wrap {
+  border: none;
+  background: var(--el-fill-color-light);
+
   :deep(.el-card__body) {
-    padding: 12px 8px;
+    padding: 10px 6px 8px;
     display: flex;
     justify-content: center;
   }
 }
 
 .chart-card {
+  border: none;
+  background: var(--el-fill-color-light);
+
   :deep(.el-card__body) {
-    padding: 16px 20px;
+    padding: 12px 16px;
   }
 }
 
 .chart-header {
   display: flex;
   align-items: center;
-  gap: 16px;
+  flex-wrap: wrap;
+  gap: 10px;
   margin-bottom: 12px;
 }
 
 .speed-info {
   display: flex;
-  gap: 16px;
-  font-size: 13px;
-  font-weight: 500;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 12px;
 }
 
-.speed-item {
+.speed-badge {
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  background: var(--el-fill-color);
+  color: var(--el-text-color-regular);
+  font-weight: 500;
+  white-space: nowrap;
 
   &.upload {
     color: #67c23a;
+    background: rgba(103, 194, 58, 0.1);
   }
   &.download {
     color: #409eff;
+    background: rgba(64, 158, 255, 0.1);
   }
   &.read {
     color: #e6a23c;
+    background: rgba(230, 162, 60, 0.1);
   }
   &.write {
     color: #f56c6c;
+    background: rgba(245, 108, 108, 0.1);
   }
 }
 </style>

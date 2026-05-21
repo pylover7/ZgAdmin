@@ -391,6 +391,14 @@ system:
     pause: Pause refresh
     resume: Resume refresh
     fetchError: Failed to fetch data, please retry later
+    systemStatus: Status
+    realtimeMonitor: Monitor
+    totalSent: Total Sent
+    totalRecv: Total Recv
+    upload: Upload
+    download: Download
+    read: Read
+    write: Write
   settings:
     title: System Settings
     general: General

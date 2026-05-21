@@ -397,6 +397,14 @@ system:
     pause: 暂停刷新
     resume: 恢复刷新
     fetchError: 数据获取失败，请稍后重试
+    systemStatus: 状态
+    realtimeMonitor: 监控
+    totalSent: 总发送
+    totalRecv: 总接收
+    upload: 上传
+    download: 下载
+    read: 读取
+    write: 写入
   settings:
     title: 系统设置
     general: 通用设置

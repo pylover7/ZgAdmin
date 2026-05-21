@@ -22,7 +22,7 @@ _prev_disk: dict = {}
 _prev_disk_time: float = 0
 _disk_io_history: dict[str, deque] = {}
 
-HISTORY_MAX = 60
+HISTORY_MAX = 1200
 
 
 @systemMonitorRouter.get("/status")

@@ -60,12 +60,12 @@ const updateChart = () => {
           overlap: false,
           roundCap: true,
           clip: false,
-          width: 14,
+          width: 10,
           itemStyle: { color: activeColor.value }
         },
         axisLine: {
           lineStyle: {
-            width: 14,
+            width: 10,
             color: [[1, trackColor.value]]
           }
         },
@@ -74,24 +74,24 @@ const updateChart = () => {
         axisLabel: { show: false },
         detail: {
           width: 80,
-          height: 36,
-          fontSize: 30,
+          height: 30,
+          fontSize: 20,
           fontWeight: 700,
-          lineHeight: 36,
-          offsetCenter: [0, "-8%"],
+          lineHeight: 30,
+          offsetCenter: [0, "-5%"],
           valueAnimation: !prefersReducedMotion.value,
           formatter: "{value}%",
           color: textColor.value
         },
         title: {
-          offsetCenter: [0, "60%"],
-          fontSize: 13,
+          offsetCenter: [0, "48%"],
+          fontSize: 12,
           color: subTextColor.value
         },
         data: [
           {
             value: Math.round(props.percent),
-            name: props.subtitle || ""
+            name: props.name || ""
           }
         ]
       }
@@ -119,9 +119,8 @@ onMounted(() => updateChart());
   >
     <template #reference>
       <div class="gauge-wrap">
-        <div class="gauge-name">{{ name }}</div>
-        <!-- #9: 响应式高度 -->
         <div ref="chartRef" class="gauge-chart" />
+        <div v-if="subtitle" class="gauge-footer">{{ subtitle }}</div>
       </div>
     </template>
     <div class="detail-grid">
@@ -168,21 +167,23 @@ onMounted(() => updateChart());
   padding: 4px;
 }
 
-.gauge-name {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--el-text-color-primary);
-  margin-bottom: 2px;
-}
-
-/* #9: 响应式高度 — 小屏幕缩小 */
 .gauge-chart {
   width: 100%;
-  height: 190px;
+  height: 140px;
 
   @media (max-width: 768px) {
-    height: 150px;
+    height: 120px;
   }
+}
+
+.gauge-footer {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 </style>
 

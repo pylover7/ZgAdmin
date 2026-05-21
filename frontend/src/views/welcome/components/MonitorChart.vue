@@ -35,11 +35,6 @@ const updateChart = () => {
 
   const animDuration = prefersReducedMotion.value ? 0 : 300;
 
-  const xData = props.data.map(p => {
-    const d = new Date(p.time);
-    return `${d.getHours().toString().padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d.getSeconds().toString().padStart(2, "0")}`;
-  });
-
   const seriesList = props.series.map(s => ({
     name: s.name,
     type: "line",
@@ -54,7 +49,7 @@ const updateChart = () => {
       color: s.color
     },
     itemStyle: { color: s.color },
-    data: props.data.map(p => p[s.key] ?? 0)
+    data: props.data.map(p => [p.time, p[s.key] ?? 0])
   }));
 
   setOptions({
@@ -69,16 +64,19 @@ const updateChart = () => {
       borderColor: isDark.value ? "#444" : "#ddd",
       textStyle: { color: isDark.value ? "#e0e0e0" : "#303133", fontSize: 12 },
       formatter: (params: any[]) => {
-        let html = `<div style="font-weight:600;margin-bottom:4px">${params[0]?.axisValue}</div>`;
+        const d = new Date(params[0]?.value?.[0] ?? params[0]?.axisValue);
+        const timeStr = `${d.getHours().toString().padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d.getSeconds().toString().padStart(2, "0")}`;
+        let html = `<div style="font-weight:600;margin-bottom:4px">${timeStr}</div>`;
         params.forEach(p => {
+          const raw = p.value?.[1] ?? p.value;
           const val =
-            typeof p.value === "number"
-              ? p.value >= 1048576
-                ? (p.value / 1048576).toFixed(1) + " MB/s"
-                : p.value >= 1024
-                  ? (p.value / 1024).toFixed(1) + " KB/s"
-                  : p.value.toFixed(1) + " B/s"
-              : p.value;
+            typeof raw === "number"
+              ? raw >= 1048576
+                ? (raw / 1048576).toFixed(1) + " MB/s"
+                : raw >= 1024
+                  ? (raw / 1024).toFixed(1) + " KB/s"
+                  : raw.toFixed(1) + " B/s"
+              : raw;
           html += `<div style="display:flex;align-items:center;gap:6px">
             <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${p.color}"></span>
             ${p.seriesName}: <b>${val}</b></div>`;
@@ -99,16 +97,15 @@ const updateChart = () => {
       containLabel: true
     },
     xAxis: {
-      type: "category",
-      data: xData,
-      boundaryGap: false,
+      type: "time",
       axisLine: { lineStyle: { color: isDark.value ? "#444" : "#ddd" } },
       axisLabel: {
         color: isDark.value ? "#a0a0a0" : "#999",
         fontSize: 10,
-        interval: "auto" as any,
-        showMaxLabel: true,
-        showMinLabel: true
+        formatter: (ts: number) => {
+          const d = new Date(ts);
+          return `${d.getHours().toString().padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}`;
+        }
       },
       splitLine: { show: false }
     },
