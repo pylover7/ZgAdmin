@@ -103,7 +103,9 @@ export const getRoleList = (
 
 /** 获取角色管理-权限-根据角色 id 查对应菜单和API */
 export const getRoleAuth = (data?: object) => {
-  return http.request<RoleAuthResult>("post", roleUrl("/getRoleAuth"), { data });
+  return http.request<RoleAuthResult>("post", roleUrl("/getRoleAuth"), {
+    data
+  });
 };
 
 /** 更新角色菜单权限 */

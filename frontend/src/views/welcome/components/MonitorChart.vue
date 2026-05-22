@@ -141,7 +141,7 @@ onMounted(() => updateChart());
 <template>
   <div class="monitor-chart-wrap">
     <!-- #7: 空状态反馈 -->
-    <div v-if="!data.length" class="chart-empty">
+    <div v-if="!data.length" class="chart-empty" :style="{ height }">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         width="40"
@@ -175,11 +175,12 @@ onMounted(() => updateChart());
 .chart-empty {
   display: flex;
   flex-direction: column;
+  gap: 8px;
   align-items: center;
   justify-content: center;
-  height: v-bind(height);
+
+  /* height 移至模板 :style 绑定 */
   color: var(--el-text-color-secondary);
-  gap: 8px;
 }
 
 .empty-icon {

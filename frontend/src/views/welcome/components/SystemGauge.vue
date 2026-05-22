@@ -163,33 +163,33 @@ onMounted(() => updateChart());
   flex-direction: column;
   align-items: center;
   width: 100%;
-  cursor: pointer;
   padding: 4px;
+  cursor: pointer;
 }
 
 .gauge-chart {
   width: 100%;
   height: 140px;
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     height: 120px;
   }
 }
 
 .gauge-footer {
+  max-width: 100%;
   margin-top: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
   font-size: 12px;
   color: var(--el-text-color-secondary);
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
 }
 </style>
 
 <style lang="scss">
 /* #10: Popover 响应式宽度（非 scoped 才能作用到 popover 浮层） */
-@media (max-width: 480px) {
+@media (width <= 480px) {
   .gauge-popover {
     max-width: calc(100vw - 32px) !important;
   }

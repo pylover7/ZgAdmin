@@ -187,12 +187,12 @@ Phase 0 (立即) → Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 →
 > **分支**：`feat/api-permission`
 > **风险**：🟡 中 — 改动角色鉴权逻辑，可能影响现有用户访问。
 
-- [ ] `role.py`：`getRoleAuth` 同时返回 `menuIds` + `apiIds`
-- [ ] `role.py`：`updateRoleAuth` 同时更新 `menuIds` + `apiIds`
-- [ ] 前端角色管理弹窗新增 "API 权限" tab，展示所有 API 列表，勾选绑定
-- [ ] 前端新增 `system/api/index.vue` 页面（API 接口管理 CRUD）
-- [ ] 后端 `api.py` 接口增强（分页查询、搜索过滤）
-- [ ] `seed/data/menus.py` 新增 API 管理菜单项
+- [x] `role.py`：`getRoleAuth` 同时返回 `menuIds` + `apiIds`
+- [x] `role.py`：`updateRoleAuth` 同时更新 `menuIds` + `apiIds`
+- [x] 前端角色管理弹窗新增 "API 权限" tab，展示所有 API 列表，勾选绑定
+- [x] 前端新增 `system/api/index.vue` 页面（API 接口管理 CRUD）
+- [x] 后端 `api.py` 接口增强（分页查询、搜索过滤）
+- [x] `seed/data/menus.py` 新增 API 管理菜单项
 
 ### 4.2 登录安全 & 网络防护
 

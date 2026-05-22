@@ -400,6 +400,24 @@ onUnmounted(() => {
 </template>
 
 <style lang="scss" scoped>
+@keyframes skeleton-pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-animate {
+    opacity: 0.6;
+    animation: none;
+  }
+}
+
 .monitor-dashboard {
   padding: 0;
 }
@@ -411,17 +429,17 @@ onUnmounted(() => {
 /* 区域标题 */
 .section-title {
   display: flex;
-  align-items: center;
   gap: 8px;
-  margin-bottom: 12px;
+  align-items: center;
   margin-top: 8px;
+  margin-bottom: 12px;
 }
 
 .section-bar {
   width: 4px;
   height: 16px;
-  border-radius: 2px;
   background: var(--el-color-primary);
+  border-radius: 2px;
 }
 
 .section-label {
@@ -438,59 +456,42 @@ onUnmounted(() => {
 .skeleton-gauge {
   display: flex;
   flex-direction: column;
-  align-items: center;
   gap: 12px;
+  align-items: center;
   padding: 20px 0;
 }
 
 .skeleton-bar {
   height: 16px;
-  border-radius: 4px;
   background: var(--el-fill-color);
+  border-radius: 4px;
 }
 
 .skeleton-circle {
   width: 120px;
   height: 120px;
-  border-radius: 50%;
   background: var(--el-fill-color);
+  border-radius: 50%;
 }
 
 .skeleton-animate {
   animation: skeleton-pulse 1.5s ease-in-out infinite;
 }
 
-@keyframes skeleton-pulse {
-  0%,
-  100% {
-    opacity: 0.4;
-  }
-  50% {
-    opacity: 1;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .skeleton-animate {
-    animation: none;
-    opacity: 0.6;
-  }
-}
-
 .gauge-card-wrap {
-  border: none;
   background: var(--el-fill-color-light);
+  border: none;
 
   :deep(.el-card__body) {
-    padding: 10px 6px 8px;
     display: flex;
     justify-content: center;
+    padding: 10px 6px 8px;
   }
 }
 
 .chart-card {
-  border: none;
   background: var(--el-fill-color-light);
+  border: none;
 
   :deep(.el-card__body) {
     padding: 12px 16px;
@@ -499,9 +500,9 @@ onUnmounted(() => {
 
 .chart-header {
   display: flex;
-  align-items: center;
   flex-wrap: wrap;
   gap: 10px;
+  align-items: center;
   margin-bottom: 12px;
 }
 
@@ -514,30 +515,33 @@ onUnmounted(() => {
 
 .speed-badge {
   display: inline-flex;
-  align-items: center;
   gap: 4px;
+  align-items: center;
   padding: 3px 10px;
-  border-radius: 12px;
-  background: var(--el-fill-color);
-  color: var(--el-text-color-regular);
   font-weight: 500;
+  color: var(--el-text-color-regular);
   white-space: nowrap;
+  background: var(--el-fill-color);
+  border-radius: 12px;
 
   &.upload {
     color: #67c23a;
-    background: rgba(103, 194, 58, 0.1);
+    background: rgb(103 194 58 / 10%);
   }
+
   &.download {
     color: #409eff;
-    background: rgba(64, 158, 255, 0.1);
+    background: rgb(64 158 255 / 10%);
   }
+
   &.read {
     color: #e6a23c;
-    background: rgba(230, 162, 60, 0.1);
+    background: rgb(230 162 60 / 10%);
   }
+
   &.write {
     color: #f56c6c;
-    background: rgba(245, 108, 108, 0.1);
+    background: rgb(245 108 108 / 10%);
   }
 }
 </style>

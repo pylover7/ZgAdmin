@@ -1,7 +1,5 @@
 import os
-import platform
 from collections import namedtuple
-from typing import Optional
 
 import psutil
 
@@ -58,7 +56,7 @@ def _get_host_cpu_count() -> int:
 
     # 来源 1: /proc/cpuinfo（cgroup v2 下可能被截断）
     try:
-        with open("/proc/cpuinfo") as f:
+        with open("/proc/cpuinfo", encoding="utf-8") as f:
             count = sum(1 for line in f if line.startswith("processor"))
             if count > 0:
                 counts.append(count)
@@ -67,7 +65,7 @@ def _get_host_cpu_count() -> int:
 
     # 来源 2: /sys/devices/system/cpu/present（通常不被命名空间化）
     try:
-        with open("/sys/devices/system/cpu/present") as f:
+        with open("/sys/devices/system/cpu/present", encoding="utf-8") as f:
             content = f.read().strip()
             max_id = 0
             for part in content.split(","):
@@ -96,7 +94,7 @@ def _is_container_cpu_limited() -> bool:
     """
     # cgroup v2
     try:
-        with open("/sys/fs/cgroup/cpu.max") as f:
+        with open("/sys/fs/cgroup/cpu.max", encoding="utf-8") as f:
             parts = f.read().strip().split()
             if parts and parts[0] != "max":
                 return True
@@ -105,7 +103,7 @@ def _is_container_cpu_limited() -> bool:
 
     # cgroup v1
     try:
-        with open("/sys/fs/cgroup/cpu/cpu.cfs_quota_us") as f:
+        with open("/sys/fs/cgroup/cpu/cpu.cfs_quota_us", encoding="utf-8") as f:
             quota = int(f.read().strip())
             if quota > 0:
                 return True

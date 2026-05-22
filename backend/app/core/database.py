@@ -1,10 +1,6 @@
-from pathlib import Path
-
 from sqlmodel import Session, SQLModel, select
 from fastapi import FastAPI
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from alembic.config import Config as AlembicConfig
-from alembic.command import upgrade
 
 from app.controllers.user import userController
 from app.core.schedule import update_expired_orders
