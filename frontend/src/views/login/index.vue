@@ -22,8 +22,8 @@ import { ref, toRaw, reactive, watch, computed, onMounted } from "vue";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 import { useTranslationLang } from "@/layout/hooks/useTranslationLang";
 import { useDataThemeChange } from "@/layout/hooks/useDataThemeChange";
-import { getInitConfig, getCaptcha } from "@/api/base";
-import type { Features } from "@/types/base";
+import { getCaptcha } from "@/api/base";
+import type { Features, SecurityConfig } from "@/types/base";
 import { getConfig } from "@/config";
 
 import dayIcon from "@/assets/svg/day.svg?component";
@@ -42,7 +42,6 @@ defineOptions({
 const imgCode = ref("");
 const captchaKey = ref("");
 const captchaImage = ref("");
-const captchaEnabled = ref(true);
 const loginDay = ref(7);
 const router = useRouter();
 const route = useRoute();
@@ -53,12 +52,17 @@ const ruleFormRef = ref<FormInstance>();
 const currentPage = computed(() => {
   return useUserStoreHook().currentPage;
 });
-const features = ref<Features>({
-  qq_login: false,
-  wechat_login: false,
-  email: false,
-  monitor_log: false
-});
+const features = ref<Features>(
+  (getConfig("Features") as Features | undefined) ?? {
+    qq_login: false,
+    wechat_login: false,
+    email: false,
+    monitor_log: false
+  }
+);
+const captchaEnabled = ref(
+  (getConfig("Security") as SecurityConfig | undefined)?.captcha_enabled ?? true
+);
 const TITLE = getConfig("Title");
 const COPYRIGHT = getConfig("Copyright");
 const ICP = getConfig("Icp");
@@ -164,22 +168,13 @@ watch(loginDay, value => {
   useUserStoreHook().SET_LOGINDAY(value);
 });
 
-// 获取初始化配置 & 验证码
+// 获取验证码
 onMounted(async () => {
   if (route.path === "/login/qq/callback") {
     useUserStoreHook().SET_CURRENTPAGE(1);
   }
-  try {
-    const initRes = await getInitConfig();
-    if (initRes.success && initRes.data) {
-      features.value = initRes.data.features;
-      captchaEnabled.value = initRes.data.security.captcha_enabled;
-    }
-    if (captchaEnabled.value) {
-      await refreshCaptcha();
-    }
-  } catch (error) {
-    console.error("初始化登录配置失败:", error);
+  if (captchaEnabled.value) {
+    await refreshCaptcha();
   }
 });
 </script>

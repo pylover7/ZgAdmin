@@ -125,6 +125,8 @@ declare global {
     Logo?: string;
     Copyright?: string;
     Icp?: string;
+    Features?: import("@/types/base").Features;
+    Security?: import("@/types/base").SecurityConfig;
   }
 
   /**
@@ -170,6 +172,8 @@ declare global {
     Logo?: string;
     Copyright?: string;
     Icp?: string;
+    Features?: import("@/types/base").Features;
+    Security?: import("@/types/base").SecurityConfig;
   }
 
   /**
