@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api import api_router
 from app.core.exceptions import (
-    HTTPException,
+    FastAPIHTTPException,
     HttpExcHandle,
     IntegrityError,
     IntegrityHandle,
@@ -34,7 +34,7 @@ def make_middlewares():
 
 
 def register_exceptions(app: FastAPI):
-    app.add_exception_handler(HTTPException, HttpExcHandle)
+    app.add_exception_handler(FastAPIHTTPException, HttpExcHandle)
     app.add_exception_handler(IntegrityError, IntegrityHandle)
     app.add_exception_handler(RequestValidationError, RequestValidationHandle)
     app.add_exception_handler(

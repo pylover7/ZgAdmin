@@ -116,15 +116,37 @@ release_port() {
 }
 
 cleanup() {
+    # 1. 先取消 trap，防止 EXIT 重复触发形成循环
+    trap - EXIT SIGINT SIGTERM
+    
     echo ""
     log_warn "正在停止服务..."
-    [ -n "$BACKEND_PID" ]  && kill "$BACKEND_PID"  2>/dev/null && wait "$BACKEND_PID"  2>/dev/null || true
-    [ -n "$FRONTEND_PID" ] && kill "$FRONTEND_PID" 2>/dev/null && wait "$FRONTEND_PID" 2>/dev/null || true
-    pids=$(lsof -ti :"$BACKEND_PORT" -sTCP:LISTEN 2>/dev/null) && kill $pids 2>/dev/null || true
-    pids=$(lsof -ti :"$FRONTEND_PORT" -sTCP:LISTEN 2>/dev/null) && kill $pids 2>/dev/null || true
+    
+    # 2. 杀进程组（确保杀掉所有子进程：uv → python, bun → vite node）
+    #    先尝试 SIGTERM，等 2s，再 SIGKILL
+    for pid in "$BACKEND_PID" "$FRONTEND_PID"; do
+        [ -n "$pid" ] || continue
+        # 获取进程组 ID，负数表示整个进程组
+        local pgid=$(ps -o pgid= "$pid" 2>/dev/null | tr -d ' ')
+        if [ -n "$pgid" ]; then
+            kill -- -"$pgid" 2>/dev/null
+        else
+            kill "$pid" 2>/dev/null
+        fi
+    done
+    
+    # 3. 等 2s 给进程优雅退出，不用 wait 阻塞
+    sleep 2
+    
+    # 4. 按端口强制清理残余进程（SIGKILL）
+    local pids
+    pids=$(lsof -ti :"$BACKEND_PORT" -sTCP:LISTEN 2>/dev/null) && kill -9 $pids 2>/dev/null || true
+    pids=$(lsof -ti :"$FRONTEND_PORT" -sTCP:LISTEN 2>/dev/null) && kill -9 $pids 2>/dev/null || true
+    
     log_info "所有服务已停止"
     exit 0
 }
+
 trap cleanup SIGINT SIGTERM EXIT
 
 # ──────────────────────── 后端 ────────────────────────────────────────────────
