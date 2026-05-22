@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
 import editForm from "../form.vue";
-import { handleTree } from "@/utils/tree";
+import { handleTree, buildApiTree } from "@/utils/tree";
 import { message } from "@/utils/message";
 import { ElMessageBox } from "element-plus";
 import { usePublicHooks } from "../../hooks";
@@ -12,8 +12,9 @@ import { getKeyList, deviceDetection } from "@pureadmin/utils";
 import {
   addRole,
   getMenuList,
+  getApiList,
   getRoleList,
-  getRoleMenuIds,
+  getRoleAuth,
   updateRole,
   updateRoleAuth,
   updateRoleStatus
@@ -21,7 +22,7 @@ import {
 import { type Ref, reactive, ref, onMounted, h, watch } from "vue";
 import { paginationConf } from "@/config";
 
-export function useRole(treeRef: Ref) {
+export function useRole(treeRef: Ref, apiTreeRef: Ref) {
   const form = reactive({
     name: "",
     code: "",
@@ -32,12 +33,20 @@ export function useRole(treeRef: Ref) {
   const dataList = ref([]);
   const treeIds = ref([]);
   const treeData = ref([]);
+  const apiTreeData = ref([]);
+  const apiTreeIds = ref([]);
   const isShow = ref(false);
   const loading = ref(true);
   const treeSearchValue = ref();
+  const apiTreeSearchValue = ref();
   const switchLoadMap = ref({});
   const isExpandAll = ref(false);
   const isSelectAll = ref(false);
+  const tabIndex = ref(0);
+  const tabOptions = [
+    { label: "菜单权限", value: 0 },
+    { label: "API权限", value: 1 }
+  ];
   const { switchStyle } = usePublicHooks();
   const treeProps = {
     value: "id",
@@ -233,10 +242,9 @@ export function useRole(treeRef: Ref) {
     if (id) {
       curRow.value = row;
       isShow.value = true;
-      const { data } = await getRoleMenuIds({ id });
-      treeRef.value.setCheckedKeys(data);
-      console.log("data", data);
-      console.log("treeRef.value", treeRef.value);
+      const { data } = await getRoleAuth({ id });
+      treeRef.value.setCheckedKeys(data.menus);
+      apiTreeRef.value.setCheckedKeys(data.apis);
     } else {
       curRow.value = null;
       isShow.value = false;
@@ -251,20 +259,21 @@ export function useRole(treeRef: Ref) {
     };
   }
 
-  /** 菜单权限-保存 */
+  /** 权限-保存 */
   function handleSave() {
     const { id, name } = curRow.value;
-    // 根据用户 id 调用实际项目中菜单权限修改接口
-    updateRoleAuth({ id, menuIds: treeRef.value.getCheckedKeys() }).then(
-      res => {
-        if (res.success) {
-          message(
-            `${transformI18n("system.role")}【${name}】${transformI18n("system.roleAuth")}${transformI18n("system.editSuccess")}`,
-            { type: "success" }
-          );
-        }
+    const menuIds = treeRef.value.getCheckedKeys();
+    const rawApiIds = apiTreeRef.value.getCheckedKeys();
+    // 过滤掉 __tag__ 前缀的分组节点 ID
+    const apiIds = rawApiIds.filter(key => !String(key).startsWith("__tag__"));
+    updateRoleAuth({ id, menuIds, apiIds }).then(res => {
+      if (res.success) {
+        message(
+          `${transformI18n("system.role")}【${name}】${transformI18n("system.roleAuth")}${transformI18n("system.editSuccess")}`,
+          { type: "success" }
+        );
       }
-    );
+    });
   }
 
   /** 数据权限 可自行开发 */
@@ -278,23 +287,40 @@ export function useRole(treeRef: Ref) {
     return transformI18n(node.title)!.includes(query);
   };
 
+  const onApiQueryChanged = (query: string) => {
+    apiTreeRef.value!.filter(query);
+  };
+
+  const apiFilterMethod = (query: string, node) => {
+    return node.label?.includes(query);
+  };
+
   onMounted(async () => {
     onSearch();
     const { data } = await getMenuList();
     treeIds.value = getKeyList(data, "id");
     treeData.value = handleTree(data);
+    const apiRes = await getApiList();
+    apiTreeData.value = buildApiTree(apiRes.data);
+    apiTreeIds.value = getKeyList(apiRes.data, "id");
   });
 
   watch(isExpandAll, val => {
     val
       ? treeRef.value.setExpandedKeys(treeIds.value)
       : treeRef.value.setExpandedKeys([]);
+    val
+      ? apiTreeRef.value?.setExpandedKeys(apiTreeIds.value)
+      : apiTreeRef.value?.setExpandedKeys([]);
   });
 
   watch(isSelectAll, val => {
     val
       ? treeRef.value.setCheckedKeys(treeIds.value)
       : treeRef.value.setCheckedKeys([]);
+    val
+      ? apiTreeRef.value?.setCheckedKeys(apiTreeIds.value)
+      : apiTreeRef.value?.setCheckedKeys([]);
   });
 
   return {
@@ -306,12 +332,14 @@ export function useRole(treeRef: Ref) {
     rowStyle,
     dataList,
     treeData,
+    apiTreeData,
     treeProps,
     pagination,
     isExpandAll,
     isSelectAll,
     treeSearchValue,
-    // buttonClass,
+    tabIndex,
+    tabOptions,
     onSearch,
     resetForm,
     openDialog,
@@ -321,7 +349,9 @@ export function useRole(treeRef: Ref) {
     filterMethod,
     transformI18n,
     onQueryChanged,
-    // handleDatabase,
+    apiTreeSearchValue,
+    onApiQueryChanged,
+    apiFilterMethod,
     handleSizeChange,
     handleCurrentChange,
     handleSelectionChange

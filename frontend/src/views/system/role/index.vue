@@ -3,6 +3,7 @@ import { useRole } from "./utils/hook";
 import { ref, computed, nextTick, onMounted } from "vue";
 import { PureTableBar } from "@/components/RePureTableBar";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
+import { ReSegmented } from "@/components/ReSegmented";
 import {
   delay,
   subBefore,
@@ -42,6 +43,7 @@ const iconClass = computed(() => {
 });
 
 const treeRef = ref();
+const apiTreeRef = ref();
 const formRef = ref();
 const tableRef = ref();
 const contentRef = ref();
@@ -56,12 +58,14 @@ const {
   rowStyle,
   dataList,
   treeData,
+  apiTreeData,
   treeProps,
   pagination,
   isExpandAll,
   isSelectAll,
   treeSearchValue,
-  // buttonClass,
+  tabIndex,
+  tabOptions,
   onSearch,
   resetForm,
   openDialog,
@@ -71,11 +75,13 @@ const {
   filterMethod,
   transformI18n,
   onQueryChanged,
-  // handleDatabase,
+  apiTreeSearchValue,
+  onApiQueryChanged,
+  apiFilterMethod,
   handleSizeChange,
   handleCurrentChange,
   handleSelectionChange
-} = useRole(treeRef);
+} = useRole(treeRef, apiTreeRef);
 
 onMounted(() => {
   useResizeObserver(contentRef, async () => {
@@ -257,32 +263,75 @@ onMounted(() => {
             {{ curRow?.name ? `（${curRow.name}）` : "" }}
           </p>
         </div>
-        <el-input
-          v-model="treeSearchValue"
-          :placeholder="$t('system.pleaseInput') + $t('menus.pureSystemMenu')"
-          class="mb-1"
-          clearable
-          @input="onQueryChanged"
-        />
-        <div class="flex flex-wrap">
-          <el-checkbox
-            v-model="isExpandAll"
-            :label="$t('system.expandCollapse')"
+        <div class="px-3 pb-3">
+          <ReSegmented
+            v-model:modelValue="tabIndex"
+            :options="tabOptions"
+            block
           />
-          <el-checkbox v-model="isSelectAll" :label="$t('system.selectAll')" />
         </div>
-        <el-tree-v2
-          ref="treeRef"
-          show-checkbox
-          :data="treeData"
-          :props="treeProps"
-          :height="treeHeight"
-          :filter-method="filterMethod"
-        >
-          <template #default="{ node }">
-            <span>{{ transformI18n(node.label) }}</span>
-          </template>
-        </el-tree-v2>
+        <div v-show="tabIndex === 0" class="px-3 pb-3">
+          <el-input
+            v-model="treeSearchValue"
+            :placeholder="$t('system.pleaseInput') + 'API'"
+            class="mb-1"
+            clearable
+            @input="onQueryChanged"
+          />
+          <div class="flex flex-wrap">
+            <el-checkbox
+              v-model="isExpandAll"
+              :label="$t('system.expandCollapse')"
+            />
+            <el-checkbox
+              v-model="isSelectAll"
+              :label="$t('system.selectAll')"
+            />
+          </div>
+          <el-tree-v2
+            ref="treeRef"
+            show-checkbox
+            :data="treeData"
+            :props="treeProps"
+            :height="treeHeight"
+            :filter-method="filterMethod"
+          >
+            <template #default="{ node }">
+              <span>{{ transformI18n(node.label) }}</span>
+            </template>
+          </el-tree-v2>
+        </div>
+        <div v-show="tabIndex === 1" class="px-3 pb-3">
+          <el-input
+            v-model="apiTreeSearchValue"
+            :placeholder="$t('system.pleaseInput') + 'API'"
+            class="mb-1"
+            clearable
+            @input="onApiQueryChanged"
+          />
+          <div class="flex flex-wrap">
+            <el-checkbox
+              v-model="isExpandAll"
+              :label="$t('system.expandCollapse')"
+            />
+            <el-checkbox
+              v-model="isSelectAll"
+              :label="$t('system.selectAll')"
+            />
+          </div>
+          <el-tree-v2
+            ref="apiTreeRef"
+            show-checkbox
+            :data="apiTreeData"
+            :props="treeProps"
+            :height="treeHeight"
+            :filter-method="apiFilterMethod"
+          >
+            <template #default="{ node }">
+              <span>{{ node.label }}</span>
+            </template>
+          </el-tree-v2>
+        </div>
       </div>
     </div>
   </div>

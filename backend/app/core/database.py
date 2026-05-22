@@ -9,6 +9,7 @@ from alembic.command import upgrade
 from app.controllers.user import userController
 from app.core.schedule import update_expired_orders
 from app.models import User, UserCreate, Api
+from app.models.link import RoleApiLink
 from app.settings.log import logger
 from app.settings import settings
 from app.utils.staticFileUtils import check_dir_exists
@@ -20,20 +21,32 @@ scheduler = AsyncIOScheduler()
 
 def _sync_api_routes(app: FastAPI, session: Session):
     apis = app.openapi()["paths"]
+    # 收集当前注册的所有 (method, path) 组合
+    current_routes: set[tuple[str, str]] = set()
     for path, methods in apis.items():
         for method, meta in methods.items():
             tags = ",".join(meta.get("tags", []))
             summary = meta.get("summary", "")
+            method_upper = method.upper()
+            current_routes.add((method_upper, path))
             existing = session.exec(
-                select(Api).where(Api.path == path)
+                select(Api).where(Api.path == path, Api.method == method_upper)
             ).first()
             if existing:
-                existing.method = method.upper()
                 existing.summary = summary
                 existing.tags = tags
                 session.add(existing)
             else:
-                session.add(Api(path=path, method=method.upper(), tags=tags, summary=summary))
+                session.add(Api(path=path, method=method_upper, tags=tags, summary=summary))
+    # 删除数据库中已不存在的路由（手动清理关联的 RoleApiLink）
+    all_db_apis = session.exec(select(Api)).all()
+    for db_api in all_db_apis:
+        if (db_api.method, db_api.path) not in current_routes:
+            for link in session.exec(
+                select(RoleApiLink).where(RoleApiLink.api_id == db_api.id)
+            ).all():
+                session.delete(link)
+            session.delete(db_api)
     session.commit()
 
 

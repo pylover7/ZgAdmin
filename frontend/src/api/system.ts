@@ -1,12 +1,13 @@
 import { http } from "@/utils/http";
 import { apiV1 } from "./utils";
-import type { Result, ResultTable } from "@/types";
+import type { Result, ResultTable, RoleAuthResult } from "@/types";
 
 const systemUrl = (url: string) => apiV1(`/system${url}`);
 const deptUrl = (url: string) => systemUrl(`/dept${url}`);
 const munuUrl = (url: string) => systemUrl(`/menu${url}`);
 const userUrl = (url: string) => systemUrl(`/user${url}`);
 const roleUrl = (url: string) => systemUrl(`/role${url}`);
+const apiUrl = (url: string) => systemUrl(`/api${url}`);
 
 const monitorUrl = (url: string) => apiV1(`/monitor${url}`);
 const logsUrl = (url: string) => monitorUrl(`/logs${url}`);
@@ -100,14 +101,19 @@ export const getRoleList = (
   });
 };
 
-/** 获取角色管理-权限-菜单权限-根据角色 id 查对应菜单 */
-export const getRoleMenuIds = (data?: object) => {
-  return http.request<Result>("post", roleUrl("/getRoleAuth"), { data });
+/** 获取角色管理-权限-根据角色 id 查对应菜单和API */
+export const getRoleAuth = (data?: object) => {
+  return http.request<RoleAuthResult>("post", roleUrl("/getRoleAuth"), { data });
 };
 
 /** 更新角色菜单权限 */
 export const updateRoleAuth = (data?: object) => {
   return http.request<Result>("post", roleUrl("/updateRoleAuth"), { data });
+};
+
+/** 获取所有 API 列表（自动同步，只读） */
+export const getApiList = () => {
+  return http.request<Result>("get", apiUrl("/list"));
 };
 
 /** 新增菜单 */

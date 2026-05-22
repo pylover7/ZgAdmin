@@ -50,4 +50,6 @@ class RoleFilter(SQLModel):
 
 
 class UpdateRoleAuth(BaseModel):
+    id: UUID
     menuIds: list[UUID]
+    apiIds: list[UUID] = []

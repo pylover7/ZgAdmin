@@ -5,6 +5,16 @@ export type Result = {
   data?: Array<any>;
 };
 
+export type RoleAuthResult = {
+  code: number;
+  msg: string;
+  success: boolean;
+  data?: {
+    menus: string[];
+    apis: string[];
+  };
+};
+
 export type ResultTable = Result & {
   /** 总条目数 */
   total?: number;
