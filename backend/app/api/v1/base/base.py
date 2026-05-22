@@ -48,29 +48,41 @@ async def get_captcha():
     })
 
 
-@router.get("/security-config", summary="获取登录安全配置（公开）")
-async def get_security_config(session: SessionDep):
-    """获取登录安全配置（验证码开关等，供前端判断是否需要验证码）"""
+@router.get("/init", summary="获取前端初始化配置（公开）")
+async def get_init_config(session: SessionDep):
+    """一次性返回前端初始化所需的所有公开数据：站点信息、功能开关、安全配置"""
+    # 站点信息
+    site = {
+        "site_name": base_config.get_config("general", "site_name", fallback="ZgAdmin"),
+        "site_desc": base_config.get_config("general", "site_desc", fallback="一个开源的在线工具箱"),
+        "logo": base_config.get_config("general", "logo", fallback=""),
+        "default_lang": base_config.get_config("general", "default_lang", fallback="zh-CN"),
+        "copyright": base_config.get_config("general", "copyright", fallback=""),
+        "icp": base_config.get_config("general", "icp", fallback=""),
+    }
+    # 功能开关
+    features = {
+        "qq_login": settings.FEATURE_QQ_LOGIN and bool(
+            base_config.get_config("login", "qq_app_id") or settings.QQ_APP_ID),
+        "wechat_login": settings.FEATURE_WECHAT_LOGIN,
+        "email": settings.FEATURE_EMAIL,
+        "monitor_log": settings.FEATURE_MONITOR_LOG,
+    }
+    # 安全配置
     policy = session.exec(select(SecurityPolicy)).first()
-    return Success(data={
+    security = {
         "captcha_enabled": policy.captcha_enabled if policy else True,
+    }
+    return Success(data={
+        "site": site,
+        "features": features,
+        "security": security,
     })
 
 
 @router.get("/health", summary="健康检查")
 async def health_check():
     return {"status": "ok"}
-
-
-@router.get("/features", summary="功能开关")
-async def get_features():
-    return Success(data={
-        "qq_login": settings.FEATURE_QQ_LOGIN and bool(
-            base_config.get_config("login", "qq_app_id") or settings.QQ_APP_ID),
-        "wechat_login": settings.FEATURE_WECHAT_LOGIN,
-        "email": settings.FEATURE_EMAIL,
-        "monitor_log": settings.FEATURE_MONITOR_LOG,
-    })
 
 
 @router.post("/accessToken", summary="获取token", dependencies=[DependRateLimit])

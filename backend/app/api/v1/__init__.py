@@ -7,9 +7,9 @@ from .system import systemRouter
 from .pay import payRouter
 from .monitor import monitorRouter
 from .settings import settingsRouter
-from .settings.login import loginPublicRouter, loginProtectedRouter
-from .settings.general import generalPublicRouter, generalProtectedRouter
-from .settings.security import securityPublicRouter, securityProtectedRouter
+from .settings.login import loginProtectedRouter
+from .settings.general import generalProtectedRouter
+from .settings.security import securityProtectedRouter
 
 v1_router = APIRouter()
 
@@ -18,22 +18,16 @@ v1_router.include_router(
     systemRouter,
     prefix="/system",
     dependencies=[DependPermission])
-# 登录方式查询接口（公开）
-v1_router.include_router(loginPublicRouter, prefix="/settings/login")
 # 登录配置管理接口（需要认证）
 v1_router.include_router(
     loginProtectedRouter,
     prefix="/settings/login",
     dependencies=[DependPermission])
-# 通用设置 - 公开接口（站点信息，无需认证）
-v1_router.include_router(generalPublicRouter, prefix="/settings/general")
 # 通用设置 - 管理接口（需要认证）
 v1_router.include_router(
     generalProtectedRouter,
     prefix="/settings/general",
     dependencies=[DependPermission])
-# 安全设置 - 公开接口
-v1_router.include_router(securityPublicRouter, prefix="/settings/security")
 # 安全设置 - 管理接口（需要认证）
 v1_router.include_router(
     securityProtectedRouter,

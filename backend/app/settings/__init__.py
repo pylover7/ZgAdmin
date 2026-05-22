@@ -25,6 +25,13 @@ def parse_cors(v: Any) -> list[str] | str:
     raise ValueError(v)
 
 
+def strip_comment(v: Any) -> Any:
+    """剥离 .env 行内注释，如 'False # 注释' -> 'False'"""
+    if isinstance(v, str):
+        v = v.split("#", 1)[0].strip()
+    return v
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file_encoding="utf-8",
@@ -43,7 +50,7 @@ class Settings(BaseSettings):
     PORT: int = 7001
     RELOAD: bool = False
     DEBUG: bool = False
-    ENVIRONMENT: Literal["local", "staging", "production"] = "local"
+    ENVIRONMENT: Annotated[Literal["local", "staging", "production"], BeforeValidator(strip_comment)] = "local"
     DATETIME_FORMAT: str = "%Y-%m-%d %H:%M:%S"
 
     BACKEND_CORS_ORIGINS: Annotated[
@@ -78,10 +85,10 @@ class Settings(BaseSettings):
     SENTRY_DSN: HttpUrl | None = None
 
     # 功能开关 — 设为 false 可关闭对应模块
-    FEATURE_QQ_LOGIN: bool = False         # QQ 登录
-    FEATURE_WECHAT_LOGIN: bool = False     # 微信登录
-    FEATURE_EMAIL: bool = False            # 邮件发送
-    FEATURE_MONITOR_LOG: bool = True       # 操作日志/登录日志记录
+    FEATURE_QQ_LOGIN: Annotated[bool, BeforeValidator(strip_comment)] = False         # QQ 登录
+    FEATURE_WECHAT_LOGIN: Annotated[bool, BeforeValidator(strip_comment)] = False     # 微信登录
+    FEATURE_EMAIL: Annotated[bool, BeforeValidator(strip_comment)] = False            # 邮件发送
+    FEATURE_MONITOR_LOG: Annotated[bool, BeforeValidator(strip_comment)] = True       # 操作日志/登录日志记录
 
     DB_SCHEME: str = "sqlite"
     DB_SERVER: str = "localhost"

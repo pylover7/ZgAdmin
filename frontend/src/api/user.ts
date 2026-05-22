@@ -8,20 +8,8 @@ import type {
   UpdateProfileParams,
   UserPreferences
 } from "@/types/user";
-import type { loginResult } from "@/types/login";
-import type { CaptchaResult, SecurityConfigResult } from "@/types/captcha";
 
 const baseUrl = (url: string) => apiV1(`/base${url}`);
-
-/** 获取验证码 */
-export const getCaptcha = () => {
-  return http.request<CaptchaResult>("get", baseUrl("/captcha"));
-};
-
-/** 获取安全配置（验证码开关等） */
-export const getSecurityConfig = () => {
-  return http.request<SecurityConfigResult>("get", baseUrl("/security-config"));
-};
 
 /** 登录 */
 export const getLogin = (data?: object) => {
@@ -82,9 +70,4 @@ export const getQQAuthUrl = () => {
 /** QQ登录 */
 export const qqLogin = (data: { code: string; state: string }) => {
   return http.request<UserResult>("post", baseUrl("/qq/login"), { data });
-};
-
-/** 获取登录方式配置 */
-export const getLoginMethods = () => {
-  return http.request<loginResult>("get", apiV1("/settings/login/methods"));
 };

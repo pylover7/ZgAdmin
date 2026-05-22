@@ -1,13 +1,3 @@
-/** 验证码响应 */
-export interface CaptchaResult {
-  code: number;
-  success: boolean;
-  data: { captcha_key: string; captcha_image: string };
-}
-
-/** 安全配置（公开） */
-export interface SecurityConfigResult {
-  code: number;
-  success: boolean;
-  data: { captcha_enabled: boolean };
-}
+// 验证码和安全配置类型已迁移到 types/base.ts
+// 保留此文件以避免其他模块的导入报错，后续可统一清理
+export type { CaptchaResult, SecurityConfig } from "./base";

@@ -22,8 +22,8 @@ import { ref, toRaw, reactive, watch, computed, onMounted } from "vue";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 import { useTranslationLang } from "@/layout/hooks/useTranslationLang";
 import { useDataThemeChange } from "@/layout/hooks/useDataThemeChange";
-import { getLoginMethods, getCaptcha, getSecurityConfig } from "@/api/user";
-import type { loginType } from "@/types/login";
+import { getInitConfig, getCaptcha } from "@/api/base";
+import type { Features, SecurityConfig } from "@/types/base";
 import { getConfig } from "@/config";
 
 import dayIcon from "@/assets/svg/day.svg?component";
@@ -53,9 +53,11 @@ const ruleFormRef = ref<FormInstance>();
 const currentPage = computed(() => {
   return useUserStoreHook().currentPage;
 });
-const loginMethods = ref<loginType>({
-  qq: { enabled: false },
-  wechat: { enabled: false }
+const features = ref<Features>({
+  qq_login: false,
+  wechat_login: false,
+  email: false,
+  monitor_log: false
 });
 const TITLE = getConfig("Title");
 const COPYRIGHT = getConfig("Copyright");
@@ -65,10 +67,10 @@ const ICP = getConfig("Icp");
 const availableOperates = computed(() => {
   return operates.filter((_, index) => {
     if (index === 0) {
-      return loginMethods.value.qq.enabled;
+      return features.value.qq_login;
     }
     if (index === 1) {
-      return loginMethods.value.wechat.enabled;
+      return features.value.wechat_login;
     }
     return false;
   });
@@ -162,21 +164,16 @@ watch(loginDay, value => {
   useUserStoreHook().SET_LOGINDAY(value);
 });
 
-// 获取登录方式配置 & 安全配置 & 验证码
+// 获取初始化配置 & 验证码
 onMounted(async () => {
   if (route.path === "/login/qq/callback") {
     useUserStoreHook().SET_CURRENTPAGE(1);
   }
   try {
-    const [methodsRes, securityRes] = await Promise.all([
-      getLoginMethods(),
-      getSecurityConfig()
-    ]);
-    if (methodsRes.success && methodsRes.data) {
-      loginMethods.value = methodsRes.data;
-    }
-    if (securityRes.success && securityRes.data) {
-      captchaEnabled.value = securityRes.data.captcha_enabled;
+    const initRes = await getInitConfig();
+    if (initRes.success && initRes.data) {
+      features.value = initRes.data.features;
+      captchaEnabled.value = initRes.data.security.captcha_enabled;
     }
     if (captchaEnabled.value) {
       await refreshCaptcha();

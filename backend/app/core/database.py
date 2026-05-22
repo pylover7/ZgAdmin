@@ -57,15 +57,7 @@ async def init_data(app: FastAPI) -> None:
         # 种子数据：部门、菜单
         dept = seed_all(session)
 
-        # 确保安全策略配置存在（单行表，只有一条记录）
-        security_policy = session.exec(select(SecurityPolicy)).first()
-        if not security_policy:
-            logger.info("创建默认安全策略...")
-            security_policy = SecurityPolicy()
-            session.add(security_policy)
-            session.commit()
-
-        # 创建默认管理员
+        # 创建默认管理员（在安全策略之前，避免密码复杂度校验阻止种子用户创建）
         admin = session.exec(
             select(User).where(
                 (User.email == settings.EMAIL_TEST_USER)
@@ -93,6 +85,14 @@ async def init_data(app: FastAPI) -> None:
                 session.commit()
         else:
             logger.info("管理员账户已存在，跳过创建")
+
+        # 确保安全策略配置存在（单行表，只有一条记录）
+        security_policy = session.exec(select(SecurityPolicy)).first()
+        if not security_policy:
+            logger.info("创建默认安全策略...")
+            security_policy = SecurityPolicy()
+            session.add(security_policy)
+            session.commit()
 
         # 同步 API 路由到数据库
         logger.info("同步API路由...")

@@ -14,10 +14,6 @@ from app.models.base import Success, Fail
 from app.core.redis import get_redis
 
 
-# ─── 公开接口 ──────────────────────────────────────────────────────────
-securityPublicRouter = APIRouter()
-
-
 # ─── 认证接口 ──────────────────────────────────────────────────────────
 securityProtectedRouter = APIRouter()
 

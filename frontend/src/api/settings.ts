@@ -2,9 +2,7 @@ import { http } from "@/utils/http";
 import { apiV1 } from "./utils";
 import type { Result } from "@/types";
 import type {
-  LoginMethods,
   LoginConfig,
-  SiteInfo,
   GeneralConfig,
   SecurityPolicy,
   IPRule
@@ -13,14 +11,6 @@ import type {
 const settingsUrl = (url: string) => apiV1(`/settings${url}`);
 
 // ─── 登录设置 ───
-
-/** 获取登录方式（公开接口） */
-export const getLoginMethods = () => {
-  return http.request<Result<LoginMethods>>(
-    "get",
-    settingsUrl("/login/methods")
-  );
-};
 
 /** 获取登录配置（管理员接口） */
 export const getLoginConfig = () => {
@@ -33,11 +23,6 @@ export const updateLoginConfig = (data: LoginConfig) => {
 };
 
 // ─── 通用设置 ───
-
-/** 获取站点基本信息（公开接口） */
-export const getSiteInfo = () => {
-  return http.request<Result<SiteInfo>>("get", settingsUrl("/general/info"));
-};
 
 /** 获取通用设置（管理员接口） */
 export const getGeneralConfig = () => {
