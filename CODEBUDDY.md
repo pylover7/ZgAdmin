@@ -531,6 +531,128 @@ export const getXxxList = (params) => http.request<ResultTable>("post", xxxUrl("
 | `v-optimize` | 防抖/节流 | `v-optimize="{ event:'click', fn:submit }"` / `v-optimize:throttle="{ event:'input', fn:search, timeout:500 }"` |
 | `v-ripple` | 水波纹点击效果 | `<button v-ripple>` / `v-ripple.center` / `v-ripple.circle` / `v-ripple="{ class:'text-gray-300' }"` |
 
+### 4.10 vue-pure-admin 可复用页面模式
+
+> **用途**：开发新页面时，优先参考这些已验证的模式，避免从零设计。
+> **来源**：[vue-pure-admin/src/views](https://github.com/pure-admin/vue-pure-admin/tree/main/src/views)
+> **使用方式**：这些是 **vue-pure-admin 的参考实现**，不是本项目已安装的组件。需要时，去 GitHub 对应目录查看源码，复制核心逻辑到项目中，并安装所需依赖。
+
+#### 组件用法示例（views/components/）
+
+| 页面 | 功能 | 实现要点 | 可能需要安装的依赖 |
+|------|------|---------|-------------------|
+| `contextmenu/` | 右键菜单 | 基于 `@pureadmin/components` 的 `ContextMenu` | `@pureadmin/components` |
+| `upload/` | 文件上传 | el-upload + 后端接口对接 | 无额外依赖 |
+| `virtual-list/` | 虚拟列表 | el-table-v2 或 `vue-virtual-scroller` | `vue-virtual-scroller` |
+| `waterfall/` | 瀑布流 | CSS columns 或 `vue-waterfall-plugin-next` | `vue-waterfall-plugin-next` |
+| `slider/` | 幻灯片/走马灯 | `swiper` 包 | `swiper` |
+| `cascader.vue` | 级联选择器 | el-cascader 省市区联动 | 无额外依赖 |
+| `check-card.vue` | 勾选卡片 | el-checkbox + 卡片样式 | 无额外依赖 |
+| `color-picker.vue` | 颜色选择器 | el-color-picker | 无额外依赖 |
+| `json-editor.vue` | JSON 编辑器 | `vue-json-pretty` + JSON.parse 校验 | `vue-json-pretty` |
+| `statistic.vue` | 统计数值展示 | el-statistic + ReCountTo | 无额外依赖 |
+| `swiper.vue` | 轮播组件 | `swiper` 包 | `swiper` |
+| `timeline.vue` | 时间线 | el-timeline | 无额外依赖 |
+
+#### 功能能力（views/able/）
+
+| 页面 | 功能 | 实现要点 | 可能需要安装的依赖 |
+|------|------|---------|-------------------|
+| `print/` | 打印功能 | `print-js` | `print-js` |
+| `video-frame/` | 视频帧截取 | canvas drawImage + video seek | 无额外依赖 |
+| `wavesurfer/` | 音频波形可视化 | `wavesurfer.js` | `wavesurfer.js` |
+| `debounce.vue` | 防抖用法 | `@pureadmin/utils` 的 `debounce` | 无额外依赖 |
+| `download.vue` | 文件下载 | `@pureadmin/utils` 的 `downloadByData` | 无额外依赖 |
+| `draggable.vue` | 拖拽排序 | `vuedraggable` / `sortablejs` | `vuedraggable` |
+| `excel.vue` | Excel 导入导出 | `xlsx` + `@pureadmin/utils` 的 `downloadByData` | `xlsx` |
+| `infinite-scroll.vue` | 无限滚动 | el-table 的 `v-infinite-scroll` | 无额外依赖 |
+| `pdf.vue` | PDF 预览 | `vue-pdf-embed` | `vue-pdf-embed` |
+| `pinyin.vue` | 拼音转换 | `@pureadmin/utils` 的 `pinyin` | 无额外依赖 |
+| `sensitive.vue` | 敏感词过滤 | 自定义 Trie 树匹配 | 无额外依赖 |
+| `video.vue` | 视频播放 | `@videojs-player/vue` | `video.js` |
+| `watermark.vue` | 水印 | `@pureadmin/utils` 的 `useWatermark` | 无额外依赖 |
+
+#### 表格模式（views/table/）
+
+| 模式 | 功能 | 实现要点 |
+|------|------|---------|
+| `base/` | 基础表格 | el-table + 分页，参考本项目已有页面 |
+| `edit/` | 可编辑表格 | el-table + el-input/el-select 行内编辑 + 保存逻辑 |
+| `high/` | 高级表格 | 配合 `RePureTableBar`（工具栏+列设置+全屏），参考本项目已有页面 |
+| `virtual/` | 虚拟滚动表格 | `vxe-table` 虚拟滚动或 el-table-v2，万行级别 |
+
+#### 结果页模式（views/result/）
+
+| 页面 | 功能 | 实现要点 |
+|------|------|---------|
+| `success.vue` | 操作成功结果页 | el-result icon="success" + 描述 + 操作按钮 |
+| `fail.vue` | 操作失败结果页 | el-result icon="error" + 描述 + 操作按钮 |
+
+#### Schema 表单（views/schema-form/）
+
+| 页面 | 功能 | 实现要点 |
+|------|------|---------|
+| `index.vue` | Schema 驱动动态表单 | JSON Schema → 动态渲染 el-form-item，参考 [pure-admin 文档](https://pure-admin.cn/) |
+
+### 4.11 @pureadmin/utils 工具函数库
+
+> **共 140+ 工具函数**，项目已安装。**导入方式**：`import { 函数名 } from "@pureadmin/utils"`。开发时优先使用这些工具函数，不要重新造轮子。详细文档：[pure-admin-utils 文档](https://pure-admin-utils.netlify.app/)
+> **签名来源**：已从 `node_modules/@pureadmin/utils/dist/index.d.mts` 源码验证。
+
+#### Vue Hooks
+
+| Hook | 功能 | 签名 | 用法示例 |
+|------|------|------|---------|
+| `useECharts` | ECharts 初始化与自适应 | `(elRef: Ref\<HTMLDivElement\>, options?) → { setOptions, echarts, resize, ... }` | `const { setOptions } = useECharts(chartRef); setOptions({ series: [...] })` |
+| `useDark` | 暗黑模式切换 | `(options?: { selector?, className? }) → { isDark, toggleDark }` | `const { isDark, toggleDark } = useDark()` |
+| `useDraggable` | 元素拖拽（弹窗类） | `(targetRef, dragRef, args?) → { draggable, transform, init, reset }` | `const { init } = useDraggable(dialogRef, headerRef)` |
+| `useWatermark` | 水印生成 | `(appendEl?, resizeReDraw?) → { setWatermark, clear }` | `const { setWatermark, clear } = useWatermark(); setWatermark("ZgAdmin")` |
+| `useLoader` | 动态加载 CSS/JS | `(destroy?) → { loadCss, loadScript }` | `const { loadScript } = useLoader(); loadScript({ src: "https://cdn..." })` |
+| `useResizeObserver` | 监听元素尺寸 | `(target, callback, options?) → { stop, restart }` | `const { stop } = useResizeObserver(elRef, (entries) => {...})` |
+| `useScrollTo` | 缓动滚动 | `(options: { el, to, directions, duration?, callback? }) → { start, stop }` | `const { start } = useScrollTo({ el: elRef, to: 0, directions: "scrollTop", duration: 500 })` |
+| `useCopyToClipboard` | 复制到剪贴板 | `(defaultValue?) → { clipboardValue, copied, update }` | `const { copied, update } = useCopyToClipboard(); update("复制的文本")` |
+| `useAttrs` | 增强的 attrs | `(params?: { excludeListeners?, excludeKeys? }) → filtered attrs` | `const attrs = useAttrs({ excludeListeners: true, excludeKeys: ["class"] })` |
+
+#### 常用工具函数
+
+| 分类 | 函数 | 功能 | 签名（已验证） |
+|------|------|------|-----------------|
+| **数组/树** | `buildHierarchyTree` | 扁平数组转树（基于 id/parentId） | `buildHierarchyTree(tree: any[], pathList?) → any` 注意：需数据含 `id`、`parentId` 字段 |
+| | `handleTree` | 扁平数组转树（自定义键名） | `handleTree(data, id?="id", parentId?="parentId", children?="children") → any` |
+| | `deleteChildren` | 删除空 children 并组建 uniqueId | `deleteChildren(tree, pathList?) → any` 注意：空 children 的节点会被删除该字段 |
+| | `getNodeByUniqueId` | 按 uniqueId 查找节点 | `getNodeByUniqueId(tree, uniqueId: number\|string) → node` |
+| | `appendFieldByUniqueId` | 向指定节点追加字段 | `appendFieldByUniqueId(tree, uniqueId, fields: object) → any` |
+| | `extractPathList` | 提取所有 uniqueId 路径 | `extractPathList(tree) → any[]` |
+| **对象** | `clone` | 克隆（默认浅拷） | `clone(val, deep?=false) → any` |
+| | `cloneDeep` | 深克隆 | `cloneDeep(val) → any` |
+| | `cleanObject` | 清理空值属性 | `cleanObject(obj, options?) → obj` options 含 `includeKeys`/`excludeKeys`/`customFilter` 等 |
+| | `deepEqual` | 深度比较 | `deepEqual(a, b) → boolean` |
+| **类型判断** | `isString` ~ `isPromise` | 类型守卫 | `(val: unknown) => val is T` 统一模式 |
+| | `isEmail` / `isPhone` / `isUrl` | 格式校验 | `(value: string) => boolean` 注意：`isPhone` 参数是 `any` |
+| | `isEmpty` | 判空（数组/对象/字符串） | `isEmpty(val) => boolean` |
+| | `isAllEmpty` | 判空（含 null/undefined） | `isAllEmpty(val) => boolean` |
+| **字符串** | `hideTextAtIndex` | 敏感信息隐藏 | `hideTextAtIndex(text, index, symbol?="*") → string` index 支持 `number`/`number[]`/`{start,end}`/`{start,end}[]` |
+| | `hasCNChars` | 判断含中文 | `hasCNChars(value, options?) → boolean` options 含 `all`(是否全中文)、`pure`(去空格) |
+| | `priceToThousands` | 金额千分位 | `priceToThousands(amount: number, options?) → string` options 含 `digit`(小数位,默认0)、`round`(四舍五入) |
+| **日期** | `getCurrentDate` | 当前日期时间 | `getCurrentDate(options?) → { ymd, hms, week }` options 含 `type`(1=汉字/2=横杠/3=斜杠)、`prefix` |
+| | `dateFormat` | 日期格式化 | `dateFormat(format: string) → string` 仅传格式串，如 `"YYYY-MM-DD HH:mm:ss"` |
+| **颜色** | `randomColor` | 随机颜色 | `randomColor(options?) → string\|string[]` options 含 `type`("rgb"/"hex"/"hsl"，默认"rgb")、`num`(数量) |
+| | `darken` / `lighten` | 颜色加深/变浅 | `(color: string, level: number) → string` color 为 hex 格式 |
+| | `hexToRgb` | hex 转 rgb | `hexToRgb(str) → [r, g, b]` |
+| | `rgbToHex` | rgb 转 hex | `rgbToHex(r, g, b) → string` |
+| **DOM** | `downloadByData` | Blob 数据下载 | `downloadByData(data: BlobPart, filename, mime?, bom?) → void` |
+| | `downloadByOnlineUrl` | 在线 URL 下载 | `downloadByOnlineUrl(url, filename, mime?, bom?) → void` |
+| | `downloadByBase64` | Base64 下载 | `downloadByBase64(buf: string, filename, mime?, bom?) → void` |
+| **其他** | `debounce` | 防抖 | `debounce(fn, timeout?=200, immediate?=false) → () => void` |
+| | `throttle` | 节流 | `throttle(fn, timeout?=1000) → () => void` |
+| | `storageLocal` | localStorage 封装 | `storageLocal() → { setItem\<T\>, getItem\<T\>, removeItem, clear }` |
+| | `storageSession` | sessionStorage 封装 | 同 `storageLocal` 接口 |
+| | `deviceDetection` | 设备检测 | `deviceDetection() → boolean` true=移动端，false=PC |
+| | `delay` | 延时等待 | `delay(timeout?=20) → Promise` |
+| | `buildUUID` | 32 位 UUID（无横杠） | `buildUUID() → string` |
+| | `buildGUID` | 36 位 GUID（带横杠） | `buildGUID() → string` |
+| | `openLink` | 新窗口打开链接 | `openLink(href, target?="_blank") → void` |
+
 ---
 
 ## 5. 开发环境
