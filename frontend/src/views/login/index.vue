@@ -23,7 +23,7 @@ import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 import { useTranslationLang } from "@/layout/hooks/useTranslationLang";
 import { useDataThemeChange } from "@/layout/hooks/useDataThemeChange";
 import { getInitConfig, getCaptcha } from "@/api/base";
-import type { Features, SecurityConfig } from "@/types/base";
+import type { Features } from "@/types/base";
 import { getConfig } from "@/config";
 
 import dayIcon from "@/assets/svg/day.svg?component";

@@ -44,10 +44,10 @@ export const getPlatformConfig = async (app: App): Promise<undefined> => {
       try {
         const { data: apiData } = await axios({
           method: "get",
-          url: "/api/v1/settings/general/info"
+          url: "/api/v1/base/init"
         });
         if (apiData?.success && apiData.data) {
-          const siteInfo = apiData.data;
+          const siteInfo = apiData.data.site;
           $config.Title = siteInfo.site_name ?? $config.Title;
           $config.Locale = siteInfo.default_lang ?? $config.Locale;
           $config.SiteDesc = siteInfo.site_desc ?? $config.SiteDesc;
