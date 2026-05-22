@@ -4,12 +4,8 @@ import { ElMessage, ElMessageBox } from "element-plus";
 import type { FormInstance, FormRules } from "element-plus";
 import { Connection, ChatDotRound } from "@element-plus/icons-vue";
 import { transformI18n } from "@/plugins/i18n";
-import {
-  getLoginConfig,
-  updateLoginConfig,
-  type LoginConfig,
-  type LoginConfigRules
-} from "@/api/settings";
+import { getLoginConfig, updateLoginConfig } from "@/api/settings";
+import type { LoginConfig, LoginConfigRules } from "@/types/settings";
 
 defineOptions({
   name: "LoginSettings"

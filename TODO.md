@@ -79,6 +79,7 @@ Phase 0 (立即) → Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 →
 ### 1.1 日志双轨统一（保留数据库，废弃文件）
 
 当前两套实现：
+
 - **文件日志**：`system/monitor.py` 直接读写 `.log` 文件
 - **数据库日志**：`monitor/logs/` 下 SQLModel `LoginLog / OperationLog / SystemLog`
 
@@ -199,13 +200,19 @@ Phase 0 (立即) → Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 →
 > **分支**：`feat/security`
 > **风险**：🟡 中 — 新增模块；IP 黑名单可能误封。
 
-- [ ] 登录验证码（图形验证码 / 滑块验证）
-- [ ] 登录失败锁定策略：连续 N 次失败锁定账号 M 分钟
-- [ ] 双因素认证（2FA / TOTP，可选启用）
-- [ ] 🔄 用户表新增 `failed_login_count`、`locked_until`、`totp_secret` 字段 + Alembic 迁移
-- [ ] IP 白名单 / 黑名单管理页面
-- [ ] `RateLimiter` 从内存改为 Redis 存储（与 Phase 0 中 Bug 修复联动，此处做完整方案）
-- [ ] 密码复杂度策略配置（最小长度、特殊字符、历史密码不可重用）
+- [x] Redis 基础设施：生产用真实 Redis，dev 用内存适配器，功能完全等价
+- [x] 服务端图形验证码（废弃前端 Canvas 验证码）
+- [x] 登录失败锁定策略：连续 N 次失败锁定账号 M 分钟
+- [x] RateLimiter 从内存改为 Redis 存储（IP 级别限流）
+- [x] 密码复杂度策略配置（最小长度、大/小写/数字/特殊字符）
+- [x] 密码历史检查：最近 3 次密码不可重用
+- [x] IP 白名单 / 黑名单管理页面
+- [x] User 表新增 `failed_login_count`、`locked_until`、`password_history` 字段
+- [x] 新增 `SecurityPolicy` + `IPRule` 模型
+- [x] 修改 `start.sh`：dev 模式默认 SQLite + 内存 Redis；prod 模式为生产模式（PostgreSQL + 真实 Redis + 环境变量自动检测）
+- [x] `docker-compose.yml` 新增 Redis 服务
+- [ ] 2FA / TOTP（暂不实现，留待后续）
+- [ ] Alembic 迁移脚本（需初始化数据库后自动创建表，或手动运行 alembic）
 
 ---
 
@@ -213,7 +220,7 @@ Phase 0 (立即) → Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 →
 
 > Phase 5 内 7 个分支彼此独立，可并行开发。
 
-### 5.1 数据字典
+### 5.1 ~~数据字典~~
 
 > **分支**：`feat/data-dict`
 > **风险**：🟢 低 — 标准 CRUD 模块。
@@ -367,36 +374,43 @@ Phase 0 (立即) → Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 →
 > 每个 Phase 完成后，对照此清单自查。
 
 ### 鉴权与访问控制
+
 - [ ] 所有新增 API 端点均添加 `DependPermission` 鉴权装饰器
 - [ ] 无硬编码的 Token / 密钥在前端代码中
 - [ ] 敏感操作（删除、强制下线、恢复备份）需二次确认 + 操作日志
 
 ### 注入防护
+
 - [ ] 所有原生 SQL（`psycopg`）查询使用参数化，禁止字符串拼接
 - [ ] 前端用户输入渲染前经过 XSS 转义（Vue 默认安全，检查 `v-html` 使用点）
 - [ ] 文件上传校验 MIME 类型 + 扩展名白名单
 
 ### 敏感信息保护
+
 - [ ] 日志中不记录密码明文、Token、密钥
 - [ ] 审计 diff 中对密码/密钥字段脱敏（不记录原始值）
 - [ ] `.env` / `platform-config.json` 不提交到仓库（检查 `.gitignore`）
 - [ ] 备份文件加密存储，传输使用 HTTPS
 
 ### 会话与认证
+
 - [ ] JWT Token 设置合理过期时间（Access Token ≤ 2h，Refresh Token ≤ 7d）
 - [ ] 登出时服务端 Token 失效（Redis 黑名单）
 - [ ] 密码复杂度策略已配置并生效
 
 ### 网络安全
+
 - [ ] CORS 配置仅允许受信任的域名
 - [ ] HTTPS 强制（生产环境 nginx 配置 `HSTS`）
 - [ ] IP 白名单/黑名单功能正常工作
 
 ### 依赖安全
+
 - [ ] 定期 `uv lock --upgrade` / `bun update` 更新依赖
 - [ ] 不使用已知有 CVE 的依赖版本（CI 中集成 `pip-audit` / `bun audit`）
 
 ### 数据完整性
+
 - [ ] 所有数据库迁移脚本可正向执行 + 可回滚（`downgrade` 已定义）
 - [ ] 数据库备份定期自动执行 + 备份完整性校验
 

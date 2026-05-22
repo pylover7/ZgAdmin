@@ -58,6 +58,15 @@ DEFAULT_MENUS = [
                 "icon": "ri:settings-2-line",
                 "rank": 2
             },
+            {
+                "menuType": 0,
+                "title": "menus.pureSecuritySettings",
+                "name": "SecuritySettings",
+                "path": "/settings/security",
+                "component": "settings/security/index",
+                "icon": "ri:shield-check-line",
+                "rank": 3
+            },
         ],
     },
 ]

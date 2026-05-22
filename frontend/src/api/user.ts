@@ -1,6 +1,6 @@
 import { http } from "@/utils/http";
 import { apiV1 } from "./utils";
-import type { ResultTable } from "@/types";
+import type { Result, ResultTable } from "@/types";
 import type {
   UserInfoResult,
   RefreshTokenResult,
@@ -9,8 +9,19 @@ import type {
   UserPreferences
 } from "@/types/user";
 import type { loginResult } from "@/types/login";
+import type { CaptchaResult, SecurityConfigResult } from "@/types/captcha";
 
 const baseUrl = (url: string) => apiV1(`/base${url}`);
+
+/** 获取验证码 */
+export const getCaptcha = () => {
+  return http.request<CaptchaResult>("get", baseUrl("/captcha"));
+};
+
+/** 获取安全配置（验证码开关等） */
+export const getSecurityConfig = () => {
+  return http.request<SecurityConfigResult>("get", baseUrl("/security-config"));
+};
 
 /** 登录 */
 export const getLogin = (data?: object) => {
@@ -44,10 +55,7 @@ export const updatePassword = (data: {
 
 /** 获取用户偏好 */
 export const getPreferences = () => {
-  return http.request<{ success: boolean; data: UserPreferences }>(
-    "get",
-    baseUrl("/preferences")
-  );
+  return http.request<Result<UserPreferences>>("get", baseUrl("/preferences"));
 };
 
 /** 更新用户偏好 */
@@ -65,7 +73,7 @@ export const getMineLogs = (params?: {
 
 /** 获取QQ授权链接 */
 export const getQQAuthUrl = () => {
-  return http.request<{ auth_url: string; state: string }>(
+  return http.request<Result<{ auth_url: string; state: string }>>(
     "get",
     baseUrl("/qq/auth-url")
   );

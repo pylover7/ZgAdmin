@@ -5,12 +5,8 @@ import type { FormInstance, FormRules } from "element-plus";
 import { Setting, Tools, Document } from "@element-plus/icons-vue";
 import { transformI18n } from "@/plugins/i18n";
 import { getConfig, setConfig } from "@/config";
-import {
-  getGeneralConfig,
-  updateGeneralConfig,
-  type GeneralConfig,
-  type GeneralConfigRules
-} from "@/api/settings";
+import { getGeneralConfig, updateGeneralConfig } from "@/api/settings";
+import type { GeneralConfig, GeneralConfigRules } from "@/types/settings";
 
 defineOptions({
   name: "GenSettings"

@@ -47,6 +47,23 @@ services:
     profiles:
       - postgres
 
+  redis:
+    image: redis:7-alpine
+    container_name: zgadmin-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    # Redis 默认不启动，取消下行注释以启用
+    profiles:
+      - postgres
+
 volumes:
   zgadmin_data:
   pgdata:
+  redisdata:

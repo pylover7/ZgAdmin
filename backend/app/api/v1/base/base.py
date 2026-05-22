@@ -17,20 +17,44 @@ from app.settings.log import logger
 from app.models.login import CredentialsSchema, JWTPayload, JWTOut, refreshTokenSchema, \
     JWTReOut, QQLoginSchema
 from app.models.logs import LoginLog
+from app.models.security import SecurityPolicy
 from app.core.dependency import DependUser, DependRateLimit, SessionDep
+from app.core.redis import get_redis
 from app.models import Api, Menu, Role, User, UpdatePassword, UpdateProfile, UpdatePreferences
 from app.models.base import Fail, Success, FailAuth, SuccessExtra
 from app.settings import settings
 from app.settings.config import base_config
 from app.utils import menuTree
+from app.utils.captcha import generate_captcha, verify_captcha
 from app.utils.jwtt import create_access_token, decode_access_token, \
     get_qq_access_token, get_qq_userinfo, find_or_create_qq_user, \
     create_oauth_state, verify_oauth_state
 from app.utils.password import get_password_hash, verify_password
+from app.utils.password_policy import validate_password_strength, check_password_history, update_password_history
 # from app.utils.pay import notify_url
 # from app.utils.pay.wechat import wxpay
 
 router = APIRouter()
+
+
+@router.get("/captcha", summary="获取登录验证码")
+async def get_captcha():
+    """获取服务端图形验证码（公开接口，无需认证）"""
+    redis = get_redis()
+    captcha_key, captcha_image = await generate_captcha(redis)
+    return Success(data={
+        "captcha_key": captcha_key,
+        "captcha_image": captcha_image,
+    })
+
+
+@router.get("/security-config", summary="获取登录安全配置（公开）")
+async def get_security_config(session: SessionDep):
+    """获取登录安全配置（验证码开关等，供前端判断是否需要验证码）"""
+    policy = session.exec(select(SecurityPolicy)).first()
+    return Success(data={
+        "captcha_enabled": policy.captcha_enabled if policy else True,
+    })
 
 
 @router.get("/health", summary="健康检查")
@@ -52,6 +76,18 @@ async def get_features():
 @router.post("/accessToken", summary="获取token", dependencies=[DependRateLimit])
 async def login_access_token(
         session: SessionDep, request: Request, credentials: CredentialsSchema):
+    # 验证码校验
+    policy = session.exec(select(SecurityPolicy)).first()
+    captcha_enabled = policy.captcha_enabled if policy else True
+
+    if captcha_enabled:
+        if not credentials.captcha_key or not credentials.captcha_code:
+            return Fail(msg="请输入验证码")
+        redis = get_redis()
+        captcha_valid = await verify_captcha(redis, credentials.captcha_key, credentials.captcha_code)
+        if not captcha_valid:
+            return Fail(msg="验证码错误或已过期")
+
     user: User | None = await userController.authenticate(
         session=session,
         credentials=credentials,
@@ -214,7 +250,26 @@ async def update_user_password(
     verified = verify_password(req_in.current_password, user.password)
     if not verified:
         return Fail(msg="旧密码验证错误！")
+
+    # 密码复杂度校验
+    policy = session.exec(select(SecurityPolicy)).first()
+    if policy:
+        valid, msg = validate_password_strength(req_in.new_password, policy)
+        if not valid:
+            return Fail(msg=msg)
+
+        # 历史密码校验
+        history_count = policy.password_history_count if policy else 3
+        if check_password_history(req_in.new_password, user.password_history, history_count):
+            return Fail(msg=f"新密码不能与最近 {history_count} 次使用的密码相同")
+
+    # 更新密码 & 历史记录
+    old_hash = user.password
     user.password = get_password_hash(req_in.new_password)
+    if policy and policy.password_history_count > 0:
+        user.password_history = update_password_history(
+            old_hash, user.password_history, policy.password_history_count
+        )
     session.add(user)
     session.commit()
     return Success(msg="修改成功")

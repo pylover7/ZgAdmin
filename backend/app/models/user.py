@@ -70,6 +70,15 @@ class User(UserBase, TimestampMixin, table=True):
         default=None,
         nullable=True,
         description="最后登录时间")
+    failed_login_count: int = Field(default=0, description="连续登录失败次数")
+    locked_until: datetime | None = Field(
+        default=None,
+        nullable=True,
+        description="锁定截止时间")
+    password_history: dict | None = Field(
+        default=None,
+        sa_column=Column(JSON, nullable=True),
+        description="最近N次密码hash列表")
     preferences: dict | None = Field(default=None, sa_column=Column(JSON, nullable=True))
     department: Department | None = Relationship(back_populates="users")
 

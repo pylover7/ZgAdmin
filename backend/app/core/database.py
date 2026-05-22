@@ -6,6 +6,7 @@ from app.controllers.user import userController
 from app.core.schedule import update_expired_orders
 from app.models import User, UserCreate, Api
 from app.models.link import RoleApiLink
+from app.models.security import SecurityPolicy
 from app.settings.log import logger
 from app.settings import settings
 from app.utils.staticFileUtils import check_dir_exists
@@ -55,6 +56,14 @@ async def init_data(app: FastAPI) -> None:
     with DatabaseSession() as session:
         # 种子数据：部门、菜单
         dept = seed_all(session)
+
+        # 确保安全策略配置存在（单行表，只有一条记录）
+        security_policy = session.exec(select(SecurityPolicy)).first()
+        if not security_policy:
+            logger.info("创建默认安全策略...")
+            security_policy = SecurityPolicy()
+            session.add(security_policy)
+            session.commit()
 
         # 创建默认管理员
         admin = session.exec(

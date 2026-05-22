@@ -9,6 +9,7 @@ from .monitor import monitorRouter
 from .settings import settingsRouter
 from .settings.login import loginPublicRouter, loginProtectedRouter
 from .settings.general import generalPublicRouter, generalProtectedRouter
+from .settings.security import securityPublicRouter, securityProtectedRouter
 
 v1_router = APIRouter()
 
@@ -30,6 +31,13 @@ v1_router.include_router(generalPublicRouter, prefix="/settings/general")
 v1_router.include_router(
     generalProtectedRouter,
     prefix="/settings/general",
+    dependencies=[DependPermission])
+# 安全设置 - 公开接口
+v1_router.include_router(securityPublicRouter, prefix="/settings/security")
+# 安全设置 - 管理接口（需要认证）
+v1_router.include_router(
+    securityProtectedRouter,
+    prefix="/settings/security",
     dependencies=[DependPermission])
 # 其他设置接口需要认证
 v1_router.include_router(

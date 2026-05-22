@@ -6,6 +6,8 @@ from sqlmodel import SQLModel, Field
 class CredentialsSchema(SQLModel):
     username: str = Field(..., description="用户名称")
     password: str = Field(..., description="密码")
+    captcha_key: str | None = Field(default=None, description="验证码key")
+    captcha_code: str | None = Field(default=None, description="验证码")
 
 
 class refreshTokenSchema(SQLModel):

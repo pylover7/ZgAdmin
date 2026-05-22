@@ -89,6 +89,7 @@ class Settings(BaseSettings):
     DB_USER: str = "postgres"
     DB_PASSWORD: str = "test"
     DB_PATH: str = "zgadmin.sqlite"
+    REDIS_URL: str = ""  # 空=自动（dev用内存，prod需配置redis://host:port/db）
 
     @computed_field
     @property

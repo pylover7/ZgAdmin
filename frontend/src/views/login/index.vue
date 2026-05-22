@@ -18,12 +18,11 @@ import LoginQQ from "./components/LoginQQ.vue";
 import { useUserStoreHook } from "@/store/modules/user";
 import { initRouter, getTopMenu } from "@/router/utils";
 import { bg, avatar, illustration } from "./utils/static";
-import { ReImageVerify } from "@/components/ReImageVerify";
 import { ref, toRaw, reactive, watch, computed, onMounted } from "vue";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 import { useTranslationLang } from "@/layout/hooks/useTranslationLang";
 import { useDataThemeChange } from "@/layout/hooks/useDataThemeChange";
-import { getLoginMethods } from "@/api/user";
+import { getLoginMethods, getCaptcha, getSecurityConfig } from "@/api/user";
 import type { loginType } from "@/types/login";
 import { getConfig } from "@/config";
 
@@ -41,6 +40,9 @@ defineOptions({
 });
 
 const imgCode = ref("");
+const captchaKey = ref("");
+const captchaImage = ref("");
+const captchaEnabled = ref(true);
 const loginDay = ref(7);
 const router = useRouter();
 const route = useRoute();
@@ -62,7 +64,6 @@ const ICP = getConfig("Icp");
 // 计算可用的登录方式（根据配置过滤）
 const availableOperates = computed(() => {
   return operates.filter((_, index) => {
-    // operates数组的index 0对应QQ登录 (currentPage=1)，index 1对应微信登录 (currentPage=2)
     if (index === 0) {
       return loginMethods.value.qq.enabled;
     }
@@ -87,6 +88,20 @@ const ruleForm = reactive({
   verifyCode: ""
 });
 
+/** 获取服务端验证码 */
+const refreshCaptcha = async () => {
+  try {
+    const res = await getCaptcha();
+    if (res.success && res.data) {
+      captchaKey.value = res.data.captcha_key;
+      captchaImage.value = res.data.captcha_image;
+      ruleForm.verifyCode = "";
+    }
+  } catch (error) {
+    console.error("获取验证码失败:", error);
+  }
+};
+
 const onLogin = async (formEl: FormInstance | undefined) => {
   if (!formEl) return;
   await formEl.validate(valid => {
@@ -95,11 +110,12 @@ const onLogin = async (formEl: FormInstance | undefined) => {
       useUserStoreHook()
         .loginByUsername({
           username: ruleForm.username,
-          password: ruleForm.password
+          password: ruleForm.password,
+          captcha_key: captchaEnabled.value ? captchaKey.value : undefined,
+          captcha_code: captchaEnabled.value ? ruleForm.verifyCode : undefined
         })
         .then(res => {
           if (res.success) {
-            // 获取后端路由
             return initRouter().then(() => {
               disabled.value = true;
               router
@@ -110,12 +126,14 @@ const onLogin = async (formEl: FormInstance | undefined) => {
                 .finally(() => (disabled.value = false));
             });
           } else {
-            message(t("login.pureLoginFail"), { type: "error" });
+            message(res.msg || t("login.pureLoginFail"), { type: "error" });
+            if (captchaEnabled.value) refreshCaptcha();
           }
         })
         .catch(err => {
-          console.log(err.response.data.msg);
-          message(err.response.data.msg, { type: "error" });
+          const msg = err?.response?.data?.msg || t("login.pureLoginFail");
+          message(msg, { type: "error" });
+          if (captchaEnabled.value) refreshCaptcha();
         })
         .finally(() => (loading.value = false));
     }
@@ -137,9 +155,6 @@ useEventListener(document, "keydown", ({ code }) => {
     immediateDebounce(ruleFormRef.value);
 });
 
-watch(imgCode, value => {
-  useUserStoreHook().SET_VERIFYCODE(value);
-});
 watch(checked, bool => {
   useUserStoreHook().SET_ISREMEMBERED(bool);
 });
@@ -147,19 +162,27 @@ watch(loginDay, value => {
   useUserStoreHook().SET_LOGINDAY(value);
 });
 
-// 获取登录方式配置
+// 获取登录方式配置 & 安全配置 & 验证码
 onMounted(async () => {
-  // QQ 回调路由：自动切换到 QQ 登录面板
   if (route.path === "/login/qq/callback") {
     useUserStoreHook().SET_CURRENTPAGE(1);
   }
   try {
-    const res = await getLoginMethods();
-    if (res.success && res.data) {
-      loginMethods.value = res.data;
+    const [methodsRes, securityRes] = await Promise.all([
+      getLoginMethods(),
+      getSecurityConfig()
+    ]);
+    if (methodsRes.success && methodsRes.data) {
+      loginMethods.value = methodsRes.data;
+    }
+    if (securityRes.success && securityRes.data) {
+      captchaEnabled.value = securityRes.data.captcha_enabled;
+    }
+    if (captchaEnabled.value) {
+      await refreshCaptcha();
     }
   } catch (error) {
-    console.error("获取登录配置失败:", error);
+    console.error("初始化登录配置失败:", error);
   }
 });
 </script>
@@ -264,7 +287,7 @@ onMounted(async () => {
             </Motion>
 
             <Motion :delay="200">
-              <el-form-item prop="verifyCode">
+              <el-form-item v-if="captchaEnabled" prop="verifyCode">
                 <el-input
                   v-model="ruleForm.verifyCode"
                   clearable
@@ -272,7 +295,17 @@ onMounted(async () => {
                   :prefix-icon="useRenderIcon(Keyhole)"
                 >
                   <template v-slot:append>
-                    <ReImageVerify v-model:code="imgCode" />
+                    <img
+                      :src="captchaImage"
+                      alt="captcha"
+                      style="
+                        height: 36px;
+                        cursor: pointer;
+                        border-radius: 0 4px 4px 0;
+                      "
+                      title="点击刷新验证码"
+                      @click="refreshCaptcha"
+                    />
                   </template>
                 </el-input>
               </el-form-item>

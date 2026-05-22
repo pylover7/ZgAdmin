@@ -81,6 +81,7 @@ menus:
   pureSysSettings: 系统设置
   pureGenSettings: 通用设置
   pureLoginSettings: 登录设置
+  pureSecuritySettings: 安全设置
   pureCodeMirror: 代码编辑器
   pureMarkdown: Markdown
   pureEditor: 编辑器

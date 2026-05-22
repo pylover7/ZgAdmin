@@ -15,7 +15,7 @@ from app.core.exceptions import (
 )
 from app.settings import settings
 
-from .middlewares import BackGroundTaskMiddleware
+from .middlewares import BackGroundTaskMiddleware, IPFilterMiddleware
 
 
 def make_middlewares():
@@ -28,6 +28,7 @@ def make_middlewares():
             allow_methods=["*"],
             allow_headers=["*"],
         ),
+        Middleware(IPFilterMiddleware),
         Middleware(BackGroundTaskMiddleware),
     ]
     return middleware

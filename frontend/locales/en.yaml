@@ -81,6 +81,7 @@ menus:
   pureSysSettings: Settings
   pureGenSettings: General
   pureLoginSettings: Login Settings
+  pureSecuritySettings: Security
   pureCodeMirror: CodeMirror
   pureMarkdown: Markdown
   pureEditor: Editor
