@@ -148,6 +148,38 @@ export const getXxxList = (params) => http.request<ResultTable>("post", xxxUrl("
 
 **分页响应类型**：`ResultTable` = `{ code, success, msg, data, total, currentPage, pageSize }`
 
+## 模板规则
+
+### 单一根节点（铁律）
+
+所有路由页面组件的 `<template>` **必须只有一个根元素**，用 `<div>` 包裹全部内容。
+
+**原因**：布局组件 `lay-content/index.vue` 使用 `<Transition>` 包裹 `<router-view>` 渲染的路由组件，`<Transition>` 要求子组件为单根节点，多根节点（fragment）会导致 Vue 警告且动画失效：
+
+```
+[Vue warn]: Component inside <Transition> renders non-element root node that cannot be animated.
+```
+
+**正确**：
+```vue
+<template>
+  <div>
+    <div>搜索表单</div>
+    <PureTableBar>表格</PureTableBar>
+    <el-dialog>弹窗</el-dialog>
+  </div>
+</template>
+```
+
+**错误**：
+```vue
+<template>
+  <div>搜索表单</div>       <!-- 根节点 1 -->
+  <PureTableBar>表格</PureTableBar>  <!-- 根节点 2 -->
+  <el-dialog>弹窗</el-dialog>        <!-- 根节点 3 -->
+</template>
+```
+
 ## 配置加载流程
 
 1. 读取 `public/platform-config.json`（静态配置：标题、主题、布局等）
