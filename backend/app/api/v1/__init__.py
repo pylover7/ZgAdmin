@@ -10,6 +10,7 @@ from .settings import settingsRouter
 from .settings.login import loginProtectedRouter
 from .settings.general import generalProtectedRouter
 from .settings.security import securityProtectedRouter
+from .resource import resourceRouter
 
 v1_router = APIRouter()
 
@@ -46,5 +47,10 @@ v1_router.include_router(
 v1_router.include_router(
     monitorRouter,
     prefix="/monitor",
+    dependencies=[DependPermission]
+)
+v1_router.include_router(
+    resourceRouter,
+    prefix="/resource",
     dependencies=[DependPermission]
 )

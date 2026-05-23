@@ -3,7 +3,11 @@ import urllib.parse
 from datetime import timedelta, datetime
 # from uuid import uuid4
 
+from pathlib import Path
+from uuid import UUID
+
 from fastapi import APIRouter, Request, HTTPException, Query
+from fastapi.responses import FileResponse
 # from fastapi.websockets import WebSocketState
 from sqlalchemy.orm import selectinload
 from sqlalchemy import func
@@ -548,3 +552,27 @@ async def qq_login(session: SessionDep, qq_login_data: QQLoginSchema):
 #             logger.debug("客户端已断开连接")
 #         else:
 #             await websocket.close()
+
+
+@router.get("/file/download/{file_id}", summary="下载文件（签名URL）")
+async def download_file(
+    file_id: UUID,
+    expires: int = Query(..., description="过期时间戳"),
+    sign: str = Query(..., description="签名"),
+    session: SessionDep = None,
+):
+    from app.utils.signed_url import verify_signed_url
+    from app.models.file import File
+    if not verify_signed_url(file_id, expires, sign):
+        return Fail(msg="签名无效或已过期")
+    file_obj = session.get(File, file_id)
+    if not file_obj:
+        return Fail(msg="文件不存在")
+    abs_path = Path(settings.STATIC_PATH) / file_obj.path
+    if not abs_path.exists():
+        return Fail(msg="文件已丢失")
+    return FileResponse(
+        path=str(abs_path),
+        media_type=file_obj.mime_type,
+        filename=file_obj.name,
+    )

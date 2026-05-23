@@ -195,6 +195,8 @@ menus:
   pureMenuOverflow: Menu Overflow Show Tooltip Text
   pureChildMenuOverflow: Child Menu Overflow Show Tooltip Text
   zgNoticeSettings: Notice Manage
+  zgResourceManagement: Resource
+  zgFileManager: File Manager
 status:
   pureLoad: Loading...
   pureMessage: Message
@@ -593,3 +595,33 @@ system:
     deleteSuccess: Deleted successfully
     deleteNoticeConfirm: Confirm to delete this notice?
     noticeLabel: Notice
+  file:
+    name: File Name
+    namePlaceholder: Enter file name
+    fileType: File Type
+    fileTypePlaceholder: Select file type
+    size: Size
+    uploader: Uploader
+    typeImage: Image
+    typeDocument: Document
+    typeVideo: Video
+    typeAudio: Audio
+    typeOther: Other
+    upload: Upload
+    dragTip: Drop files here, or
+    clickUpload: click to upload
+    preview: Preview
+    download: Download
+    rename: Rename
+    delete: Delete
+    batchDelete: Batch Delete
+    newName: Enter new file name
+    nameRequired: File name is required
+    renameSuccess: Renamed successfully
+    deleteSuccess: Deleted successfully
+    confirmDelete: Confirm to delete this file?
+    atLeastOne: Please select at least one file
+    batchDeleteSuccess: Batch delete successful
+    uploadSuccess: Upload successful
+    uploadFail: Upload failed
+    uploadPartial: Partial upload completed

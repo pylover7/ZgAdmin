@@ -8,3 +8,4 @@ from .login import *
 from .logs import *
 from .notice import *
 from .security import *
+from .file import *
