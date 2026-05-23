@@ -186,8 +186,6 @@ export const getXxxList = (params) => http.request<ResultTable>("post", xxxUrl("
 
 `<pure-table adaptive>` 用于让表格自动撑满剩余视口高度，**禁止硬编码 `adaptiveConfig` 对象字面量**。
 
-**原理**：`@pureadmin/table` 的 adaptive 计算 `height = window.innerHeight - table.getBoundingClientRect().top - offsetBottom`，其中 `getBoundingClientRect().top` 已自动包含搜索栏高度，`offsetBottom` 只需补偿表格下方固定元素（页脚 + 间距）。布局层 `lay-content` 通过 `ResizeObserver` 监听页脚高度变化，自动计算 `offsetBottom` 并 `provide("adaptiveConfig")`。
-
 **正确用法**：
 ```vue
 <script setup lang="ts">

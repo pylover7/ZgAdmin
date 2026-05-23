@@ -146,6 +146,7 @@ function addPathMatch() {
       name: "PageNotFound",
       redirect: "/error/404",
       meta: {
+        title: "404",
         showLink: false
       }
     });

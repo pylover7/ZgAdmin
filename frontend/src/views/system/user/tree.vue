@@ -1,6 +1,14 @@
 <script setup lang="ts">
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
-import { ref, computed, watch, getCurrentInstance } from "vue";
+import {
+  ref,
+  computed,
+  watch,
+  inject,
+  getCurrentInstance,
+  type ComputedRef
+} from "vue";
+import type { AdaptiveConfig } from "@/layout/hooks/useTableAdaptive";
 
 import Dept from "~icons/ri/git-branch-line";
 // import Reset from "~icons/ri/restart-line";
@@ -29,6 +37,14 @@ const isExpand = ref(true);
 const searchValue = ref("");
 const highlightMap = ref({});
 const { proxy } = getCurrentInstance();
+const injectConfig = inject<ComputedRef<AdaptiveConfig>>("adaptiveConfig");
+// 动态计算树容器最小高度，考虑 footer
+// 原始硬编码 141px = 顶部空间(33px) + NON_FOOTER_BOTTOM_SPACE(108px)
+// offsetBottom = footerHeight + 108，所以 141 - 108 = 33 为顶部固定空间
+const treeStyle = computed(() => {
+  const offsetBottom = injectConfig?.value?.offsetBottom ?? 108;
+  return { minHeight: `calc(100vh - 33px - ${offsetBottom}px)` };
+});
 const defaultProps = {
   children: "children",
   label: "name"
@@ -96,8 +112,8 @@ defineExpose({ onTreeReset });
 <template>
   <div
     v-loading="treeLoading"
-    class="h-full bg-bg_color overflow-hidden relative"
-    :style="{ minHeight: `calc(100vh - 141px)` }"
+    class="h-full bg-bg_color overflow-hidden relative flex flex-col"
+    :style="treeStyle"
   >
     <div class="flex items-center h-8.5">
       <el-input
@@ -147,7 +163,7 @@ defineExpose({ onTreeReset });
       </el-dropdown>
     </div>
     <el-divider />
-    <el-scrollbar height="calc(90vh - 88px)">
+    <el-scrollbar class="flex-1">
       <el-tree
         ref="treeRef"
         :data="treeData"

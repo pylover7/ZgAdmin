@@ -6,9 +6,7 @@ import { PureTableBar } from "@/components/RePureTableBar";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 import type { AdaptiveConfig } from "@/layout/hooks/useTableAdaptive";
 
-import Upload from "~icons/ri/upload-line";
 import Role from "~icons/ri/admin-line";
-import Password from "~icons/ri/lock-password-line";
 import More from "~icons/ep/more-filled";
 import Delete from "~icons/ep/delete";
 import EditPen from "~icons/ep/edit-pen";

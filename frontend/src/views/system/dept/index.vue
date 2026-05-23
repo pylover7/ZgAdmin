@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, inject, type ComputedRef } from "vue";
+import { ref, inject, computed, type ComputedRef } from "vue";
 import { useDept } from "./utils/hook";
 import { PureTableBar } from "@/components/RePureTableBar";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
@@ -16,7 +16,14 @@ defineOptions({
 
 const formRef = ref();
 const tableRef = ref();
-const adaptiveConfig = inject<ComputedRef<AdaptiveConfig>>("adaptiveConfig");
+const injectConfig = inject<ComputedRef<AdaptiveConfig>>("adaptiveConfig");
+// 部门管理是树形表格，无分页器，需要减去分页器高度预算（~32px + margin 16px×2 = 64px）
+const adaptiveConfig = computed<AdaptiveConfig>(() => ({
+  offsetBottom: (injectConfig?.value?.offsetBottom ?? 108) - 64,
+  fixHeader: injectConfig?.value?.fixHeader ?? true,
+  timeout: injectConfig?.value?.timeout ?? 60,
+  zIndex: injectConfig?.value?.zIndex ?? 3
+}));
 const {
   form,
   loading,
