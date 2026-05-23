@@ -1,9 +1,17 @@
 <script setup lang="ts">
 import { useRole } from "./utils/hook";
-import { ref, computed, nextTick, onMounted } from "vue";
+import {
+  ref,
+  computed,
+  nextTick,
+  onMounted,
+  inject,
+  type ComputedRef
+} from "vue";
 import { PureTableBar } from "@/components/RePureTableBar";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 import { ReSegmented } from "@/components/ReSegmented";
+import type { AdaptiveConfig } from "@/layout/hooks/useTableAdaptive";
 import {
   delay,
   subBefore,
@@ -48,6 +56,7 @@ const formRef = ref();
 const tableRef = ref();
 const contentRef = ref();
 const treeHeight = ref();
+const adaptiveConfig = inject<ComputedRef<AdaptiveConfig>>("adaptiveConfig");
 
 const {
   form,
@@ -175,7 +184,7 @@ onMounted(() => {
             :size="size"
             adaptive
             :row-style="rowStyle"
-            :adaptiveConfig="{ offsetBottom: 108 }"
+            :adaptiveConfig="adaptiveConfig"
             :data="dataList"
             :columns="dynamicColumns"
             :pagination="{ ...pagination, size }"

@@ -5,12 +5,24 @@ import LayFooter from "../lay-footer/index.vue";
 import { useTags } from "@/layout/hooks/useTag";
 import { useGlobal, isNumber } from "@pureadmin/utils";
 import BackTopIcon from "@/assets/svg/back_top.svg?component";
-import { h, computed, Transition, defineComponent } from "vue";
+import {
+  h,
+  computed,
+  Transition,
+  defineComponent,
+  provide,
+  type ComputedRef
+} from "vue";
+import { useTableAdaptive } from "@/layout/hooks/useTableAdaptive";
+import type { AdaptiveConfig } from "@/layout/hooks/useTableAdaptive";
 import { usePermissionStoreHook } from "@/store/modules/permission";
 
 const props = defineProps({
   fixedHeader: Boolean
 });
+
+const { adaptiveConfig } = useTableAdaptive();
+provide<ComputedRef<AdaptiveConfig>>("adaptiveConfig", adaptiveConfig);
 
 const { t } = useI18n();
 const { showModel } = useTags();

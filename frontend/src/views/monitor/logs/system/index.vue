@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, inject, type ComputedRef } from "vue";
 import { useRole } from "./hook";
 import { getPickerShortcuts } from "../../utils";
 import { PureTableBar } from "@/components/RePureTableBar";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
+import type { AdaptiveConfig } from "@/layout/hooks/useTableAdaptive";
 
 import Delete from "~icons/ep/delete";
 import Refresh from "~icons/ep/refresh";
@@ -14,6 +15,7 @@ defineOptions({
 
 const formRef = ref();
 const tableRef = ref();
+const adaptiveConfig = inject<ComputedRef<AdaptiveConfig>>("adaptiveConfig");
 
 const {
   form,
@@ -136,7 +138,7 @@ const {
           :loading="loading"
           :size="size"
           adaptive
-          :adaptiveConfig="{ offsetBottom: 108 }"
+          :adaptiveConfig="adaptiveConfig"
           :data="dataList"
           :columns="dynamicColumns"
           :pagination="{ ...pagination, size }"

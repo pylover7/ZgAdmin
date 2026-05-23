@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, inject, type ComputedRef } from "vue";
 import { useFile } from "./utils/hooks";
 import { transformI18n } from "@/plugins/i18n";
 import { PureTableBar } from "@/components/RePureTableBar";
 import { message } from "@/utils/message";
+import type { AdaptiveConfig } from "@/layout/hooks/useTableAdaptive";
+
+const adaptiveConfig = inject<ComputedRef<AdaptiveConfig>>("adaptiveConfig");
 
 const {
   form,
@@ -144,6 +147,8 @@ function handleExceed() {
 
         <pure-table
           row-key="id"
+          adaptive
+          :adaptiveConfig="adaptiveConfig"
           :loading="loading"
           :data="dataList"
           :columns="dynamicColumns"

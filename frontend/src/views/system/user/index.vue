@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, inject, type ComputedRef } from "vue";
 import tree from "./tree.vue";
 import { useUser } from "./utils/hook";
 import { PureTableBar } from "@/components/RePureTableBar";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
+import type { AdaptiveConfig } from "@/layout/hooks/useTableAdaptive";
 
 import Upload from "~icons/ri/upload-line";
 import Role from "~icons/ri/admin-line";
@@ -21,6 +22,7 @@ defineOptions({
 const treeRef = ref();
 const formRef = ref();
 const tableRef = ref();
+const adaptiveConfig = inject<ComputedRef<AdaptiveConfig>>("adaptiveConfig");
 
 const {
   form,
@@ -160,7 +162,7 @@ const {
             ref="tableRef"
             row-key="id"
             adaptive
-            :adaptiveConfig="{ offsetBottom: 108 }"
+            :adaptiveConfig="adaptiveConfig"
             align-whole="center"
             table-layout="auto"
             :loading="loading"

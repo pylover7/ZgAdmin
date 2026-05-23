@@ -6,6 +6,7 @@ import configPrettier from "eslint-config-prettier";
 import pluginPrettier from "eslint-plugin-prettier";
 import { defineConfig, globalIgnores } from "eslint/config";
 import eslintPluginBetterTailwindcss from "eslint-plugin-better-tailwindcss";
+import enforceAdaptiveConfig from "./eslint-rules/enforce-adaptive-config.js";
 
 export default defineConfig([
   globalIgnores([
@@ -169,6 +170,21 @@ export default defineConfig([
           math: "always"
         }
       ]
+    }
+  },
+  {
+    files: ["src/views/**/*.vue"],
+    plugins: {
+      vue: pluginVue,
+      "zg-admin": {
+        rules: { "enforce-adaptive-config": enforceAdaptiveConfig }
+      }
+    },
+    rules: {
+      // 路由页面被 <Transition> 包裹，多根节点会导致动画失效 + Vue 警告
+      "vue/no-multiple-template-root": "error",
+      // 禁止硬编码 adaptiveConfig，必须使用 inject 获取
+      "zg-admin/enforce-adaptive-config": "error"
     }
   },
   {

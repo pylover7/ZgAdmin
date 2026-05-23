@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, inject, type ComputedRef } from "vue";
 import { useMenu } from "./utils/hook";
 import { transformI18n } from "@/plugins/i18n";
 import { PureTableBar } from "@/components/RePureTableBar";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
+import type { AdaptiveConfig } from "@/layout/hooks/useTableAdaptive";
 
 import Delete from "~icons/ep/delete";
 import EditPen from "~icons/ep/edit-pen";
@@ -16,6 +17,7 @@ defineOptions({
 
 const formRef = ref();
 const tableRef = ref();
+const adaptiveConfig = inject<ComputedRef<AdaptiveConfig>>("adaptiveConfig");
 const {
   form,
   loading,
@@ -86,7 +88,7 @@ function onFullscreen() {
         <pure-table
           ref="tableRef"
           adaptive
-          :adaptiveConfig="{ offsetBottom: 45 }"
+          :adaptiveConfig="adaptiveConfig"
           align-whole="center"
           row-key="id"
           showOverflowTooltip
