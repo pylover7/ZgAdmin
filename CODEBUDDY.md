@@ -63,7 +63,7 @@ uv run alembic downgrade -1
 3. **API 封装**：所有 API 调用封装在 `src/api/` 下，不在组件中直接调用 Axios
 4. **类型安全**：API 响应使用 `Result`/`ResultTable` 等泛型类型
 5. **国际化**：菜单标题使用 i18n 键名（如 `menus.pureUser`），通过 `transformI18n` 自动翻译
-6. **组件命名**：`Re*` 前缀为公共组件（如 `ReDialog`、`ReIcon`），业务页面优先复用，禁止重复实现
+6. **组件选型优先级**：开发前端功能时，必须按以下顺序选型——① pure-admin 体系复用组件/工具（Re* 组件、`@pureadmin/table`、`@pureadmin/descriptions`、`@pureadmin/utils`、自定义指令、预集成第三方库） → ② Element Plus 组件 → ③ 自行实现。`Re*` 前缀为公共组件（如 `ReDialog`、`ReIcon`），业务页面优先复用，禁止重复实现
 7. **状态管理**：Pinia，Store 定义在 `src/store/modules/` 下
 8. **慎用 try/catch**：非必要不使用 try 语句，优先通过完整的条件判断、可选链（`?.`）、空值合并（`??`）、类型守卫等方式保证代码健壮性，而非依赖异常捕获来控制流程
 9. **样式零自定义原则**：业务页面 `<style scoped>` 应为空，优先使用 Tailwind 工具类（`flex-c`/`flex-bc`/`bg-bg_color`/`text-primary` 等）、Element Plus 辅助类（`.pure-popper`/`.pure-scrollbar`/`.reset-margin`）、全局 CSS 变量（`var(--pure-border-color)` 等），严禁在业务页面写自定义 CSS

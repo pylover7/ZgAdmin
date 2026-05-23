@@ -116,6 +116,16 @@ frontend/src/
 
 ## 页面开发约定
 
+### 组件选型优先级（铁律）
+
+开发前端功能时，**必须**按以下顺序选型，严禁跳级造轮子：
+
+1. **pure-admin 体系复用组件/工具**：Re* 组件、`@pureadmin/table`、`@pureadmin/descriptions`、`@pureadmin/utils`、自定义指令、预集成第三方库
+2. **Element Plus 组件**：确认 pure-admin 体系没有封装后使用
+3. **自行实现**：仅当以上两级都无法满足时
+
+### 文件组织
+
 每个功能页面遵循以下文件组织模式：
 
 ```
