@@ -10,7 +10,6 @@ from pydantic import (
     computed_field,
     model_validator,
 )
-from typing import Annotated
 from pydantic_core import MultiHostUrl
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing_extensions import Self

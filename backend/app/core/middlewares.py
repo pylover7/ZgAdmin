@@ -78,9 +78,9 @@ class IPFilterMiddleware(SimpleBaseMiddleware):
                 pass
 
         # 从数据库加载
-        from sqlmodel import Session, select
-        from app.models.security import IPRule
-        from app.core import engine
+        from sqlmodel import Session, select  # pylint: disable=import-outside-toplevel
+        from app.models.security import IPRule  # pylint: disable=import-outside-toplevel
+        from app.core import engine  # pylint: disable=import-outside-toplevel
 
         rules = []
         with Session(engine) as session:

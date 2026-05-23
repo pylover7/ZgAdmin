@@ -161,6 +161,13 @@
   }
 }
 
+/* 全局搜索表单间距 */
+.search-form {
+  :deep(.el-form-item) {
+    margin-bottom: 12px;
+  }
+}
+
 /* 仿 el-scrollbar 滚动条样式，支持大多数浏览器，如Chrome、Edge、Firefox、Safari等。整体暗色风格在 src/style/dark.scss 文件进行了适配 */
 .pure-scrollbar {
   scrollbar-color: rgb(221 222 224) transparent; /* 滑块颜色、轨道颜色 */

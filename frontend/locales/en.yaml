@@ -425,6 +425,144 @@ system:
   appId: App ID
   appKey: App Key
   redirectUri: Redirect URI
+  siteInfo: Site Information
+  funcSettings: Feature Settings
+  otherInfo: Other Information
+  saveSuccess: Saved successfully
+  saveFail: Save failed
+  resetConfirm: Are you sure to reset all settings?
+  resetSuccess: Reset successfully
+  tip: Tip
+  enableEmailTip: System will not send any email notifications when disabled
+  loadFailed: Load failed
+  passwordStrength: Strong
+  passwordModified: Password changed successfully
+  passwordModifyFail: Failed to change password
+  fieldModified: Modified successfully
+  fieldModifyFail: Modification failed
+  notImplemented: Not implemented yet
+  accountPassword: Account Password
+  passwordStrengthCurrent: "Current password strength: Strong"
+  securityPhone: Security Phone
+  bindPhoneTip: Bind phone to recover password via SMS
+  boundPhone: Bound phone
+  securityQuestion: Security Question
+  securityQuestionTip: No security question set. It can effectively protect your account
+  backupEmail: Backup Email
+  boundEmail: Bound email
+  bindEmailTip: Bound email can be used to recover password
+  changePassword: Change Password
+  confirmNewPassword: Confirm New Password
+  pleaseEnterCurrentPwd: Please enter current password
+  pleaseEnterNewPwd: Please enter new password
+  pleaseReenterNewPwd: Please re-enter new password
+  pwdLengthRange: Password must be 8-40 characters
+  pwdNotMatch: Passwords do not match
+  confirmModify: Confirm
+  pleaseEnterNewPhone: Please enter new phone
+  pleaseEnterNewEmail: Please enter new email
+  pleaseEnterPhone: Please enter phone number
+  pleaseEnterEmail: Please enter email
+  emailFormatError: Please enter a valid email address
+  phoneFormatError: Please enter a valid phone number
+  modify: Modify
+  accountManagement: Account Management
+  modifySecurityPhone: Modify Security Phone
+  modifyBackupEmail: Modify Backup Email
+  preferences: Preferences
+  notifyAccount: Account Password
+  notifyAccountTip: Other users' messages will be notified via in-app message
+  notifySystem: System Messages
+  notifySystemTip: System messages will be notified via in-app message
+  notifyTask: Todo Tasks
+  notifyTaskTip: Todo tasks will be notified via in-app message
+  settingSuccess: Setting saved
+  settingFail: Setting failed
+  yes: Yes
+  no: No
+  profile: Profile
+  nicknameRequired: Nickname is required
+  emailRequired: Email is required
+  pleaseEnterNickname: Please enter nickname
+  contactPhone: Contact Phone
+  pleaseEnterContactPhone: Please enter contact phone
+  introduction: Introduction
+  pleaseEnterIntroduction: Please enter introduction
+  updateProfile: Update Profile
+  updateProfileSuccess: Profile updated successfully
+  updateProfileFail: Failed to update profile
+  copyrightPlaceholder: e.g. Copyright © 2024 ZgAdmin
+  icpPlaceholder: e.g. ICP License No.
+  siteNameMax: Site name must not exceed 50 characters
+  siteDescMax: Site description must not exceed 200 characters
+  pleaseSelectLang: Please select default language
+  qqLoginDisabled: QQ Login is disabled
+  wechatLoginDisabled: WeChat Login is disabled
+  qqRedirectTip: This URL needs to be configured in QQ Connect backend, e.g. http://localhost:7000/login/qq/callback
+  wechatRedirectTip: This URL needs to be configured in WeChat Open Platform backend, e.g. http://localhost:7000/login/wechat/callback
+  invalidUrl: Please enter a valid URL
+  configGuide: Configuration Guide
+  qqConfigSteps: "QQ Login Configuration Steps:"
+  qqStep1: Visit QQ Connect and sign in
+  qqStep2: Create an application and get App ID and App Key
+  qqStep3: Configure the callback domain, must match the above
+  qqStep4: Wait for review approval
+  wechatConfigSteps: "WeChat Login Configuration Steps:"
+  wechatStep1: Visit WeChat Open Platform and sign in
+  wechatStep2: Create a web application and get AppID and AppSecret
+  wechatStep3: Configure the authorization callback domain, must match the above
+  wechatStep4: Wait for review approval
+  security:
+    policyConfig: Security Policy
+    passwordPolicy: Password Policy
+    loginProtection: Login Protection
+    ipBlackWhiteList: IP Blacklist/Whitelist
+    minPasswordLength: Min Password Length
+    requireUppercase: Require Uppercase
+    requireLowercase: Require Lowercase
+    requireDigit: Require Digit
+    requireSpecial: Require Special Character
+    passwordHistory: Password History Check
+    passwordHistoryTip: Cannot reuse last N passwords, 0 means no check
+    maxLoginAttempts: Max Login Attempts
+    maxLoginAttemptsTip: Lock account after N consecutive failures
+    lockoutDuration: Lockout Duration (min)
+    lockoutDurationTip: Wait time after account locked
+    captchaEnabled: Enable Login Captcha
+    savePolicy: Save Policy
+    policySaveSuccess: Security policy saved successfully
+    ipPriorityNote: "Whitelist takes priority: if whitelist rules exist, only whitelisted IPs can access; blacklisted IPs are directly denied."
+    noIpRules: No IP rules yet
+    addRule: Add Rule
+    editRule: Edit IP Rule
+    ipCidr: IP/CIDR
+    ruleType: Rule Type
+    whitelist: Whitelist
+    blacklist: Blacklist
+    description: Description
+    enabled: Enabled
+    disabled: Disabled
+    createdAt: Created At
+    ipRuleAddSuccess: IP rule added successfully
+    ipRuleUpdateSuccess: IP rule updated successfully
+    ipRuleDeleteConfirm: Are you sure to delete the selected IP rules?
+    enterIpCidr: Please enter IP address or CIDR
+    ipCidrPlaceholder: e.g. 192.168.1.0/24 or 10.0.0.1
+    optionalRemark: Optional remark
+    deleteLogConfirm: Are you sure to delete this log?
+  requestTime: Request Time
+  requestMethod: Request Method
+  requestDuration: Request Duration
+  requestUrl: Request URL
+  responseHeaders: Response Headers
+  responseBody: Response Body
+  requestHeaders: Request Headers
+  requestBody: Request Body
+  ip: IP Address
+  location: Location
+  os: OS
+  browser: Browser Type
+  module: Module
   notice:
     title: Notice Title
     type: Notice Type

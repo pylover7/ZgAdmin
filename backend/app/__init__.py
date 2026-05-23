@@ -41,7 +41,7 @@ def create_app() -> FastAPI:
 @asynccontextmanager
 async def lifespan_context(application: FastAPI):
     # 启动时执行的逻辑
-    from app.core.redis import init_redis, close_redis
+    from app.core.redis import init_redis, close_redis  # pylint: disable=import-outside-toplevel
     await init_redis()
     await init_data(application)
     yield

@@ -265,7 +265,7 @@ def _create_redis() -> RedisClient:
 
 def get_redis() -> RedisClient:
     """获取 Redis 全局单例"""
-    global _redis_instance
+    global _redis_instance  # pylint: disable=global-statement
     if _redis_instance is None:
         _redis_instance = _create_redis()
     return _redis_instance
@@ -273,7 +273,7 @@ def get_redis() -> RedisClient:
 
 async def init_redis() -> None:
     """应用启动时调用 — 初始化 Redis 连接"""
-    global _redis_instance
+    global _redis_instance  # pylint: disable=global-statement
     _redis_instance = _create_redis()
 
     # 测试连接
@@ -291,7 +291,7 @@ async def init_redis() -> None:
 
 async def close_redis() -> None:
     """应用关闭时调用 — 关闭 Redis 连接"""
-    global _redis_instance
+    global _redis_instance  # pylint: disable=global-statement
     if _redis_instance is not None:
         await _redis_instance.close()
         _redis_instance = None

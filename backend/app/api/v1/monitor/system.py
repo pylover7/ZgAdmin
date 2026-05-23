@@ -63,7 +63,7 @@ async def system_status():
 
 @systemMonitorRouter.get("/network")
 async def network_monitor(iface: str = Query(default="")):
-    global _prev_net, _prev_net_time
+    global _prev_net, _prev_net_time  # pylint: disable=global-statement
     current = get_network_io()
     now = time.time()
 
@@ -106,7 +106,7 @@ async def network_monitor(iface: str = Query(default="")):
 
 @systemMonitorRouter.get("/disk-io")
 async def disk_io_monitor():
-    global _prev_disk, _prev_disk_time
+    global _prev_disk, _prev_disk_time  # pylint: disable=global-statement
     current = get_disk_io()
     now = time.time()
 
