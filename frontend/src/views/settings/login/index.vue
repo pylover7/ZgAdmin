@@ -19,8 +19,8 @@ const {
 </script>
 
 <template>
-  <div class="p-5">
-    <el-card v-loading="loading" shadow="never">
+  <div class="main">
+    <el-card v-loading="loading" shadow="never" class="border-0!">
       <template #header>
         <div class="flex-bc">
           <span class="text-lg font-semibold text-(--el-text-color-primary)">

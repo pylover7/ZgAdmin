@@ -28,9 +28,9 @@ const tableRef = ref();
 </script>
 
 <template>
-  <div class="p-5">
+  <div class="main">
     <!-- 安全策略配置 -->
-    <el-card v-loading="policyLoading" shadow="never" class="mb-5">
+    <el-card v-loading="policyLoading" shadow="never" class="mb-5 border-0!">
       <template #header>
         <div class="flex-bc">
           <span
@@ -133,7 +133,7 @@ const tableRef = ref();
     </el-card>
 
     <!-- IP 黑白名单 -->
-    <el-card v-loading="ipLoading" shadow="never">
+    <el-card v-loading="ipLoading" shadow="never" class="border-0!">
       <template #header>
         <div class="flex-bc">
           <span
