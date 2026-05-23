@@ -28,7 +28,10 @@ class File(BaseModel, TimestampMixin, table=True):
     path: str = Field(max_length=500, description="存储相对路径")
     size: int = Field(default=0, description="文件大小(字节)")
     mime_type: str = Field(default="", max_length=100, description="MIME类型(magic检测)")
-    file_type: str = Field(default="other", max_length=20, description="文件分类: image/document/video/audio/other")
+    file_type: str = Field(
+        default="other",
+        max_length=20,
+        description="文件分类: image/document/video/audio/other")
     extension: str = Field(default="", max_length=20, description="文件扩展名(小写)")
     uploader_id: UUID | None = Field(default=None, foreign_key="user.id", description="上传者")
     uploader: Optional["User"] = Relationship()

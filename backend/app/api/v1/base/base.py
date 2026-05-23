@@ -25,6 +25,7 @@ from app.models.security import SecurityPolicy
 from app.core.dependency import DependUser, DependRateLimit, SessionDep
 from app.core.redis import get_redis
 from app.models import Api, Menu, Role, User, UpdatePassword, UpdateProfile, UpdatePreferences
+from app.models.file import File
 from app.models.base import Fail, Success, FailAuth, SuccessExtra
 from app.settings import settings
 from app.settings.config import base_config
@@ -35,6 +36,7 @@ from app.utils.jwtt import create_access_token, decode_access_token, \
     create_oauth_state, verify_oauth_state
 from app.utils.password import get_password_hash, verify_password
 from app.utils.password_policy import validate_password_strength, check_password_history, update_password_history
+from app.utils.signed_url import verify_signed_url
 # from app.utils.pay import notify_url
 # from app.utils.pay.wechat import wxpay
 
@@ -561,8 +563,6 @@ async def download_file(
     sign: str = Query(..., description="签名"),
     session: SessionDep = None,
 ):
-    from app.utils.signed_url import verify_signed_url
-    from app.models.file import File
     if not verify_signed_url(file_id, expires, sign):
         return Fail(msg="签名无效或已过期")
     file_obj = session.get(File, file_id)

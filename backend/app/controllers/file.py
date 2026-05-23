@@ -1,6 +1,7 @@
+import os
 from uuid import UUID
 
-from sqlmodel import Session
+from sqlmodel import Session, select, func
 
 from app.core.crud import CRUDBase
 from app.models.file import File, FileCreate, FileUpdate
@@ -76,7 +77,6 @@ class FileController(CRUDBase[File, FileCreate, FileUpdate]):
                 continue
             # 删除磁盘文件
             abs_path = f"{settings.STATIC_PATH}/{file_obj.path}"
-            import os
             if os.path.exists(abs_path):
                 os.remove(abs_path)
             session.delete(file_obj)
@@ -86,7 +86,6 @@ class FileController(CRUDBase[File, FileCreate, FileUpdate]):
 
     async def get_storage_stats(self, session: Session) -> dict:
         """获取存储统计信息"""
-        from sqlmodel import select, func
         total_files = session.exec(
             select(func.count()).select_from(File)
         ).one()

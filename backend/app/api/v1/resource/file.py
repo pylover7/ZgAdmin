@@ -1,9 +1,10 @@
+import os
 from uuid import UUID
 
 from fastapi import APIRouter, Query, UploadFile, File as FastAPIFile
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import selectinload
-from sqlmodel import and_, col, select
+from sqlmodel import and_, col
 
 from app.controllers.file import fileController
 from app.core.dependency import DependUser, SessionDep
@@ -128,13 +129,12 @@ async def delete_file(session: SessionDep, data: list[UUID]):
 async def preview_file(
     file_id: UUID,
     session: SessionDep,
-    current_user: DependUser,
+    _current_user: DependUser,
 ):
     file_obj = session.get(File, file_id)
     if not file_obj:
         return Fail(msg="文件不存在")
     abs_path = f"{settings.STATIC_PATH}/{file_obj.path}"
-    import os
     if not os.path.exists(abs_path):
         return Fail(msg="文件已丢失")
     return FileResponse(
@@ -148,7 +148,7 @@ async def preview_file(
 async def get_sign_url(
     file_id: UUID,
     session: SessionDep,
-    current_user: DependUser,
+    _current_user: DependUser,
 ):
     file_obj = session.get(File, file_id)
     if not file_obj:
@@ -158,7 +158,7 @@ async def get_sign_url(
 
 
 @fileRouter.get("/stats", summary="存储统计")
-async def get_storage_stats(session: SessionDep, current_user: DependUser):
+async def get_storage_stats(session: SessionDep, _current_user: DependUser):
     stats = await fileController.get_storage_stats(session)
     stats["total_size_display"] = format_file_size(stats["total_size"])
     for item in stats["type_stats"]:
