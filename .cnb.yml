@@ -38,7 +38,7 @@ $:
         IMAGE_TAG: ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:env
       stages:
         - name: docker build
-          script: docker build -t ${IMAGE_TAG} . -f .ide/Dockerfile
+          script: docker build -t ${IMAGE_TAG} . -f .cnb/Dockerfile
         - name: docker list
           script: docker images
         - name: docker push
