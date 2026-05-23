@@ -41,7 +41,7 @@ const {
       :model="form"
       class="search-form bg-bg_color w-full pl-8 pt-3 overflow-auto"
     >
-      <el-form-item label="日志等级" prop="level">
+      <el-form-item :label="$t('system.logLevel')" prop="level">
         <el-select
           v-model="form.level"
           :placeholder="$t('system.pleaseSelect')"
@@ -50,9 +50,9 @@ const {
           class="w-60!"
           @change="onSearch"
         >
-          <el-option label="信息" value="info" />
-          <el-option label="警告" value="warning" />
-          <el-option label="重要" value="error" />
+          <el-option :label="$t('system.logInfo')" value="info" />
+          <el-option :label="$t('system.logWarn')" value="warning" />
+          <el-option :label="$t('system.logError')" value="error" />
         </el-select>
       </el-form-item>
       <el-form-item :label="$t('system.operationTime')" prop="operationTime">
@@ -72,10 +72,10 @@ const {
           :loading="loading"
           @click="onSearch"
         >
-          搜索
+          {{ $t("system.search") }}
         </el-button>
         <el-button :icon="useRenderIcon(Refresh)" @click="resetForm(formRef)">
-          重置
+          {{ $t("system.reset") }}
         </el-button>
       </el-form-item>
     </el-form>
@@ -92,7 +92,7 @@ const {
         >
           <template #reference>
             <el-button type="danger" :icon="useRenderIcon(Delete)">
-              清空日志
+              {{ $t("system.clearLog") }}
             </el-button>
           </template>
         </el-popconfirm>
@@ -111,7 +111,7 @@ const {
               {{ selectedNum }} {{ $t("system.selected") }}
             </span>
             <el-button type="primary" text @click="onSelectionCancel">
-              取消选择
+              {{ $t("system.cancel") }}
             </el-button>
           </div>
           <el-popconfirm
@@ -119,7 +119,9 @@ const {
             @confirm="onbatchDel"
           >
             <template #reference>
-              <el-button type="danger" text class="mr-1!"> 批量删除 </el-button>
+              <el-button type="danger" text class="mr-1!">
+                {{ $t("system.batchDelete") }}
+              </el-button>
             </template>
           </el-popconfirm>
         </div>
@@ -151,15 +153,5 @@ const {
 <style lang="scss" scoped>
 :deep(.el-dropdown-menu__item i) {
   margin: 0;
-}
-
-.main-content {
-  margin: 24px 24px 0 !important;
-}
-
-.search-form {
-  :deep(.el-form-item) {
-    margin-bottom: 12px;
-  }
 }
 </style>

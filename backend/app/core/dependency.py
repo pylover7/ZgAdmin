@@ -1,6 +1,5 @@
 from uuid import UUID
 import time
-import asyncio
 from collections.abc import Generator
 from typing import Annotated
 
@@ -11,6 +10,7 @@ from fastapi import Depends, Header, HTTPException, Request
 from app.controllers.user import userController
 from app.core.database import engine
 from app.core.ctx import CTX_USER_ID
+from app.core.redis import get_redis
 from app.models import Role, User
 from app.settings import settings
 from app.settings.log import logger
@@ -89,34 +89,30 @@ DependUser = Annotated[User, DependAuth]
 
 
 class RateLimiter:
-    """IP 级别请求限流 — 防止登录暴力破解"""
+    """IP 级别请求限流 — 基于 Redis 的滑动窗口"""
 
     def __init__(self, max_requests: int = 10, window_seconds: int = 60):
         self.max = max_requests
         self.window = window_seconds
-        self._attempts: dict[str, list[float]] = {}
-        self._lock = asyncio.Lock()
-
-    async def _cleanup(self):
-        now = time.monotonic()
-        cutoff = now - self.window
-        self._attempts = {
-            ip: [t for t in times if t > cutoff]
-            for ip, times in self._attempts.items() if any(t > cutoff for t in times)
-        }
 
     async def check(self, request: Request) -> None:
+        redis = get_redis()
         ip = request.client.host if request.client else "unknown"
-        async with self._lock:
-            await self._cleanup()
-            attempts = self._attempts.get(ip, [])
-            if len(attempts) >= self.max:
-                raise HTTPException(
-                    status_code=429,
-                    detail="请求过于频繁，请稍后再试"
-                )
-            attempts.append(time.monotonic())
-            self._attempts[ip] = attempts
+        key = f"rate_limit:{ip}"
+        now = time.monotonic()
+
+        results = await redis.pipeline_exec([
+            ("zremrangebyscore", key, 0, now - self.window),
+            ("zcard", key),
+            ("zadd", key, {str(now): now}),
+            ("expire", key, self.window),
+        ])
+        count = results[1]
+        if count >= self.max:
+            raise HTTPException(
+                status_code=429,
+                detail="请求过于频繁，请稍后再试"
+            )
 
 
 rate_limiter = RateLimiter()

@@ -78,10 +78,10 @@ class Settings(BaseSettings):
     SENTRY_DSN: HttpUrl | None = None
 
     # 功能开关 — 设为 false 可关闭对应模块
-    FEATURE_QQ_LOGIN: bool = False         # QQ 登录
-    FEATURE_WECHAT_LOGIN: bool = False     # 微信登录
-    FEATURE_EMAIL: bool = False            # 邮件发送
-    FEATURE_MONITOR_LOG: bool = True       # 操作日志/登录日志记录
+    FEATURE_QQ_LOGIN: bool = False
+    FEATURE_WECHAT_LOGIN: bool = False
+    FEATURE_EMAIL: bool = False
+    FEATURE_MONITOR_LOG: bool = True
 
     DB_SCHEME: str = "sqlite"
     DB_SERVER: str = "localhost"
@@ -89,6 +89,7 @@ class Settings(BaseSettings):
     DB_USER: str = "postgres"
     DB_PASSWORD: str = "test"
     DB_PATH: str = "zgadmin.sqlite"
+    REDIS_URL: str = ""  # 空=自动（dev用内存，prod需配置redis://host:port/db）
 
     @computed_field
     @property

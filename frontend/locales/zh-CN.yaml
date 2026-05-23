@@ -81,6 +81,7 @@ menus:
   pureSysSettings: 系统设置
   pureGenSettings: 通用设置
   pureLoginSettings: 登录设置
+  pureSecuritySettings: 安全设置
   pureCodeMirror: 代码编辑器
   pureMarkdown: Markdown
   pureEditor: 编辑器
@@ -373,6 +374,38 @@ system:
     loginLog: 登录日志
     operationLog: 操作日志
     systemLog: 系统日志
+    load: 负载
+    cpu: CPU
+    memory: 内存
+    disk: 磁盘
+    network: 网络流量
+    diskIO: 磁盘IO
+    load1: 1分钟
+    load5: 5分钟
+    load15: 15分钟
+    cores: 核心数
+    status: 状态
+    cpuFreq: 频率
+    physicalCores: 物理核心
+    logicalCores: 逻辑核心
+    total: 总计
+    used: 已用
+    available: 可用
+    cached: 缓存
+    buffers: 缓冲
+    free: 空闲
+    shared: 共享
+    pause: 暂停刷新
+    resume: 恢复刷新
+    fetchError: 数据获取失败，请稍后重试
+    systemStatus: 状态
+    realtimeMonitor: 监控
+    totalSent: 总发送
+    totalRecv: 总接收
+    upload: 上传
+    download: 下载
+    read: 读取
+    write: 写入
   settings:
     title: 系统设置
     general: 通用设置
@@ -398,6 +431,144 @@ system:
   appId: App ID
   appKey: App Key
   redirectUri: 回调地址
+  siteInfo: 站点信息
+  funcSettings: 功能设置
+  otherInfo: 其他信息
+  saveSuccess: 保存成功
+  saveFail: 保存失败
+  resetConfirm: 确定要重置所有配置吗？
+  resetSuccess: 已重置
+  tip: 提示
+  enableEmailTip: 关闭后系统将不发送任何邮件通知
+  loadFailed: 加载失败
+  passwordStrength: 强
+  passwordModified: 密码修改成功
+  passwordModifyFail: 密码修改失败
+  fieldModified: 修改成功
+  fieldModifyFail: 修改失败
+  notImplemented: 暂未实现
+  accountPassword: 账户密码
+  passwordStrengthCurrent: 当前密码强度：强
+  securityPhone: 密保手机
+  bindPhoneTip: 绑定手机后可通过手机号找回密码
+  boundPhone: 已绑定手机
+  securityQuestion: 密保问题
+  securityQuestionTip: 未设置密保问题，密保问题可有效保护账户安全
+  backupEmail: 备用邮箱
+  boundEmail: 已绑定邮箱
+  bindEmailTip: 已绑定邮箱可用于找回密码
+  changePassword: 修改密码
+  confirmNewPassword: 确认新密码
+  pleaseEnterCurrentPwd: 请输入当前密码
+  pleaseEnterNewPwd: 请输入新密码
+  pleaseReenterNewPwd: 请再次输入新密码
+  pwdLengthRange: 密码长度为8-40位
+  pwdNotMatch: 两次输入的密码不一致
+  confirmModify: 确认修改
+  pleaseEnterNewPhone: 请输入新手机号
+  pleaseEnterNewEmail: 请输入新邮箱
+  pleaseEnterPhone: 请输入手机号
+  pleaseEnterEmail: 请输入邮箱
+  emailFormatError: 请输入正确的邮箱地址
+  phoneFormatError: 请输入正确的手机号
+  modify: 修改
+  accountManagement: 账户管理
+  modifySecurityPhone: 修改密保手机
+  modifyBackupEmail: 修改备用邮箱
+  preferences: 偏好设置
+  notifyAccount: 账户密码
+  notifyAccountTip: 其他用户的消息将以站内信的形式通知
+  notifySystem: 系统消息
+  notifySystemTip: 系统消息将以站内信的形式通知
+  notifyTask: 待办任务
+  notifyTaskTip: 待办任务将以站内信的形式通知
+  settingSuccess: 设置成功
+  settingFail: 设置失败
+  yes: 是
+  no: 否
+  profile: 个人信息
+  nicknameRequired: 昵称必填
+  emailRequired: 邮箱必填
+  pleaseEnterNickname: 请输入昵称
+  contactPhone: 联系电话
+  pleaseEnterContactPhone: 请输入联系电话
+  introduction: 简介
+  pleaseEnterIntroduction: 请输入简介
+  updateProfile: 更新信息
+  updateProfileSuccess: 更新信息成功
+  updateProfileFail: 更新信息失败
+  copyrightPlaceholder: 如：Copyright © 2024 ZgAdmin
+  icpPlaceholder: 如：京ICP备XXXXXXXX号
+  siteNameMax: 站点名称不超过50个字符
+  siteDescMax: 站点描述不超过200个字符
+  pleaseSelectLang: 请选择默认语言
+  qqLoginDisabled: QQ登录已禁用
+  wechatLoginDisabled: 微信登录已禁用
+  qqRedirectTip: 此地址需要在QQ互联后台的回调域名中配置，格式如：http://localhost:7000/login/qq/callback
+  wechatRedirectTip: 此地址需要在微信开放平台后台的回调域名中配置，格式如：http://localhost:7000/login/wechat/callback
+  invalidUrl: 请输入正确的URL地址
+  configGuide: 配置说明
+  qqConfigSteps: "QQ登录配置步骤："
+  qqStep1: 访问QQ互联并登录
+  qqStep2: 创建应用，获取 App ID 和 App Key
+  qqStep3: 配置回调域名，格式需与上方填写的一致
+  qqStep4: 等待审核通过后即可使用
+  wechatConfigSteps: "微信登录配置步骤："
+  wechatStep1: 访问微信开放平台并登录
+  wechatStep2: 创建网站应用，获取 AppID 和 AppSecret
+  wechatStep3: 配置授权回调域名，格式需与上方填写的一致
+  wechatStep4: 等待审核通过后即可使用
+  security:
+    policyConfig: 安全策略配置
+    passwordPolicy: 密码策略
+    loginProtection: 登录保护
+    ipBlackWhiteList: IP 黑白名单
+    minPasswordLength: 最小密码长度
+    requireUppercase: 需要大写字母
+    requireLowercase: 需要小写字母
+    requireDigit: 需要数字
+    requireSpecial: 需要特殊字符
+    passwordHistory: 密码历史检查
+    passwordHistoryTip: 最近 N 次密码不可重用，0 表示不检查
+    maxLoginAttempts: 最大登录失败次数
+    maxLoginAttemptsTip: 连续失败 N 次后锁定账号
+    lockoutDuration: 锁定时长(分钟)
+    lockoutDurationTip: 账号锁定后的等待时间
+    captchaEnabled: 启用登录验证码
+    savePolicy: 保存策略
+    policySaveSuccess: 安全策略保存成功
+    ipPriorityNote: 白名单优先：如果存在白名单规则，则只有匹配白名单的 IP 才能访问；黑名单中的 IP 将被直接拒绝。
+    noIpRules: 暂无IP规则
+    addRule: 新增规则
+    editRule: 编辑IP规则
+    ipCidr: IP/CIDR
+    ruleType: 规则类型
+    whitelist: 白名单
+    blacklist: 黑名单
+    description: 备注
+    enabled: 启用
+    disabled: 禁用
+    createdAt: 创建时间
+    ipRuleAddSuccess: IP规则添加成功
+    ipRuleUpdateSuccess: IP规则更新成功
+    ipRuleDeleteConfirm: 确定要删除选中的IP规则吗？
+    enterIpCidr: 请输入IP地址或CIDR
+    ipCidrPlaceholder: "如: 192.168.1.0/24 或 10.0.0.1"
+    optionalRemark: 可选备注
+    deleteLogConfirm: 确定要删除该条日志吗？
+  requestTime: 请求时间
+  requestMethod: 请求方法
+  requestDuration: 请求耗时
+  requestUrl: 请求接口
+  responseHeaders: 响应头
+  responseBody: 响应体
+  requestHeaders: 请求头
+  requestBody: 请求体
+  ip: IP 地址
+  location: 地点
+  os: 操作系统
+  browser: 浏览器类型
+  module: 所属模块
   notice:
     title: 通知标题
     type: 通知类型

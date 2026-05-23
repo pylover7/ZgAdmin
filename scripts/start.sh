@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # ==============================================================================
 # ZgAdmin — 一键启动脚本
-# 用法: ./scripts/start.sh [dev|backend|frontend|sync|stop|status]
+# 用法: ./scripts/start.sh [dev|prod|backend|frontend|sync|stop|status]
+#   dev      — 开发模式（默认）：SQLite + 内存 Redis
+#   prod     — 生产模式：PostgreSQL + 真实 Redis，自动检测环境变量
 # ==============================================================================
 set -euo pipefail
 export UV_LINK_MODE=copy
@@ -18,6 +20,7 @@ BACKEND_HOST="0.0.0.0"
 BACKEND_PORT="7001"
 FRONTEND_PORT="7000"
 FIRST_RUN=false
+RUN_MODE="dev"  # dev 或 prod
 
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; BLUE='\033[0;34m'; BOLD='\033[1m'; NC='\033[0m'
 
@@ -62,6 +65,85 @@ bootstrap() {
     echo ""
 }
 
+# ──────────────────────── 生产模式环境变量检测 ──────────────────────────────────
+# 优先读取已有环境变量（docker-compose 等注入），未设置时才自动修复 .env
+check_prod_env() {
+    local changed=false
+
+    # 1. 检查 SECRET_KEY — 环境变量优先
+    if [ -z "${SECRET_KEY+x}" ] || [ "$SECRET_KEY" = "changethis" ]; then
+        if grep -q "^SECRET_KEY=changethis" "$ENV_FILE" 2>/dev/null; then
+            local new_key
+            new_key=$(python3 -c "import secrets; print(secrets.token_urlsafe(32))")
+            sed -i "s|^SECRET_KEY=changethis|SECRET_KEY=${new_key}|" "$ENV_FILE"
+            log_warn "SECRET_KEY 已自动生成并保存至 .env"
+            changed=true
+        fi
+    fi
+
+    # 2. 检查 DB_SCHEME — 生产模式不能是 sqlite，环境变量优先
+    if [ -z "${DB_SCHEME+x}" ] || [ "$DB_SCHEME" = "sqlite" ]; then
+        if grep -q "^DB_SCHEME=sqlite" "$ENV_FILE" 2>/dev/null; then
+            sed -i "s|^DB_SCHEME=sqlite|DB_SCHEME=postgresql|" "$ENV_FILE"
+            log_warn "DB_SCHEME 已从 sqlite 改为 postgresql（生产模式）"
+            changed=true
+        fi
+    fi
+
+    # 3. 检查 REDIS_URL — 生产模式需配置，环境变量优先
+    if [ -z "${REDIS_URL+x}" ] || [ -z "$REDIS_URL" ]; then
+        if grep -q "^REDIS_URL=$" "$ENV_FILE" 2>/dev/null || ! grep -q "^REDIS_URL=" "$ENV_FILE" 2>/dev/null; then
+            local redis_line_exists
+            redis_line_exists=$(grep -c "^REDIS_URL=" "$ENV_FILE" 2>/dev/null || echo "0")
+            if [ "$redis_line_exists" -eq 0 ]; then
+                echo "REDIS_URL=redis://localhost:6379/0" >> "$ENV_FILE"
+            else
+                sed -i "s|^REDIS_URL=.*|REDIS_URL=redis://localhost:6379/0|" "$ENV_FILE"
+            fi
+            log_warn "REDIS_URL 已设置为 redis://localhost:6379/0（生产模式）"
+            changed=true
+        fi
+    fi
+
+    # 4. 检查 FIRST_SUPERUSER_PASSWORD
+    if [ -z "${FIRST_SUPERUSER_PASSWORD+x}" ] || [ "$FIRST_SUPERUSER_PASSWORD" = "admin123456" ]; then
+        if grep -q "^FIRST_SUPERUSER_PASSWORD=admin123456" "$ENV_FILE" 2>/dev/null; then
+            log_warn "⚠ FIRST_SUPERUSER_PASSWORD 仍为默认值 admin123456，强烈建议修改！"
+        fi
+    fi
+
+    # 5. 检查 DB_PASSWORD
+    if [ -z "${DB_PASSWORD+x}" ] || [ "$DB_PASSWORD" = "changethis" ]; then
+        if grep -q "^DB_PASSWORD=changethis" "$ENV_FILE" 2>/dev/null; then
+            log_warn "⚠ DB_PASSWORD 仍为默认值 changethis，请修改为安全密码！"
+        fi
+    fi
+
+    # 6. 检查 ENVIRONMENT — 环境变量优先
+    if [ -z "${ENVIRONMENT+x}" ] || [ "$ENVIRONMENT" = "local" ]; then
+        if grep -q "^ENVIRONMENT=local" "$ENV_FILE" 2>/dev/null; then
+            sed -i "s|^ENVIRONMENT=local|ENVIRONMENT=production|" "$ENV_FILE"
+            log_warn "ENVIRONMENT 已从 local 改为 production（生产模式）"
+            changed=true
+        fi
+    fi
+
+    if [ "$changed" = true ]; then
+        log_info "环境变量已自动更新，详情见 .env 文件"
+    fi
+}
+
+# ──────────────────────── 开发模式环境变量注入 ──────────────────────────────────
+# 优先使用已有环境变量（支持 docker-compose 注入），未设置才注入开发默认值
+inject_dev_env() {
+    : "${DB_SCHEME:=sqlite}"
+    : "${REDIS_URL:=}"
+    : "${ENVIRONMENT:=local}"
+    : "${DEBUG:=True}"
+    : "${RELOAD:=True}"
+    export DB_SCHEME REDIS_URL ENVIRONMENT DEBUG RELOAD
+}
+
 # ──────────────────────── 环境检查 ────────────────────────────────────────────
 check_deps() {
     local missing=()
@@ -81,16 +163,21 @@ check_deps() {
 }
 
 # ──────────────────────── 环境变量加载 ────────────────────────────────────────
+# 从 .env 读取配置，但不会覆盖已有环境变量（尊重 docker-compose 等外部注入）
 load_env() {
     if [ -f "$ENV_FILE" ]; then
         while IFS='=' read -r key value; do
             key=$(echo "$key" | xargs)
             value=$(echo "$value" | xargs | sed 's/^"//;s/"$//')
             case "$key" in
-                PORT)      BACKEND_PORT="${value:-$BACKEND_PORT}" ;;
-                HOST)      BACKEND_HOST="${value:-$BACKEND_HOST}" ;;
-                VITE_PORT) FRONTEND_PORT="${value:-$FRONTEND_PORT}" ;;
+                PORT)      BACKEND_PORT="${BACKEND_PORT:-${value:-7001}}" ;;
+                HOST)      BACKEND_HOST="${BACKEND_HOST:-${value:-0.0.0.0}}" ;;
+                VITE_PORT) FRONTEND_PORT="${FRONTEND_PORT:-${value:-7000}}" ;;
             esac
+            # 如果该环境变量尚未设置，则从 .env 导出
+            if [ -n "$key" ] && [ -z "${!key+x}" ]; then
+                export "$key=$value"
+            fi
         done < <(grep -v '^\s*#' "$ENV_FILE" | grep '=' || true)
     fi
 }
@@ -116,15 +203,37 @@ release_port() {
 }
 
 cleanup() {
+    # 1. 先取消 trap，防止 EXIT 重复触发形成循环
+    trap - EXIT SIGINT SIGTERM
+    
     echo ""
     log_warn "正在停止服务..."
-    [ -n "$BACKEND_PID" ]  && kill "$BACKEND_PID"  2>/dev/null && wait "$BACKEND_PID"  2>/dev/null || true
-    [ -n "$FRONTEND_PID" ] && kill "$FRONTEND_PID" 2>/dev/null && wait "$FRONTEND_PID" 2>/dev/null || true
-    pids=$(lsof -ti :"$BACKEND_PORT" -sTCP:LISTEN 2>/dev/null) && kill $pids 2>/dev/null || true
-    pids=$(lsof -ti :"$FRONTEND_PORT" -sTCP:LISTEN 2>/dev/null) && kill $pids 2>/dev/null || true
+    
+    # 2. 杀进程组（确保杀掉所有子进程：uv → python, bun → vite node）
+    #    先尝试 SIGTERM，等 2s，再 SIGKILL
+    for pid in "$BACKEND_PID" "$FRONTEND_PID"; do
+        [ -n "$pid" ] || continue
+        # 获取进程组 ID，负数表示整个进程组
+        local pgid=$(ps -o pgid= "$pid" 2>/dev/null | tr -d ' ')
+        if [ -n "$pgid" ]; then
+            kill -- -"$pgid" 2>/dev/null
+        else
+            kill "$pid" 2>/dev/null
+        fi
+    done
+    
+    # 3. 等 2s 给进程优雅退出，不用 wait 阻塞
+    sleep 2
+    
+    # 4. 按端口强制清理残余进程（SIGKILL）
+    local pids
+    pids=$(lsof -ti :"$BACKEND_PORT" -sTCP:LISTEN 2>/dev/null) && kill -9 $pids 2>/dev/null || true
+    pids=$(lsof -ti :"$FRONTEND_PORT" -sTCP:LISTEN 2>/dev/null) && kill -9 $pids 2>/dev/null || true
+    
     log_info "所有服务已停止"
     exit 0
 }
+
 trap cleanup SIGINT SIGTERM EXIT
 
 # ──────────────────────── 后端 ────────────────────────────────────────────────
@@ -197,7 +306,8 @@ show_help() {
     echo "用法: ./scripts/start.sh [命令]"
     echo ""
     echo "命令:"
-    echo "  dev        启动前后端开发服务器（默认）"
+    echo "  dev        启动开发模式（默认）：SQLite + 内存 Redis"
+    echo "  prod       启动生产模式：PostgreSQL + 真实 Redis，自动检测环境变量"
     echo "  backend    仅启动后端"
     echo "  frontend   仅启动前端"
     echo "  sync       仅安装依赖，不启动服务"
@@ -207,7 +317,8 @@ show_help() {
     echo "首次运行: 脚本会自动从 .env.example 创建 .env 配置文件"
     echo ""
     echo "示例:"
-    echo "  ./scripts/start.sh            # 一键启动"
+    echo "  ./scripts/start.sh            # 开发模式启动"
+    echo "  ./scripts/start.sh prod       # 生产模式启动"
     echo "  ./scripts/start.sh sync       # 仅安装依赖"
     echo "  ./scripts/start.sh status     # 查看状态"
     echo "  ./scripts/start.sh stop       # 停止服务"
@@ -221,21 +332,42 @@ main() {
 
     case "$cmd" in
         dev)
-            bootstrap; check_deps; load_env
+            RUN_MODE="dev"
+            bootstrap; check_deps; load_env; inject_dev_env
             run_backend; run_frontend
             echo ""
             banner "═══════════════════════════════════════════════════════════════"
-            banner "  ZgAdmin 已启动"
+            banner "  ZgAdmin 已启动（开发模式）"
             banner "═══════════════════════════════════════════════════════════════"
             echo ""
             echo -e "  前端: ${GREEN}http://localhost:${FRONTEND_PORT}${NC}"
             echo -e "  后端: ${GREEN}http://localhost:${BACKEND_PORT}${NC}"
             echo -e "  API:  ${GREEN}http://localhost:${BACKEND_PORT}/api/v1/docs${NC}"
             echo ""
+            echo -e "  数据库: SQLite | Redis: 内存模拟"
             echo -e "  默认管理员: admin / admin123456"
             echo -e "  按 ${YELLOW}Ctrl+C${NC} 停止"
             echo ""
             $FIRST_RUN && log_info "首次运行？编辑 .env 配置数据库等选项后重新启动"
+            wait -n 2>/dev/null || wait
+            log_error "某个服务已退出"
+            ;;
+        prod)
+            RUN_MODE="prod"
+            bootstrap; check_deps; load_env; check_prod_env
+            run_backend; run_frontend
+            echo ""
+            banner "═══════════════════════════════════════════════════════════════"
+            banner "  ZgAdmin 已启动（生产模式）"
+            banner "═══════════════════════════════════════════════════════════════"
+            echo ""
+            echo -e "  前端: ${GREEN}http://localhost:${FRONTEND_PORT}${NC}"
+            echo -e "  后端: ${GREEN}http://localhost:${BACKEND_PORT}${NC}"
+            echo -e "  API:  ${GREEN}http://localhost:${BACKEND_PORT}/api/v1/docs${NC}"
+            echo ""
+            echo -e "  数据库: PostgreSQL | Redis: 真实连接"
+            echo -e "  按 ${YELLOW}Ctrl+C${NC} 停止"
+            echo ""
             wait -n 2>/dev/null || wait
             log_error "某个服务已退出"
             ;;

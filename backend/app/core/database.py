@@ -1,14 +1,12 @@
-from pathlib import Path
-
 from sqlmodel import Session, SQLModel, select
 from fastapi import FastAPI
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from alembic.config import Config as AlembicConfig
-from alembic.command import upgrade
 
 from app.controllers.user import userController
 from app.core.schedule import update_expired_orders
 from app.models import User, UserCreate, Api
+from app.models.link import RoleApiLink
+from app.models.security import SecurityPolicy
 from app.settings.log import logger
 from app.settings import settings
 from app.utils.staticFileUtils import check_dir_exists
@@ -20,20 +18,32 @@ scheduler = AsyncIOScheduler()
 
 def _sync_api_routes(app: FastAPI, session: Session):
     apis = app.openapi()["paths"]
+    # 收集当前注册的所有 (method, path) 组合
+    current_routes: set[tuple[str, str]] = set()
     for path, methods in apis.items():
         for method, meta in methods.items():
             tags = ",".join(meta.get("tags", []))
             summary = meta.get("summary", "")
+            method_upper = method.upper()
+            current_routes.add((method_upper, path))
             existing = session.exec(
-                select(Api).where(Api.path == path)
+                select(Api).where(Api.path == path, Api.method == method_upper)
             ).first()
             if existing:
-                existing.method = method.upper()
                 existing.summary = summary
                 existing.tags = tags
                 session.add(existing)
             else:
-                session.add(Api(path=path, method=method.upper(), tags=tags, summary=summary))
+                session.add(Api(path=path, method=method_upper, tags=tags, summary=summary))
+    # 删除数据库中已不存在的路由（手动清理关联的 RoleApiLink）
+    all_db_apis = session.exec(select(Api)).all()
+    for db_api in all_db_apis:
+        if (db_api.method, db_api.path) not in current_routes:
+            for link in session.exec(
+                select(RoleApiLink).where(RoleApiLink.api_id == db_api.id)
+            ).all():
+                session.delete(link)
+            session.delete(db_api)
     session.commit()
 
 
@@ -47,7 +57,7 @@ async def init_data(app: FastAPI) -> None:
         # 种子数据：部门、菜单
         dept = seed_all(session)
 
-        # 创建默认管理员
+        # 创建默认管理员（在安全策略之前，避免密码复杂度校验阻止种子用户创建）
         admin = session.exec(
             select(User).where(
                 (User.email == settings.EMAIL_TEST_USER)
@@ -75,6 +85,14 @@ async def init_data(app: FastAPI) -> None:
                 session.commit()
         else:
             logger.info("管理员账户已存在，跳过创建")
+
+        # 确保安全策略配置存在（单行表，只有一条记录）
+        security_policy = session.exec(select(SecurityPolicy)).first()
+        if not security_policy:
+            logger.info("创建默认安全策略...")
+            security_policy = SecurityPolicy()
+            session.add(security_policy)
+            session.commit()
 
         # 同步 API 路由到数据库
         logger.info("同步API路由...")

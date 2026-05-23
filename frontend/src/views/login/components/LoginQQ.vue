@@ -22,10 +22,10 @@ const qrCodeUrl = ref("");
 const generateQQQRCode = async () => {
   try {
     const res = await getQQAuthUrl();
-    if (res) {
-      qrCodeUrl.value = res.auth_url;
+    if (res?.data) {
+      qrCodeUrl.value = res.data.auth_url;
       // 将状态存储到sessionStorage用于回调验证
-      sessionStorage.setItem("qq_login_state", res.state);
+      sessionStorage.setItem("qq_login_state", res.data.state);
     }
   } catch (error) {
     console.error("获取QQ授权链接失败:", error);

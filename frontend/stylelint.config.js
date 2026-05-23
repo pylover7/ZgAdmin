@@ -24,6 +24,7 @@ export default {
   ],
   rules: {
     "prettier/prettier": true,
+    "no-empty-source": null,
     "selector-class-pattern": null,
     "no-descending-specificity": null,
     "scss/dollar-variable-pattern": null,

@@ -7,13 +7,8 @@ import {
   routerArrays,
   storageLocal
 } from "../utils";
-import {
-  type UserResult,
-  type RefreshTokenResult,
-  getLogin,
-  refreshTokenApi,
-  qqLogin
-} from "@/api/user";
+import type { UserResult, RefreshTokenResult } from "@/types/user";
+import { getLogin, refreshTokenApi, qqLogin } from "@/api/user";
 import { useMultiTagsStoreHook } from "./multiTags";
 import { type DataInfo, setToken, removeToken, userKey } from "@/utils/auth";
 

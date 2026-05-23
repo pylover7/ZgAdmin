@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
-from .general import generalPublicRouter, generalProtectedRouter
+from .general import generalProtectedRouter
+from .security import securityProtectedRouter
 
 settingsRouter = APIRouter()
 

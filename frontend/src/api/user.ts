@@ -1,6 +1,6 @@
 import { http } from "@/utils/http";
 import { apiV1 } from "./utils";
-import type { ResultTable } from "@/types";
+import type { Result, ResultTable } from "@/types";
 import type {
   UserInfoResult,
   RefreshTokenResult,
@@ -8,7 +8,6 @@ import type {
   UpdateProfileParams,
   UserPreferences
 } from "@/types/user";
-import type { loginResult } from "@/types/login";
 
 const baseUrl = (url: string) => apiV1(`/base${url}`);
 
@@ -44,10 +43,7 @@ export const updatePassword = (data: {
 
 /** 获取用户偏好 */
 export const getPreferences = () => {
-  return http.request<{ success: boolean; data: UserPreferences }>(
-    "get",
-    baseUrl("/preferences")
-  );
+  return http.request<Result<UserPreferences>>("get", baseUrl("/preferences"));
 };
 
 /** 更新用户偏好 */
@@ -65,7 +61,7 @@ export const getMineLogs = (params?: {
 
 /** 获取QQ授权链接 */
 export const getQQAuthUrl = () => {
-  return http.request<{ auth_url: string; state: string }>(
+  return http.request<Result<{ auth_url: string; state: string }>>(
     "get",
     baseUrl("/qq/auth-url")
   );
@@ -74,9 +70,4 @@ export const getQQAuthUrl = () => {
 /** QQ登录 */
 export const qqLogin = (data: { code: string; state: string }) => {
   return http.request<UserResult>("post", baseUrl("/qq/login"), { data });
-};
-
-/** 获取登录方式配置 */
-export const getLoginMethods = () => {
-  return http.request<loginResult>("get", apiV1("/settings/login/methods"));
 };

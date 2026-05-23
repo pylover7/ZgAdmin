@@ -1,64 +1,18 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
-import { message } from "@/utils/message";
-import { getPreferences, updatePreferences } from "@/api/user";
 import { deviceDetection } from "@pureadmin/utils";
+import { usePreferences } from "../utils/usePreferences";
+import { transformI18n } from "@/plugins/i18n";
 
 defineOptions({
   name: "Preferences"
 });
 
-const list = ref([
-  {
-    key: "notify_account",
-    title: "账户密码",
-    illustrate: "其他用户的消息将以站内信的形式通知",
-    checked: true
-  },
-  {
-    key: "notify_system",
-    title: "系统消息",
-    illustrate: "系统消息将以站内信的形式通知",
-    checked: true
-  },
-  {
-    key: "notify_task",
-    title: "待办任务",
-    illustrate: "待办任务将以站内信的形式通知",
-    checked: true
-  }
-]);
-
-async function loadPreferences() {
-  const res = await getPreferences();
-  if (res?.data) {
-    for (const item of list.value) {
-      if (res.data[item.key] !== undefined) {
-        item.checked = res.data[item.key];
-      }
-    }
-  }
-}
-
-async function onChange(val: boolean, item: (typeof list.value)[0]) {
-  const oldValue = !val;
-  try {
-    await updatePreferences({ [item.key]: val });
-    message(`${item.title}设置成功`, { type: "success" });
-  } catch {
-    item.checked = oldValue;
-    message(`${item.title}设置失败`, { type: "error" });
-  }
-}
-
-onMounted(() => {
-  loadPreferences();
-});
+const { list, onChange } = usePreferences();
 </script>
 
 <template>
   <div :class="['min-w-45', deviceDetection() ? 'max-w-full' : 'max-w-[70%]']">
-    <h3 class="my-8!">偏好设置</h3>
+    <h3 class="my-8!">{{ transformI18n("system.preferences") }}</h3>
     <div v-for="(item, index) in list" :key="index">
       <div class="flex items-center">
         <div class="flex-1">
@@ -72,9 +26,9 @@ onMounted(() => {
         <el-switch
           v-model="item.checked"
           inline-prompt
-          active-text="是"
-          inactive-text="否"
-          @change="val => onChange(val, item)"
+          :active-text="transformI18n('system.yes')"
+          :inactive-text="transformI18n('system.no')"
+          @change="(val: string | number | boolean) => onChange(!!val, item)"
         />
       </div>
       <el-divider />

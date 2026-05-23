@@ -45,7 +45,7 @@ const {
       <el-form-item :label="$t('system.logModule')" prop="module">
         <el-select
           v-model="form.module"
-          placeholder="请选择所属模块"
+          :placeholder="$t('system.pleaseSelect') + $t('system.logModule')"
           clearable
           class="w-42.5!"
           @change="onSearch"
@@ -75,10 +75,10 @@ const {
           :loading="loading"
           @click="onSearch"
         >
-          搜索
+          {{ $t("system.search") }}
         </el-button>
         <el-button :icon="useRenderIcon(Refresh)" @click="resetForm(formRef)">
-          重置
+          {{ $t("system.reset") }}
         </el-button>
       </el-form-item>
     </el-form>
@@ -95,7 +95,7 @@ const {
         >
           <template #reference>
             <el-button type="danger" :icon="useRenderIcon(Delete)">
-              清空日志
+              {{ $t("system.clearLog") }}
             </el-button>
           </template>
         </el-popconfirm>
@@ -114,7 +114,7 @@ const {
               {{ selectedNum }} {{ $t("system.selected") }}
             </span>
             <el-button type="primary" text @click="onSelectionCancel">
-              取消选择
+              {{ $t("system.cancel") }}
             </el-button>
           </div>
           <el-popconfirm
@@ -122,7 +122,9 @@ const {
             @confirm="onbatchDel"
           >
             <template #reference>
-              <el-button type="danger" text class="mr-1!"> 批量删除 </el-button>
+              <el-button type="danger" text class="mr-1!">
+                {{ $t("system.batchDelete") }}
+              </el-button>
             </template>
           </el-popconfirm>
         </div>
@@ -148,7 +150,7 @@ const {
         >
           <template #operation="{ row }">
             <el-popconfirm
-              title="确定要删除该条日志吗？"
+              :title="$t('system.security.deleteLogConfirm')"
               @confirm="
                 onbatchDel();
                 tableRef.getTableRef().toggleRowSelection(row, false);
@@ -162,7 +164,7 @@ const {
                   :size="size"
                   :icon="useRenderIcon(Delete)"
                 >
-                  删除
+                  {{ $t("system.delete") }}
                 </el-button>
               </template>
             </el-popconfirm>
@@ -176,15 +178,5 @@ const {
 <style lang="scss" scoped>
 :deep(.el-dropdown-menu__item i) {
   margin: 0;
-}
-
-.main-content {
-  margin: 24px 24px 0 !important;
-}
-
-.search-form {
-  :deep(.el-form-item) {
-    margin-bottom: 12px;
-  }
 }
 </style>

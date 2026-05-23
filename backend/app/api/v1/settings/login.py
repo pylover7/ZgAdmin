@@ -3,39 +3,8 @@ from fastapi import APIRouter
 from app.models import Success, Fail
 from app.settings.config import base_config
 
-# 公开接口：获取登录方式
-loginPublicRouter = APIRouter()
-
 # 认证接口：管理员获取/修改配置
 loginProtectedRouter = APIRouter()
-
-
-@loginPublicRouter.get("/methods", summary="获取可用的登录方式")
-async def get_login_methods():
-    """获取QQ和微信登录方式启用状态（公开接口）"""
-    try:
-        result = {
-            "qq": {
-                "enabled": base_config.get_config(
-                    "login", "qq_enabled", fallback="false"
-                ).lower()
-                == "true",
-            },
-            "wechat": {
-                "enabled": base_config.get_config(
-                    "login", "wechat_enabled", fallback="false"
-                ).lower()
-                == "true",
-            },
-        }
-        return Success(msg="获取成功！", data=result)
-    except Exception:
-        # 如果配置文件不存在，返回默认禁用状态
-        result = {
-            "qq": {"enabled": False},
-            "wechat": {"enabled": False},
-        }
-        return Success(msg="获取成功！", data=result)
 
 
 @loginProtectedRouter.get("", summary="获取登录配置")

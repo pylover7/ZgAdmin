@@ -1,65 +1,20 @@
 import { http } from "@/utils/http";
 import { apiV1 } from "./utils";
-import type { FormItemRule } from "element-plus";
+import type { Result } from "@/types";
+import type {
+  LoginConfig,
+  GeneralConfig,
+  SecurityPolicy,
+  IPRule
+} from "@/types/settings";
 
 const settingsUrl = (url: string) => apiV1(`/settings${url}`);
 
-type Result = {
-  code: number;
-  msg: string;
-  success: boolean;
-  data?: any;
-};
-
-/** 登录方式类型（公开） */
-export interface LoginMethods {
-  qq: {
-    enabled: boolean;
-  };
-  wechat: {
-    enabled: boolean;
-  };
-}
-
-/** 登录配置类型（管理员） */
-export interface LoginConfig {
-  qq?: {
-    app_id: string;
-    app_key: string;
-    redirect_uri: string;
-    enabled: boolean;
-  };
-  wechat?: {
-    app_id: string;
-    app_secret: string;
-    redirect_uri: string;
-    enabled: boolean;
-  };
-}
-
-/**
- * 将配置类型转换为表单规则类型
- * 例如：{ qq: { app_id: string } } -> { qq: { app_id: FormItemRule[] } }
- */
-type ConfigToRules<T> = {
-  [K in keyof T]?: T[K] extends object
-    ? {
-        [P in keyof T[K]]?: FormItemRule[];
-      }
-    : never;
-};
-
-/** 登录配置表单规则类型 */
-export type LoginConfigRules = ConfigToRules<LoginConfig>;
-
-/** 获取登录方式（公开接口） */
-export const getLoginMethods = () => {
-  return http.request<Result>("get", settingsUrl("/login/methods"));
-};
+// ─── 登录设置 ───
 
 /** 获取登录配置（管理员接口） */
 export const getLoginConfig = () => {
-  return http.request<Result>("get", settingsUrl("/login"));
+  return http.request<Result<LoginConfig>>("get", settingsUrl("/login"));
 };
 
 /** 更新登录配置 */
@@ -67,45 +22,69 @@ export const updateLoginConfig = (data: LoginConfig) => {
   return http.request<Result>("post", settingsUrl("/login"), { data });
 };
 
-// ─── 通用设置相关 ───
-
-/** 站点基本信息（公开） */
-export interface SiteInfo {
-  site_name: string;
-  site_desc: string;
-  logo: string;
-  default_lang: string;
-  copyright: string;
-  icp: string;
-}
-
-/** 通用设置配置（管理员） */
-export interface GeneralConfig {
-  site_name: string;
-  site_desc: string;
-  logo: string;
-  default_lang: string;
-  enable_email: boolean;
-  copyright: string;
-  icp: string;
-}
-
-/** 通用设置表单规则 */
-export type GeneralConfigRules = {
-  [K in keyof GeneralConfig]?: FormItemRule[];
-};
-
-/** 获取站点基本信息（公开接口） */
-export const getSiteInfo = () => {
-  return http.request<Result>("get", settingsUrl("/general/info"));
-};
+// ─── 通用设置 ───
 
 /** 获取通用设置（管理员接口） */
 export const getGeneralConfig = () => {
-  return http.request<Result>("get", settingsUrl("/general"));
+  return http.request<Result<GeneralConfig>>("get", settingsUrl("/general"));
 };
 
 /** 更新通用设置 */
 export const updateGeneralConfig = (data: GeneralConfig) => {
   return http.request<Result>("post", settingsUrl("/general"), { data });
+};
+
+// ─── 安全设置 ───
+
+/** 获取安全策略 */
+export const getSecurityPolicy = () => {
+  return http.request<Result<SecurityPolicy>>(
+    "get",
+    settingsUrl("/security/policy")
+  );
+};
+
+/** 更新安全策略 */
+export const updateSecurityPolicy = (data: Partial<SecurityPolicy>) => {
+  return http.request<Result>("post", settingsUrl("/security/policy"), {
+    data
+  });
+};
+
+/** 获取 IP 规则列表 */
+export const getIPRules = () => {
+  return http.request<Result<IPRule[]>>(
+    "get",
+    settingsUrl("/security/ip-rules")
+  );
+};
+
+/** 新增 IP 规则 */
+export const addIPRule = (data: {
+  ip_cidr: string;
+  rule_type: string;
+  description?: string;
+  is_active?: boolean;
+}) => {
+  return http.request<Result>("post", settingsUrl("/security/ip-rules/add"), {
+    data
+  });
+};
+
+/** 修改 IP 规则 */
+export const updateIPRule = (data: Partial<IPRule> & { id: string }) => {
+  return http.request<Result>(
+    "post",
+    settingsUrl("/security/ip-rules/update"),
+    { data }
+  );
+};
+
+/** 删除 IP 规则 */
+export const deleteIPRules = (data: string[]) => {
+  return http.request<Result>(
+    "post",
+    settingsUrl("/security/ip-rules/delete"),
+    { data }
+  );
 };

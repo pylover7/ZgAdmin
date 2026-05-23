@@ -97,7 +97,7 @@
     },
     "启动 ZgAdmin": {
       "path": "/bin/zsh",
-      "args": ["-c", "zsh /workspace/scripts/start.sh dev"],
+      "args": ["-c", "bash /workspace/scripts/start.sh dev"],
       "name": "Start ZgAdmin",
       "description": "Terminal profile that runs start.sh to launch ZgAdmin"
     },

@@ -186,3 +186,39 @@ export const handleTree = (
   }
   return tree;
 };
+
+/**
+ * @description 将扁平的 API 列表按 tags 分组构建树形结构
+ * @param data API 列表，每项需包含 id, method, path, summary, tags 字段
+ * @returns 树形结构，分组节点 id 使用 __tag__${tag} 前缀以便区分
+ */
+export const buildApiTree = (data: any[]): any[] => {
+  if (!Array.isArray(data)) {
+    console.warn("data must be an array");
+    return [];
+  }
+  if (!data || data.length === 0) return [];
+
+  const groupMap: Record<string, any> = {};
+  const tree: any[] = [];
+
+  for (const item of data) {
+    const tag = item.tags || "未分组";
+    if (!groupMap[tag]) {
+      groupMap[tag] = {
+        id: `__tag__${tag}`,
+        title: tag,
+        children: []
+      };
+      tree.push(groupMap[tag]);
+    }
+    groupMap[tag].children.push({
+      id: item.id,
+      title: `[${item.method}] ${item.summary || item.path}`,
+      method: item.method,
+      path: item.path,
+      summary: item.summary
+    });
+  }
+  return tree;
+};

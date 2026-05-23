@@ -1,12 +1,11 @@
 from fastapi.exceptions import (
-    HTTPException,
     RequestValidationError,
     ResponseValidationError,
+    HTTPException as FastAPIHTTPException,
 )
 from fastapi.requests import Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import IntegrityError
-from fastapi.exceptions import HTTPException as FastAPIHTTPException
 
 from app.settings.log import logger
 

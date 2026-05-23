@@ -170,3 +170,16 @@ async def reset_pwd(
     session.commit()
     await logger.systemInfo("系统管理", f"重置用户密码: {user.username}")
     return Success(msg="密码重置成功！")
+
+
+@userRouter.post("/unlock", summary="解锁用户")
+async def unlock_user(session: SessionDep, data: BaseModel):
+    """管理员手动解锁被锁定的用户"""
+    user = await userController.get(session, data.id)
+    if not user:
+        raise HTTPException(status_code=404, detail="用户不存在！")
+    if not user.locked_until and (user.failed_login_count or 0) == 0:
+        return Success(msg="该用户未处于锁定状态")
+    user = await userController.unlock_user(session, user.id)
+    await logger.systemInfo("系统管理", f"解锁用户: {user.username}")
+    return Success(msg="用户解锁成功！")

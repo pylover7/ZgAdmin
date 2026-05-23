@@ -21,7 +21,7 @@ export function useRole(tableRef: Ref) {
 
   const form = reactive({
     module: "",
-    oprationTime: null
+    operationTime: null
   });
   const dataList = ref([]);
   const loading = ref(true);
@@ -130,7 +130,7 @@ export function useRole(tableRef: Ref) {
     loading.value = true;
     const { data, total, pageSize, currentPage } = await getSystemLogsList(
       form.module,
-      formatDateTimeRange(form.oprationTime),
+      formatDateTimeRange(form.operationTime),
       pagination.currentPage,
       pagination.pageSize
     );
