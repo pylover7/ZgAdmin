@@ -4,7 +4,6 @@ from app.core.dependency import DependPermission
 
 from .base import base_router
 from .system import systemRouter
-from .pay import payRouter
 from .monitor import monitorRouter
 from .settings import settingsRouter
 from .settings.login import loginProtectedRouter
@@ -39,11 +38,6 @@ v1_router.include_router(
     settingsRouter,
     prefix="/settings",
     dependencies=[DependPermission])
-v1_router.include_router(
-    payRouter,
-    prefix="/pay",
-    dependencies=[DependPermission]
-)
 v1_router.include_router(
     monitorRouter,
     prefix="/monitor",
