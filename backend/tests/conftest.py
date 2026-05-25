@@ -1,368 +1,247 @@
 """
-pytest配置文件
-定义测试夹具和共享配置
+测试基础设施 — SQLite 内存 DB + MemoryRedis + TestClient
+
+核心设计:
+- test_engine: Session 级 SQLite 内存引擎，所有表只创建一次
+- test_redis: Session 级 MemoryRedis 实例
+- db: Function 级 Session，使用嵌套事务(savepoint)隔离，测试结束自动回滚
+- client: TestClient，依赖注入覆盖 get_db / get_redis
+- admin_user / admin_headers: 预创建超级管理员 + JWT
 """
 import pytest
-import asyncio
-from unittest.mock import Mock
+from datetime import datetime, timedelta, timezone
+from uuid import uuid4
+
+from sqlalchemy import event
+from sqlmodel import Session, SQLModel, create_engine
 from fastapi import FastAPI
-from sqlmodel import Session, create_engine, SQLModel
 from fastapi.testclient import TestClient
+
+# ─── 确保所有 Model 注册到 SQLModel.metadata ───────────────────────────
+from app.models import (  # noqa: F401
+    User, Role, Menu, Department, Api, File,
+    LoginLog, OperationLog, SystemLog,
+    Notice, NoticeRead,
+    SecurityPolicy, IPRule,
+    UserRoleLink, RoleMenuLink, RoleApiLink,
+)
+from app.models.base import Success, Fail, SuccessExtra, FailAuth
+from app.models.login import JWTPayload
+from app.core.redis import MemoryRedis
+from app.core.dependency import get_db
+from app.core.redis import get_redis as _orig_get_redis
+from app.utils.password import get_password_hash
+from app.utils.jwtt import create_access_token
+from app.core.init import register_exceptions, register_routers
+
+
+# ─── 测试专用 App 工厂（无 lifespan，不触发 init_data） ────────────────
+def create_test_app() -> FastAPI:
+    application = FastAPI(
+        title="Test App",
+        openapi_url="/openapi.json",
+    )
+    register_exceptions(application)
+    register_routers(application, prefix="/api")
+    return application
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# Session 级 fixtures
+# ═══════════════════════════════════════════════════════════════════════
+
+@pytest.fixture(scope="session")
+def test_engine():
+    """Session 级 SQLite 内存引擎 — 所有表只创建一次"""
+    _engine = create_engine(
+        "sqlite:///:memory:",
+        connect_args={"check_same_thread": False},
+        echo=False,
+    )
+    SQLModel.metadata.create_all(_engine)
+    yield _engine
+    _engine.dispose()
 
 
 @pytest.fixture(scope="session")
-def event_loop():
-    """创建一个事件循环用于异步测试"""
-    loop = asyncio.get_event_loop_policy().new_event_loop()
-    yield loop
-    loop.close()
+def test_redis():
+    """Session 级 MemoryRedis 实例"""
+    redis = MemoryRedis()
+    yield redis
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# Function 级 fixtures
+# ═══════════════════════════════════════════════════════════════════════
+
+@pytest.fixture
+def db(test_engine):
+    """
+    Function 级 DB Session — 嵌套事务隔离。
+    每个 test 获得独立 savepoint，API 路由中的 commit 只释放 savepoint，
+    测试结束后外层事务回滚，确保测试之间零污染。
+    """
+    connection = test_engine.connect()
+    transaction = connection.begin()
+    session = Session(bind=connection, expire_on_commit=False)
+
+    # 开启嵌套事务（savepoint），使 session.commit() 只释放 savepoint
+    nested = connection.begin_nested()
+
+    @event.listens_for(session, "after_transaction_end")
+    def _restart_savepoint(sess, trans):
+        nonlocal nested
+        if trans.nested and not trans._parent.nested:
+            nested = connection.begin_nested()
+
+    yield session
+
+    session.close()
+    transaction.rollback()
+    connection.close()
 
 
 @pytest.fixture
-def mock_app():
-    """创建模拟的FastAPI应用"""
-    app = FastAPI(title="Test App")
-    
-    @app.get("/test")
-    async def test_endpoint():
-        return {"message": "test"}
-    
-    return app
+def client(db, test_redis):
+    """TestClient — 覆盖 get_db / get_redis 依赖注入 + 全局 Redis 替换"""
+    from unittest.mock import patch
 
+    application = create_test_app()
+
+    def _override_get_db():
+        yield db
+
+    def _override_get_redis():
+        return test_redis
+
+    application.dependency_overrides[get_db] = _override_get_db
+    application.dependency_overrides[_orig_get_redis] = _override_get_redis
+
+    # 全局替换 Redis 单例 — 因为部分代码直接调用 get_redis() 而非依赖注入
+    import app.core.redis as redis_mod
+    original_instance = redis_mod._redis_instance
+    redis_mod._redis_instance = test_redis
+
+    # Mock getIpAddress — TestClient 的 client.host 为 "testclient"，不是合法 IP
+    async def _mock_get_ip_address(ip: str) -> str:
+        return "内网IP"
+
+    # 必须在 import 位置 patch，而非定义位置
+    with patch("app.controllers.user.getIpAddress", side_effect=_mock_get_ip_address):
+        with TestClient(application) as c:
+            yield c
+
+    application.dependency_overrides.clear()
+    redis_mod._redis_instance = original_instance
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# 用户 / 认证 fixtures
+# ═══════════════════════════════════════════════════════════════════════
 
 @pytest.fixture
-def mock_session():
-    """创建模拟的数据库会话"""
-    session = Mock(spec=Session)
-    session.add = Mock()
-    session.commit = Mock()
-    session.rollback = Mock()
-    session.refresh = Mock()
-    session.exec = Mock()
-    session.query = Mock()
-    session.delete = Mock()
-    
-    return session
-
-
-@pytest.fixture
-def mock_user():
-    """创建模拟用户对象"""
-    user = Mock()
-    user.id = "test-user-id"
-    user.username = "testuser"
-    user.email = "test@example.com"
-    user.password = "hashed_password"
-    user.is_active = True
-    user.is_superuser = False
-    user.created_at = "2023-12-07T12:00:00Z"
-    
+def admin_user(db):
+    """创建超级管理员并返回 User 对象"""
+    user = User(
+        username="admin",
+        nickname="测试管理员",
+        email="admin@test.com",
+        password=get_password_hash("admin123456"),
+        phone="13800138000",
+        status=1,
+        is_superuser=True,
+        sex=1,
+        remark="测试管理员",
+    )
+    db.add(user)
+    db.commit()
+    db.refresh(user)
     return user
 
 
 @pytest.fixture
-def mock_request():
-    """创建模拟请求对象"""
-    request = Mock()
-    request.method = "GET"
-    request.url.path = "/test"
-    request.headers = {
-        "User-Agent": "Mozilla/5.0 (Test Browser)",
-        "X-Forwarded-For": "127.0.0.1"
-    }
-    request.query_params = {}
-    request.json = Mock(return_value={"test": "data"})
-    
-    return request
+def admin_headers(admin_user):
+    """超级管理员的 Authorization headers"""
+    payload = JWTPayload(
+        user_id=str(admin_user.id),
+        username=admin_user.username,
+        is_superuser=True,
+        exp=datetime.now(timezone.utc) + timedelta(hours=2),
+    )
+    token = create_access_token(data=payload)
+    return {"Authorization": f"Bearer {token}"}
 
 
 @pytest.fixture
-def sample_jwt_payload():
-    """示例JWT载荷"""
-    return {
-        "sub": "testuser",
-        "exp": 1234567890,
-        "iat": 1234567890 - 3600
-    }
+def normal_user(db):
+    """创建普通用户（非管理员）并返回 User 对象"""
+    user = User(
+        username="normaluser",
+        nickname="普通用户",
+        email="normal@test.com",
+        password=get_password_hash("normal123456"),
+        phone="13900139000",
+        status=1,
+        is_superuser=False,
+        sex=0,
+    )
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return user
 
 
 @pytest.fixture
-def sample_password_data():
-    """示例密码数据"""
-    return {
-        "plain_password": "test_password_123",
-        "hashed_password": "$2b$12$test_hashed_password_here",
-        "md5_hash": "5d41402abc4b2a76b9719d911017c592"
-    }
+def disabled_user(db):
+    """创建已禁用用户"""
+    user = User(
+        username="disabled_user",
+        nickname="禁用用户",
+        email="disabled@test.com",
+        password=get_password_hash("disabled123456"),
+        status=0,
+        is_superuser=False,
+    )
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return user
 
 
 @pytest.fixture
-def sample_qq_userinfo():
-    """示例QQ用户信息"""
-    return {
-        "openid": "test_openid_123",
-        "nickname": "测试用户",
-        "avatar": "http://example.com/avatar.jpg",
-        "unionid": "test_unionid_456"
-    }
+def security_policy(db):
+    """创建默认安全策略"""
+    policy = SecurityPolicy()
+    db.add(policy)
+    db.commit()
+    db.refresh(policy)
+    return policy
 
 
 @pytest.fixture
-def sample_email_data():
-    """示例邮件数据"""
-    return {
-        "receiver": "recipient@example.com",
-        "subject": "Test Subject",
-        "body": "This is a test email body.",
-        "sender": "sender@example.com",
-        "host": "smtp.example.com",
-        "port": "587"
-    }
+def test_department(db):
+    """创建测试部门"""
+    dept = Department(
+        name="测试部门",
+        sort=0,
+        status=0,
+    )
+    db.add(dept)
+    db.commit()
+    db.refresh(dept)
+    return dept
 
 
 @pytest.fixture
-def sample_ip_responses():
-    """示例IP API响应"""
-    return {
-        "api2_response": '{"data":{"address":"北京市 电信"}}',
-        "api1_response": '{"data":[{"location":"上海市 移动"}]}',
-        "error_response": '{"error":"not_found"}',
-        "empty_response": '{"data":[]}'
-    }
-
-
-@pytest.fixture
-def sample_time_data():
-    """示例时间数据"""
-    return {
-        "utc_time": "2023-12-07T12:00:00.000Z",
-        "beijing_time": "2023-12-07T20:00:00+08:00",
-        "ny_time": "2023-12-07T07:00:00-05:00"
-    }
-
-
-@pytest.fixture
-def error_responses():
-    """示例错误响应"""
-    return {
-        "integrity_error": "UNIQUE constraint failed: user.email",
-        "http_404": "Not Found",
-        "http_500": "Internal Server Error",
-        "validation_error": "field required",
-        "response_validation_error": "invalid response format"
-    }
-
-
-# 测试数据库配置
-@pytest.fixture(scope="session")
-def test_db_url():
-    """测试数据库URL"""
-    return "sqlite:///:memory:"
-
-
-@pytest.fixture(scope="session")
-def test_engine(test_db_url):
-    """创建测试数据库引擎"""
-    engine = create_engine(test_db_url, connect_args={"check_same_thread": False})
-    return engine
-
-
-@pytest.fixture
-def test_session(test_engine):
-    """创建测试数据库会话"""
-    SQLModel.metadata.create_all(test_engine)
-    session = Session(test_engine)
-    try:
-        yield session
-    finally:
-        session.close()
-        SQLModel.metadata.drop_all(test_engine)
-
-
-# 测试客户端
-@pytest.fixture
-def test_client(mock_app):
-    """创建测试客户端"""
-    return TestClient(mock_app)
-
-
-# 异步测试支持
-@pytest.fixture
-async def async_client(mock_app):
-    """创建异步测试客户端"""
-    from httpx import AsyncClient
-    async with AsyncClient(app=mock_app, base_url="http://test") as client:
-        yield client
-
-
-# Mock工具函数
-@pytest.fixture
-def mock_httpx_get():
-    """Mock httpx.get函数"""
-    with pytest.MonkeyPatch().context() as m:
-        mock_response = Mock()
-        mock_response.status_code = 200
-        mock_response.content.decode.return_value = '{"data": {"test": "value"}}'
-        mock_response.json.return_value = {"data": {"test": "value"}}
-        
-        def mock_get(*args, **kwargs):
-            return mock_response
-        
-        m.setattr("httpx.get", mock_get)
-        yield mock_response
-
-
-@pytest.fixture
-def mock_smtp():
-    """Mock SMTP服务器"""
-    with pytest.MonkeyPatch().context() as m:
-        mock_server = Mock()
-        mock_server.starttls = Mock()
-        mock_server.login = Mock()
-        mock_server.sendmail = Mock()
-        
-        def mock_smtp_server(*args, **kwargs):
-            return mock_server
-        
-        m.setattr("smtplib.SMTP", mock_smtp_server)
-        yield mock_server
-
-
-@pytest.fixture
-def mock_logger():
-    """Mock日志器"""
-    logger = Mock()
-    logger.info = Mock()
-    logger.error = Mock()
-    logger.warning = Mock()
-    logger.debug = Mock()
-    
-    return logger
-
-
-# 配置相关
-@pytest.fixture
-def temp_config_file():
-    """创建临时配置文件"""
-    import tempfile
-    import os
-    
-    config_content = """
-[test]
-string_value = "test_string"
-int_value = 123
-bool_value = true
-"""
-    
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.ini', delete=False) as f:
-        f.write(config_content)
-        temp_path = f.name
-    
-    yield temp_path
-    
-    # 清理
-    if os.path.exists(temp_path):
-        os.unlink(temp_path)
-
-
-# 环境变量管理
-@pytest.fixture
-def env_manager():
-    """环境变量管理器"""
-    import os
-    original_env = os.environ.copy()
-    
-    class EnvManager:
-        def set(self, key, value):
-            os.environ[key] = value
-        
-        def get(self, key, default=None):
-            return os.environ.get(key, default)
-        
-        def delete(self, key):
-            if key in os.environ:
-                del os.environ[key]
-        
-        def restore(self):
-            os.environ.clear()
-            os.environ.update(original_env)
-    
-    manager = EnvManager()
-    yield manager
-    manager.restore()
-
-
-# 测试数据生成器
-@pytest.fixture
-def data_generator():
-    """测试数据生成器"""
-    import uuid
-    import secrets
-    from datetime import datetime
-    
-    class DataGenerator:
-        def uuid(self):
-            return str(uuid.uuid4())
-        
-        def random_string(self, length=10):
-            return secrets.token_urlsafe(length)[:length]
-        
-        def email(self):
-            return f"{self.random_string()}@example.com"
-        
-        def phone(self):
-            return f"1{secrets.randbelow(9000000000) + 1000000000}"
-        
-        def datetime_str(self):
-            return datetime.now().isoformat()
-        
-        def password(self, length=12):
-            chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*"
-            return ''.join(secrets.choice(chars) for _ in range(length))
-    
-    return DataGenerator()
-
-
-# 断言辅助工具
-@pytest.fixture
-def assertions():
-    """断言辅助工具"""
-    class Assertions:
-        def assert_json_response(self, response, expected_code=200, expected_keys=None):
-            assert response.status_code == expected_code
-            json_data = response.json()
-            if expected_keys:
-                for key in expected_keys:
-                    assert key in json_data
-            return json_data
-        
-        def assert_time_within_range(self, actual_time, expected_time, tolerance_seconds=5):
-            from datetime import datetime, timedelta
-            if isinstance(actual_time, str):
-                actual_time = datetime.fromisoformat(actual_time.replace('Z', '+00:00'))
-            if isinstance(expected_time, str):
-                expected_time = datetime.fromisoformat(expected_time.replace('Z', '+00:00'))
-            
-            diff = abs(actual_time - expected_time)
-            assert diff.total_seconds() <= tolerance_seconds
-        
-        def assert_uuid_format(self, uuid_string):
-            import uuid as uuid_lib
-            try:
-                uuid_obj = uuid_lib.UUID(uuid_string)
-                assert str(uuid_obj) == uuid_string
-            except ValueError:
-                pytest.fail(f"Invalid UUID format: {uuid_string}")
-        
-        def assert_email_format(self, email):
-            import re
-            pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-            assert re.match(pattern, email), f"Invalid email format: {email}"
-        
-        def assert_password_strength(self, password):
-            assert len(password) >= 8, "Password too short"
-            assert any(c.isupper() for c in password), "Password missing uppercase"
-            assert any(c.islower() for c in password), "Password missing lowercase"
-            assert any(c.isdigit() for c in password), "Password missing digit"
-    
-    return Assertions()
+def test_role(db):
+    """创建测试角色"""
+    role = Role(
+        name="测试角色",
+        code="test_role",
+        status=0,
+        remark="用于测试的角色",
+    )
+    db.add(role)
+    db.commit()
+    db.refresh(role)
+    return role

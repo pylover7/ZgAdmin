@@ -8,7 +8,6 @@ from uuid import UUID
 
 from fastapi import APIRouter, Request, HTTPException, Query
 from fastapi.responses import FileResponse
-# from fastapi.websockets import WebSocketState
 from sqlalchemy.orm import selectinload
 from sqlalchemy import func
 from sqlmodel import select, col
