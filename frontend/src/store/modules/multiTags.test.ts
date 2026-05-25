@@ -52,8 +52,7 @@ vi.mock("@/router/utils", () => ({
 }));
 
 import { useMultiTagsStore } from "@/store/modules/multiTags";
-import { isUrl, isBoolean, isNumber, storageLocal } from "@pureadmin/utils";
-import { getConfig } from "@/config";
+import { isUrl, isBoolean } from "@pureadmin/utils";
 
 describe("store/modules/multiTags", () => {
   beforeEach(() => {
@@ -101,7 +100,9 @@ describe("store/modules/multiTags", () => {
     describe("equal mode", () => {
       it("replaces multiTags array", () => {
         const store = useMultiTagsStore();
-        store.handleTags("equal", [{ path: "/home", name: "Home", meta: {} }] as any);
+        store.handleTags("equal", [
+          { path: "/home", name: "Home", meta: {} }
+        ] as any);
         expect(store.multiTags).toHaveLength(1);
         expect(store.multiTags[0].path).toBe("/home");
       });
@@ -110,41 +111,65 @@ describe("store/modules/multiTags", () => {
     describe("push mode", () => {
       it("adds new tag", () => {
         const store = useMultiTagsStore();
-        store.handleTags("push", { path: "/home", name: "Home", meta: { title: "Home" } } as any);
+        store.handleTags("push", {
+          path: "/home",
+          name: "Home",
+          meta: { title: "Home" }
+        } as any);
         expect(store.multiTags).toHaveLength(1);
       });
 
       it("skips hidden tags", () => {
         const store = useMultiTagsStore();
-        store.handleTags("push", { path: "/hidden", name: "Hidden", meta: { hiddenTag: true, title: "Hidden" } } as any);
+        store.handleTags("push", {
+          path: "/hidden",
+          name: "Hidden",
+          meta: { hiddenTag: true, title: "Hidden" }
+        } as any);
         expect(store.multiTags).toHaveLength(0);
       });
 
       it("skips URL-named tags", () => {
         (isUrl as ReturnType<typeof vi.fn>).mockReturnValue(true);
         const store = useMultiTagsStore();
-        store.handleTags("push", { path: "/ext", name: "http://example.com", meta: { title: "Ext" } } as any);
+        store.handleTags("push", {
+          path: "/ext",
+          name: "http://example.com",
+          meta: { title: "Ext" }
+        } as any);
         expect(store.multiTags).toHaveLength(0);
         (isUrl as ReturnType<typeof vi.fn>).mockReturnValue(false);
       });
 
       it("skips tags with empty title", () => {
         const store = useMultiTagsStore();
-        store.handleTags("push", { path: "/empty", name: "Empty", meta: { title: "" } } as any);
+        store.handleTags("push", {
+          path: "/empty",
+          name: "Empty",
+          meta: { title: "" }
+        } as any);
         expect(store.multiTags).toHaveLength(0);
       });
 
       it("skips tags with showLink=false", () => {
-        (isBoolean as ReturnType<typeof vi.fn>).mockReturnValue(true);
+        vi.mocked(isBoolean).mockReturnValue(true);
         const store = useMultiTagsStore();
-        store.handleTags("push", { path: "/hidden", name: "Hidden", meta: { title: "Hidden", showLink: false } } as any);
+        store.handleTags("push", {
+          path: "/hidden",
+          name: "Hidden",
+          meta: { title: "Hidden", showLink: false }
+        } as any);
         expect(store.multiTags).toHaveLength(0);
-        (isBoolean as ReturnType<typeof vi.fn>).mockReturnValue(false);
+        vi.mocked(isBoolean).mockReturnValue(false);
       });
 
       it("skips duplicate tags (same path, query, params)", () => {
         const store = useMultiTagsStore();
-        const tag = { path: "/home", name: "Home", meta: { title: "Home" } } as any;
+        const tag = {
+          path: "/home",
+          name: "Home",
+          meta: { title: "Home" }
+        } as any;
         store.handleTags("push", tag);
         store.handleTags("push", tag);
         expect(store.multiTags).toHaveLength(1);
@@ -152,17 +177,41 @@ describe("store/modules/multiTags", () => {
 
       it("adds tag with different query", () => {
         const store = useMultiTagsStore();
-        store.handleTags("push", { path: "/home", name: "Home", meta: { title: "Home" }, query: { a: 1 } } as any);
-        store.handleTags("push", { path: "/home", name: "Home", meta: { title: "Home" }, query: { b: 2 } } as any);
+        store.handleTags("push", {
+          path: "/home",
+          name: "Home",
+          meta: { title: "Home" },
+          query: { a: 1 }
+        } as any);
+        store.handleTags("push", {
+          path: "/home",
+          name: "Home",
+          meta: { title: "Home" },
+          query: { b: 2 }
+        } as any);
         // isEqual mock returns false for different objects
         expect(store.multiTags).toHaveLength(2);
       });
 
       it("replaces first dynamic tag when limit reached", () => {
         const store = useMultiTagsStore();
-        store.handleTags("push", { path: "/dynamic", name: "D1", meta: { title: "D1", dynamicLevel: 2 } } as any);
-        store.handleTags("push", { path: "/dynamic", name: "D2", meta: { title: "D2", dynamicLevel: 2 }, query: { x: 1 } } as any);
-        store.handleTags("push", { path: "/dynamic", name: "D3", meta: { title: "D3", dynamicLevel: 2 }, query: { x: 2 } } as any);
+        store.handleTags("push", {
+          path: "/dynamic",
+          name: "D1",
+          meta: { title: "D1", dynamicLevel: 2 }
+        } as any);
+        store.handleTags("push", {
+          path: "/dynamic",
+          name: "D2",
+          meta: { title: "D2", dynamicLevel: 2 },
+          query: { x: 1 }
+        } as any);
+        store.handleTags("push", {
+          path: "/dynamic",
+          name: "D3",
+          meta: { title: "D3", dynamicLevel: 2 },
+          query: { x: 2 }
+        } as any);
         // Should have replaced the first one (dynamicLevel=2, so max 2 tags for same path)
         const dynamicTags = store.multiTags.filter(t => t.path === "/dynamic");
         expect(dynamicTags.length).toBeLessThanOrEqual(2);
@@ -172,23 +221,42 @@ describe("store/modules/multiTags", () => {
     describe("splice mode", () => {
       it("removes tag by path without position", () => {
         const store = useMultiTagsStore();
-        store.handleTags("push", { path: "/home", name: "Home", meta: { title: "Home" } } as any);
+        store.handleTags("push", {
+          path: "/home",
+          name: "Home",
+          meta: { title: "Home" }
+        } as any);
         store.handleTags("splice", "/home" as any);
         expect(store.multiTags).toHaveLength(0);
       });
 
       it("removes tag at position", () => {
         const store = useMultiTagsStore();
-        store.handleTags("push", { path: "/home", name: "Home", meta: { title: "Home" } } as any);
-        store.handleTags("push", { path: "/about", name: "About", meta: { title: "About" } } as any);
-        store.handleTags("splice", undefined as any, { startIndex: 0, length: 1 });
+        store.handleTags("push", {
+          path: "/home",
+          name: "Home",
+          meta: { title: "Home" }
+        } as any);
+        store.handleTags("push", {
+          path: "/about",
+          name: "About",
+          meta: { title: "About" }
+        } as any);
+        store.handleTags("splice", undefined as any, {
+          startIndex: 0,
+          length: 1
+        });
         expect(store.multiTags).toHaveLength(1);
         expect(store.multiTags[0].path).toBe("/about");
       });
 
       it("does nothing when path not found", () => {
         const store = useMultiTagsStore();
-        store.handleTags("push", { path: "/home", name: "Home", meta: { title: "Home" } } as any);
+        store.handleTags("push", {
+          path: "/home",
+          name: "Home",
+          meta: { title: "Home" }
+        } as any);
         store.handleTags("splice", "/nonexistent" as any);
         expect(store.multiTags).toHaveLength(1);
       });
@@ -197,8 +265,16 @@ describe("store/modules/multiTags", () => {
     describe("slice mode", () => {
       it("returns last tag", () => {
         const store = useMultiTagsStore();
-        store.handleTags("push", { path: "/home", name: "Home", meta: { title: "Home" } } as any);
-        store.handleTags("push", { path: "/about", name: "About", meta: { title: "About" } } as any);
+        store.handleTags("push", {
+          path: "/home",
+          name: "Home",
+          meta: { title: "Home" }
+        } as any);
+        store.handleTags("push", {
+          path: "/about",
+          name: "About",
+          meta: { title: "About" }
+        } as any);
         const result = store.handleTags("slice");
         expect(result).toHaveLength(1);
         expect(result[0].path).toBe("/about");

@@ -6,12 +6,13 @@ from datetime import timedelta, datetime
 from pathlib import Path
 from uuid import UUID
 
-from fastapi import APIRouter, Request, HTTPException, Query
+from fastapi import APIRouter, Request, HTTPException, Query, Depends
 from fastapi.responses import FileResponse
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import selectinload, InstrumentedAttribute
 from sqlalchemy import func
-from sqlmodel import select, col
+from sqlmodel import select, col, Session
 from jwt.exceptions import ExpiredSignatureError
+from typing import cast
 
 from app.controllers.department import deptController
 from app.controllers.user import userController
@@ -20,7 +21,7 @@ from app.models.login import CredentialsSchema, JWTPayload, JWTOut, refreshToken
     JWTReOut, QQLoginSchema
 from app.models.logs import LoginLog
 from app.models.security import SecurityPolicy
-from app.core.dependency import DependUser, DependRateLimit, SessionDep
+from app.core.dependency import DependUser, DependRateLimit, SessionDep, get_db
 from app.core.redis import get_redis
 from app.models import Api, Menu, Role, User, UpdatePassword, UpdateProfile, UpdatePreferences
 from app.models.file import File
@@ -199,7 +200,7 @@ async def get_user_menu(session: SessionDep, current_user: DependUser):
     statement = select(User).where(
         col(User.id) == current_user.id
     ).options(
-        selectinload(User.roles).selectinload(Role.menus)
+        selectinload(cast(InstrumentedAttribute, User.roles)).selectinload(cast(InstrumentedAttribute, Role.menus))
     )
     user_obj = session.exec(statement).first()
     if not user_obj:
@@ -235,7 +236,7 @@ async def get_user_api(session: SessionDep, current_user: DependUser):
     statement = select(User).where(
         col(User.id) == current_user.id
     ).options(
-        selectinload(User.roles).selectinload(Role.apis)
+        selectinload(cast(InstrumentedAttribute, User.roles)).selectinload(cast(InstrumentedAttribute, Role.apis))
     )
     user_obj = session.exec(statement).first()
     if not user_obj:
@@ -367,7 +368,7 @@ async def get_login_logs(
     total = session.exec(count_stmt).one()
     stmt = select(LoginLog).where(
         LoginLog.username == user.username
-    ).order_by(LoginLog.time.desc()).offset(offset).limit(pageSize)
+    ).order_by(col(LoginLog.time).desc()).offset(offset).limit(pageSize)
     logs = session.exec(stmt).all()
     list_data = []
     for log in logs:
@@ -385,7 +386,7 @@ async def get_qq_auth_url():
     app_id = base_config.get_config("login", "qq_app_id") or settings.QQ_APP_ID
     redirect_uri = base_config.get_config("login", "qq_redirect_uri") or settings.QQ_REDIRECT_URI
     qq_enabled = settings.FEATURE_QQ_LOGIN and (
-        base_config.get_config("login", "qq_enabled", fallback="false").lower() == "true")
+        (base_config.get_config("login", "qq_enabled", fallback="false") or "").lower() == "true")
 
     if not qq_enabled:
         return Fail(msg="QQ登录未启用")
@@ -488,7 +489,7 @@ async def download_file(
     file_id: UUID,
     expires: int = Query(..., description="过期时间戳"),
     sign: str = Query(..., description="签名"),
-    session: SessionDep = None,
+    session: Session | None = Depends(get_db),
 ):
     if not verify_signed_url(file_id, expires, sign):
         return Fail(msg="签名无效或已过期")

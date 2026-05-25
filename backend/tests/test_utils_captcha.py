@@ -88,7 +88,7 @@ class TestVerifyCaptcha:
         captcha_key, _ = await generate_captcha(redis)
         stored = await redis.get(f"{CAPTCHA_KEY_PREFIX}{captcha_key}")
         # 小写输入
-        result = await verify_captcha(redis, captcha_key, stored.lower())
+        result = await verify_captcha(redis, captcha_key, stored.lower() if stored else "")
         assert result is True
 
     @pytest.mark.asyncio

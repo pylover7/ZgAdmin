@@ -28,12 +28,20 @@ describe("api/user", () => {
 
   it("getLogin calls POST /api/v1/base/accessToken", () => {
     getLogin({ username: "admin", password: "123456" });
-    expect(mockRequest).toHaveBeenCalledWith("post", "/api/v1/base/accessToken", { data: { username: "admin", password: "123456" } });
+    expect(mockRequest).toHaveBeenCalledWith(
+      "post",
+      "/api/v1/base/accessToken",
+      { data: { username: "admin", password: "123456" } }
+    );
   });
 
   it("refreshTokenApi calls POST /api/v1/base/refreshToken", () => {
     refreshTokenApi({ refreshToken: "rt" });
-    expect(mockRequest).toHaveBeenCalledWith("post", "/api/v1/base/refreshToken", { data: { refreshToken: "rt" } });
+    expect(mockRequest).toHaveBeenCalledWith(
+      "post",
+      "/api/v1/base/refreshToken",
+      { data: { refreshToken: "rt" } }
+    );
   });
 
   it("getMine calls GET /api/v1/base/userinfo", () => {
@@ -43,12 +51,18 @@ describe("api/user", () => {
 
   it("updateProfile calls POST /api/v1/base/updateProfile", () => {
     updateProfile({ nickname: "new" });
-    expect(mockRequest).toHaveBeenCalledWith("post", "/api/v1/base/updateProfile", { data: { nickname: "new" } });
+    expect(mockRequest).toHaveBeenCalledWith(
+      "post",
+      "/api/v1/base/updateProfile",
+      { data: { nickname: "new" } }
+    );
   });
 
   it("updatePassword calls POST /api/v1/base/updatePwd", () => {
     updatePassword({ current_password: "old", new_password: "new" });
-    expect(mockRequest).toHaveBeenCalledWith("post", "/api/v1/base/updatePwd", { data: { current_password: "old", new_password: "new" } });
+    expect(mockRequest).toHaveBeenCalledWith("post", "/api/v1/base/updatePwd", {
+      data: { current_password: "old", new_password: "new" }
+    });
   });
 
   it("getPreferences calls GET /api/v1/base/preferences", () => {
@@ -58,12 +72,18 @@ describe("api/user", () => {
 
   it("updatePreferences calls POST /api/v1/base/updatePreferences", () => {
     updatePreferences({ notify_account: true });
-    expect(mockRequest).toHaveBeenCalledWith("post", "/api/v1/base/updatePreferences", { data: { notify_account: true } });
+    expect(mockRequest).toHaveBeenCalledWith(
+      "post",
+      "/api/v1/base/updatePreferences",
+      { data: { notify_account: true } }
+    );
   });
 
   it("getMineLogs calls GET /api/v1/base/loginLogs", () => {
     getMineLogs({ pageSize: 15, currentPage: 1 });
-    expect(mockRequest).toHaveBeenCalledWith("get", "/api/v1/base/loginLogs", { params: { pageSize: 15, currentPage: 1 } });
+    expect(mockRequest).toHaveBeenCalledWith("get", "/api/v1/base/loginLogs", {
+      params: { pageSize: 15, currentPage: 1 }
+    });
   });
 
   it("getQQAuthUrl calls GET /api/v1/base/qq/auth-url", () => {
@@ -73,6 +93,8 @@ describe("api/user", () => {
 
   it("qqLogin calls POST /api/v1/base/qq/login", () => {
     qqLogin({ code: "abc", state: "xyz" });
-    expect(mockRequest).toHaveBeenCalledWith("post", "/api/v1/base/qq/login", { data: { code: "abc", state: "xyz" } });
+    expect(mockRequest).toHaveBeenCalledWith("post", "/api/v1/base/qq/login", {
+      data: { code: "abc", state: "xyz" }
+    });
   });
 });

@@ -7,6 +7,7 @@ from sqlmodel import Session, SQLModel, create_engine, select
 from app.controllers.notice import noticeController
 from app.controllers.role import roleController
 from app.models import User, Role, Menu, Api, Notice, NoticeRead
+from app.models.enums import MethodType
 from app.models.notice import NoticeCreate, NoticeUpdate
 from app.models.role import RoleCreate
 from app.utils.password import get_password_hash
@@ -177,7 +178,7 @@ class TestRoleController:
     async def test_update_apis(self, ctrl_session):
         role = Role(name="API角色", code="api_role", status=0, remark="test")
         ctrl_session.add(role)
-        api = Api(path="/api/v1/test", method="GET", summary="测试", tags="test")
+        api = Api(path="/api/v1/test", method=MethodType.GET, summary="测试", tags="test")
         ctrl_session.add(api)
         ctrl_session.commit()
         ctrl_session.refresh(role)

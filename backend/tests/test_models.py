@@ -71,7 +71,7 @@ class TestResponseModels:
     def test_success_default(self):
         resp = Success()
         assert resp.status_code == 200
-        data = resp.body.decode()
+        data = bytes(resp.body).decode()
         assert '"code":200' in data
         assert '"success":true' in data
 

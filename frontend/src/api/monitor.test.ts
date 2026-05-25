@@ -17,21 +17,35 @@ describe("api/monitor", () => {
 
   it("getSystemStatus calls GET /api/v1/monitor/system/status", () => {
     monitorApi.getSystemStatus();
-    expect(mockRequest).toHaveBeenCalledWith("get", "/api/v1/monitor/system/status");
+    expect(mockRequest).toHaveBeenCalledWith(
+      "get",
+      "/api/v1/monitor/system/status"
+    );
   });
 
   it("getNetworkMonitor calls GET /api/v1/monitor/system/network without params", () => {
     monitorApi.getNetworkMonitor();
-    expect(mockRequest).toHaveBeenCalledWith("get", "/api/v1/monitor/system/network", { params: {} });
+    expect(mockRequest).toHaveBeenCalledWith(
+      "get",
+      "/api/v1/monitor/system/network",
+      { params: {} }
+    );
   });
 
   it("getNetworkMonitor calls GET /api/v1/monitor/system/network with iface param", () => {
     monitorApi.getNetworkMonitor("eth0");
-    expect(mockRequest).toHaveBeenCalledWith("get", "/api/v1/monitor/system/network", { params: { iface: "eth0" } });
+    expect(mockRequest).toHaveBeenCalledWith(
+      "get",
+      "/api/v1/monitor/system/network",
+      { params: { iface: "eth0" } }
+    );
   });
 
   it("getDiskIOMonitor calls GET /api/v1/monitor/system/disk-io", () => {
     monitorApi.getDiskIOMonitor();
-    expect(mockRequest).toHaveBeenCalledWith("get", "/api/v1/monitor/system/disk-io");
+    expect(mockRequest).toHaveBeenCalledWith(
+      "get",
+      "/api/v1/monitor/system/disk-io"
+    );
   });
 });

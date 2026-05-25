@@ -11,6 +11,11 @@ from app.models.role import RoleCreate
 from app.utils.password import get_password_hash
 
 
+# 用于不需要 UpdateSchema 的 CRUDBase 实例化
+class _DummyUpdateSchema(SQLModel):
+    pass
+
+
 # ─── 使用独立的内存 DB，避免与 conftest 冲突 ──────────────────────────
 @pytest.fixture(scope="module")
 def crud_engine():
@@ -50,7 +55,7 @@ def crud_session(crud_engine):
 class TestCRUDBaseUser:
     @pytest.fixture
     def user_crud(self):
-        return CRUDBase[User, UserCreate, None](User)
+        return CRUDBase[User, UserCreate, _DummyUpdateSchema](User)
 
     def _make_user_create(self, suffix: str) -> UserCreate:
         return UserCreate(
@@ -127,7 +132,7 @@ class TestCRUDBaseUser:
 class TestCRUDBaseRole:
     @pytest.fixture
     def role_crud(self):
-        return CRUDBase[Role, RoleCreate, None](Role)
+        return CRUDBase[Role, RoleCreate, _DummyUpdateSchema](Role)
 
     @pytest.mark.asyncio
     async def test_create_role(self, crud_session, role_crud):
@@ -157,7 +162,7 @@ class TestCRUDBaseRole:
 class TestCRUDBaseListFilter:
     @pytest.fixture
     def user_crud(self):
-        return CRUDBase[User, UserCreate, None](User)
+        return CRUDBase[User, UserCreate, _DummyUpdateSchema](User)
 
     def _make_user_create(self, suffix: str) -> UserCreate:
         return UserCreate(

@@ -75,7 +75,7 @@ class User(UserBase, TimestampMixin, table=True):
         default=None,
         nullable=True,
         description="锁定截止时间")
-    password_history: dict | None = Field(
+    password_history: list[str] | None = Field(
         default=None,
         sa_column=Column(JSON, nullable=True),
         description="最近N次密码hash列表")

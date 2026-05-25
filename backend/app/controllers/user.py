@@ -177,8 +177,10 @@ class UserController(CRUDBase[User, UserCreate, UserUpdate]):
         session.commit()
         return user
 
-    async def update_last_login(self, session: Session, pk: UUID):
+    async def update_last_login(self, session: Session, pk: UUID) -> User:
         user = session.get(User, pk)
+        if user is None:
+            raise HTTPException(status_code=404, detail="用户不存在")
         user.last_login = now(0)
         session.add(user)
         session.commit()

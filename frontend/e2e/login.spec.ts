@@ -8,7 +8,9 @@ test.describe("ZgAdmin E2E - Login Flow", () => {
   test("shows login page when not authenticated", async ({ page }) => {
     // Should redirect to login page
     await page.waitForURL(/\/login/, { timeout: 15000 });
-    await expect(page.locator(".login-container, .login, [class*='login']")).toBeVisible({ timeout: 10000 });
+    await expect(
+      page.locator(".login-container, .login, [class*='login']")
+    ).toBeVisible({ timeout: 10000 });
   });
 
   test("login page has username and password inputs", async ({ page }) => {
@@ -22,7 +24,11 @@ test.describe("ZgAdmin E2E - Login Flow", () => {
     await page.waitForURL(/\/login/, { timeout: 15000 });
 
     // Fill login form
-    const usernameInput = page.locator('input[type="text"], input[placeholder*="用户"], input[placeholder*="账号"]').first();
+    const usernameInput = page
+      .locator(
+        'input[type="text"], input[placeholder*="用户"], input[placeholder*="账号"]'
+      )
+      .first();
     const passwordInput = page.locator('input[type="password"]').first();
 
     if (await usernameInput.isVisible()) {
@@ -33,15 +39,21 @@ test.describe("ZgAdmin E2E - Login Flow", () => {
     }
 
     // Click login button
-    const loginBtn = page.locator('button[type="submit"], button:has-text("登录"), button:has-text("Login")').first();
+    const loginBtn = page
+      .locator(
+        'button[type="submit"], button:has-text("登录"), button:has-text("Login")'
+      )
+      .first();
     if (await loginBtn.isVisible()) {
       await loginBtn.click();
     }
 
     // Should navigate away from login page
-    await page.waitForURL(url => !url.toString().includes("/login"), { timeout: 15000 }).catch(() => {
-      // Login might fail in CI — that's OK for smoke test
-    });
+    await page
+      .waitForURL(url => !url.toString().includes("/login"), { timeout: 15000 })
+      .catch(() => {
+        // Login might fail in CI — that's OK for smoke test
+      });
   });
 });
 
@@ -54,7 +66,9 @@ test.describe("ZgAdmin E2E - Basic Navigation", () => {
     await page.goto("/");
     await page.waitForTimeout(3000);
     // Page should load without critical JS errors
-    const criticalErrors = errors.filter(e => !e.includes("ResizeObserver") && !e.includes("NetworkError"));
+    const criticalErrors = errors.filter(
+      e => !e.includes("ResizeObserver") && !e.includes("NetworkError")
+    );
     expect(criticalErrors.length).toBeLessThan(3);
   });
 

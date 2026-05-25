@@ -24,11 +24,13 @@ class TestValidateExtension:
     def test_disallowed_extension(self):
         ext, err = validate_extension("virus.exe")
         assert ext is None
+        assert err is not None
         assert "不允许" in err
 
     def test_no_extension(self):
         ext, err = validate_extension("Makefile")
         assert ext is None
+        assert err is not None
         assert "无扩展名" in err
 
     def test_empty_filename(self):

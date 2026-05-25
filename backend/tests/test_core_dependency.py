@@ -7,6 +7,7 @@ from fastapi import HTTPException
 
 from app.core.dependency import AuthControl, PermissionControl, RateLimiter
 from app.models import User, Role, Api
+from app.models.enums import MethodType
 from app.models.login import JWTPayload
 from app.utils.jwtt import create_access_token
 from app.utils.password import get_password_hash
@@ -98,7 +99,7 @@ class TestPermissionControl:
     async def test_user_with_permission_passes(self, db, normal_user, test_role):
         """有权限的角色访问 → 通过"""
         # 给角色添加 API 权限
-        api = Api(path="/api/v1/system/user/add", method="POST", summary="添加用户", tags="system")
+        api = Api(path="/api/v1/system/user/add", method=MethodType.POST, summary="添加用户", tags="system")
         db.add(api)
         test_role.apis.append(api)
         normal_user.roles.append(test_role)
@@ -116,7 +117,7 @@ class TestPermissionControl:
     async def test_user_without_specific_permission_raises_403(self, db, normal_user, test_role):
         """角色有权限但访问无权限的路由 → 403"""
         # 给角色添加一个不相关的 API
-        api = Api(path="/api/v1/system/role/list", method="POST", summary="角色列表", tags="system")
+        api = Api(path="/api/v1/system/role/list", method=MethodType.POST, summary="角色列表", tags="system")
         db.add(api)
         test_role.apis.append(api)
         normal_user.roles.append(test_role)

@@ -10,7 +10,13 @@ vi.mock("axios", () => ({
   default: mockAxios
 }));
 
-import { getConfig, setConfig, responsiveStorageNameSpace, paginationConf, getPlatformConfig } from "@/config";
+import {
+  getConfig,
+  setConfig,
+  responsiveStorageNameSpace,
+  paginationConf,
+  getPlatformConfig
+} from "@/config";
 
 describe("config", () => {
   beforeEach(() => {
@@ -129,18 +135,27 @@ describe("config", () => {
                 copyright: "2024",
                 icp: "ICP123"
               },
-              features: { qq_login: false, wechat_login: false, email: true, monitor_log: true },
+              features: {
+                qq_login: false,
+                wechat_login: false,
+                email: true,
+                monitor_log: true
+              },
               security: { captcha_enabled: true }
             }
           }
         });
 
-      const result = await getPlatformConfig(mockApp);
+      const _result = await getPlatformConfig(mockApp);
 
       expect(mockAxios).toHaveBeenCalledTimes(2);
       expect(mockApp.config.globalProperties.$config.Title).toBe("ZgAdmin");
-      expect(mockApp.config.globalProperties.$config.Features.qq_login).toBe(false);
-      expect(mockApp.config.globalProperties.$config.Security.captcha_enabled).toBe(true);
+      expect(mockApp.config.globalProperties.$config.Features.qq_login).toBe(
+        false
+      );
+      expect(
+        mockApp.config.globalProperties.$config.Security.captcha_enabled
+      ).toBe(true);
     });
 
     it("handles API failure gracefully", async () => {
@@ -155,8 +170,10 @@ describe("config", () => {
         })
         .mockRejectedValueOnce(new Error("API unavailable"));
 
-      const result = await getPlatformConfig(mockApp);
-      expect(mockApp.config.globalProperties.$config.Title).toBe("Platform Title");
+      const _result2 = await getPlatformConfig(mockApp);
+      expect(mockApp.config.globalProperties.$config.Title).toBe(
+        "Platform Title"
+      );
     });
 
     it("throws when platform-config.json is unavailable", async () => {

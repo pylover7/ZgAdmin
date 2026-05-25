@@ -91,25 +91,19 @@ describe("router/utils", () => {
     });
 
     it("assigns auto-rank when rank is missing for non-home routes", () => {
-      const routes = [
-        { name: "Other", path: "/other", meta: {} }
-      ];
+      const routes = [{ name: "Other", path: "/other", meta: {} }];
       const result = ascending(routes);
       expect(result[0].meta.rank).toBe(2); // index+2
     });
 
     it("does not assign auto-rank for Home route at path /", () => {
-      const routes = [
-        { name: "Home", path: "/", meta: { rank: 0 } }
-      ];
+      const routes = [{ name: "Home", path: "/", meta: { rank: 0 } }];
       const result = ascending(routes);
       expect(result[0].meta.rank).toBe(0);
     });
 
     it("assigns auto-rank when rank is 0 and not Home", () => {
-      const routes = [
-        { name: "Other", path: "/other", meta: { rank: 0 } }
-      ];
+      const routes = [{ name: "Other", path: "/other", meta: { rank: 0 } }];
       const result = ascending(routes);
       expect(result[0].meta.rank).toBe(2); // Gets auto-rank
     });
@@ -183,17 +177,23 @@ describe("router/utils", () => {
     });
 
     it("returns false when meta.auths is undefined", () => {
-      router.currentRoute.value.meta = {};
+      router.currentRoute.value.meta = { title: "" };
       expect(hasAuth("some-auth")).toBe(false);
     });
 
     it("returns true when string auth is in meta.auths", () => {
-      router.currentRoute.value.meta = { auths: ["system:user:add"] };
+      router.currentRoute.value.meta = {
+        title: "",
+        auths: ["system:user:add"]
+      };
       expect(hasAuth("system:user:add")).toBe(true);
     });
 
     it("returns false when string auth is not in meta.auths", () => {
-      router.currentRoute.value.meta = { auths: ["system:user:add"] };
+      router.currentRoute.value.meta = {
+        title: "",
+        auths: ["system:user:add"]
+      };
       expect(hasAuth("system:role:edit")).toBe(false);
     });
   });
@@ -205,7 +205,14 @@ describe("router/utils", () => {
 
     it("converts routes to two-stage format", () => {
       const routes = [
-        { path: "/", component: {}, name: "Layout", redirect: "/home", meta: {}, children: [] },
+        {
+          path: "/",
+          component: {},
+          name: "Layout",
+          redirect: "/home",
+          meta: {},
+          children: []
+        },
         { path: "/about", component: {}, name: "About", meta: {} }
       ] as any;
       const result = formatTwoStageRoutes(routes);
@@ -216,7 +223,14 @@ describe("router/utils", () => {
 
     it("preserves root route properties", () => {
       const routes = [
-        { path: "/", component: "cmp", name: "Root", redirect: "/home", meta: { title: "Root" }, children: [] }
+        {
+          path: "/",
+          component: "cmp",
+          name: "Root",
+          redirect: "/home",
+          meta: { title: "Root" },
+          children: []
+        }
       ] as any;
       const result = formatTwoStageRoutes(routes);
       expect(result[0].name).toBe("Root");
@@ -298,10 +312,7 @@ describe("router/utils", () => {
       const routes = [
         {
           path: "/system",
-          children: [
-            { path: "/system/user" },
-            { path: "/system/role" }
-          ]
+          children: [{ path: "/system/user" }, { path: "/system/role" }]
         }
       ] as any;
       const result = findRouteByPath("/system/user", routes);
@@ -318,9 +329,7 @@ describe("router/utils", () => {
   describe("filterNoPermissionTree", () => {
     it("returns filtered tree — empty roles filter out role-restricted routes", () => {
       // When current user has no roles, role-restricted routes are filtered out
-      const routes = [
-        { meta: {}, children: [] }
-      ] as any;
+      const routes = [{ meta: {}, children: [] }] as any;
       const result = filterNoPermissionTree(routes);
       // Routes without roles meta should still be present (isOneOfArray returns true)
       expect(result).toBeDefined();
@@ -330,25 +339,40 @@ describe("router/utils", () => {
   describe("handleAliveRoute", () => {
     it("add mode calls cacheOperate with add", () => {
       handleAliveRoute({ name: "Home" } as any, "add");
-      expect(mockCacheOperate).toHaveBeenCalledWith({ mode: "add", name: "Home" });
+      expect(mockCacheOperate).toHaveBeenCalledWith({
+        mode: "add",
+        name: "Home"
+      });
     });
 
     it("delete mode calls cacheOperate with delete", () => {
       handleAliveRoute({ name: "Home" } as any, "delete");
-      expect(mockCacheOperate).toHaveBeenCalledWith({ mode: "delete", name: "Home" });
+      expect(mockCacheOperate).toHaveBeenCalledWith({
+        mode: "delete",
+        name: "Home"
+      });
     });
 
     it("refresh mode calls cacheOperate with refresh", () => {
       handleAliveRoute({ name: "Home" } as any, "refresh");
-      expect(mockCacheOperate).toHaveBeenCalledWith({ mode: "refresh", name: "Home" });
+      expect(mockCacheOperate).toHaveBeenCalledWith({
+        mode: "refresh",
+        name: "Home"
+      });
     });
 
     it("default mode (no mode specified) calls delete then add after timeout", () => {
       vi.useFakeTimers();
       handleAliveRoute({ name: "Home" } as any);
-      expect(mockCacheOperate).toHaveBeenCalledWith({ mode: "delete", name: "Home" });
+      expect(mockCacheOperate).toHaveBeenCalledWith({
+        mode: "delete",
+        name: "Home"
+      });
       vi.advanceTimersByTime(100);
-      expect(mockCacheOperate).toHaveBeenCalledWith({ mode: "add", name: "Home" });
+      expect(mockCacheOperate).toHaveBeenCalledWith({
+        mode: "add",
+        name: "Home"
+      });
       vi.useRealTimers();
     });
   });
@@ -363,9 +387,7 @@ describe("router/utils", () => {
     });
 
     it("sets backstage=true in meta for all routes", () => {
-      const routes = [
-        { meta: {}, path: "/test", children: [] }
-      ] as any;
+      const routes = [{ meta: {}, path: "/test", children: [] }] as any;
       const result = addAsyncRoutes(routes);
       expect(result[0].meta.backstage).toBe(true);
     });

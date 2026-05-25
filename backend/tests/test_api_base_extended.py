@@ -4,6 +4,7 @@ from datetime import datetime, timedelta, timezone
 from unittest.mock import patch, AsyncMock
 
 from app.models import Menu, Role, Api
+from app.models.enums import MethodType
 from app.models.login import JWTPayload
 from app.utils.jwtt import create_access_token
 from app.utils.password import get_password_hash
@@ -66,7 +67,7 @@ class TestUserMenu:
 
 class TestUserApi:
     def test_superuser_gets_all_apis(self, client, admin_headers, admin_user, db):
-        api = Api(path="/api/v1/test", method="GET", summary="测试", tags="test")
+        api = Api(path="/api/v1/test", method=MethodType.GET, summary="测试", tags="test")
         db.add(api)
         db.commit()
 
