@@ -4,7 +4,7 @@
 
 编辑 `.env`：
 
-```env
+```bash
 PROJECT_NAME=我的系统
 ```
 
@@ -20,7 +20,7 @@ PROJECT_NAME=我的系统
 
 编辑 `.env`：
 
-```env
+```bash
 FIRST_SUPERUSER=admin
 FIRST_SUPERUSER_PASSWORD=my-new-password
 ```
@@ -54,7 +54,7 @@ DEFAULT_MENUS = [
 
 编辑 `.env`：
 
-```env
+```bash
 FEATURE_QQ_LOGIN=False          # 关闭 QQ 登录
 FEATURE_WECHAT_LOGIN=False      # 关闭微信登录
 FEATURE_EMAIL=False             # 关闭邮件发送
@@ -69,7 +69,7 @@ FEATURE_MONITOR_LOG=True        # 保留操作日志
 
 默认使用 SQLite（零配置）。切换到 PostgreSQL：
 
-```env
+```bash
 DB_SCHEME=postgresql
 DB_SERVER=localhost
 DB_PORT=5432
@@ -82,7 +82,7 @@ DB_PASSWORD=mypassword
 
 编辑 `.env`：
 
-```env
+```bash
 ACCESS_TOKEN_EXPIRE_MINUTES=120       # 访问令牌 2 小时
 REFRESH_TOKEN_EXPIRE_MINUTES=43200    # 刷新令牌 30 天
 ```
@@ -106,7 +106,7 @@ REFRESH_TOKEN_EXPIRE_MINUTES=43200    # 刷新令牌 30 天
 
 编辑 `.env`：
 
-```env
+```bash
 MAX_UPLOAD_SIZE=10485760  # 上传大小限制（字节），默认 10MB
 ```
 

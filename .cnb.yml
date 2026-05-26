@@ -1,6 +1,6 @@
 main:
-  # ===== 每日 9:00 依赖版本检测 =====
-  "crontab: 0 9 * * *":
+  # ===== 每周周一 9:00 依赖版本检测 =====
+  "crontab: 0 9 * * 1":
     - name: dependency-check
       docker:
         image: docker.cnb.cool/pylover/tools/zgadmin:env
@@ -42,7 +42,6 @@ $:
         - vscode
       imports:
         - https://cnb.cool/pylover/key/-/blob/main/deepseek.yml
-        - https://cnb.cool/pylover/Tools/KeJi_Key/-/blob/main/tapd.yml
       stages:
         - name: ls
           script: ls -la
@@ -60,7 +59,7 @@ $:
         - name: docker push
           script: docker push ${IMAGE_TAG}
 
-  web_trigger_vscode:
+  web_trigger_preview:
     - docker:
         image: docker.cnb.cool/pylover/tools/zgadmin:env
         volumes:
@@ -77,9 +76,6 @@ $:
             onlyPreview: true
             launch: bash ./scripts/preview.sh
             daemon: true
-      imports:
-        - https://cnb.cool/pylover/key/-/blob/main/deepseek.yml
-        - https://cnb.cool/pylover/Tools/KeJi_Key/-/blob/main/tapd.yml
       stages:
         - name: ls
           script: ls -la
@@ -96,3 +92,13 @@ $:
           image: cnbcool/codewiki:latest
           settings:
             git_doc_dir: /data/codewiki/${CNB_REPO_SLUG}
+
+    - docker:
+        image: docker.cnb.cool/pylover/tools/zgadmin:env
+        volumes:
+          - ./docs/node_modules:rw
+      imports:
+        - https://cnb.cool/pylover/key/-/blob/main/edgeone.yml
+      stages:
+        - name: deploy docs
+          script: bash scripts/deploy-docs.sh

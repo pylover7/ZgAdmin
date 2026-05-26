@@ -123,7 +123,7 @@ POST /api/v1/settings/login
 
 也可以通过环境变量控制功能开关（需要重启）：
 
-```env
+```bash
 FEATURE_QQ_LOGIN=False          # 关闭 QQ 登录
 FEATURE_WECHAT_LOGIN=False      # 关闭微信登录
 FEATURE_EMAIL=False             # 关闭邮件发送
