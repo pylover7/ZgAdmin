@@ -71,7 +71,12 @@ describe("sso", () => {
     expect(sso.length).toBe(0); // SSO not detected
 
     // Case 3: Extra params
-    const params3 = { username: "admin", roles: "admin", accessToken: "token", extra: "val" };
+    const params3 = {
+      username: "admin",
+      roles: "admin",
+      accessToken: "token",
+      extra: "val"
+    };
     expect(Object.keys(params3).length).not.toBe(must.length); // Won't pass the first check
   });
 
@@ -81,8 +86,15 @@ describe("sso", () => {
 
     // If params have different number of keys, IIFE returns early
     expect(Object.keys({ username: "a" }).length).not.toBe(mustLength);
-    expect(Object.keys({ username: "a", roles: "b" }).length).not.toBe(mustLength);
-    expect(Object.keys({ username: "a", roles: "b", accessToken: "c" }).length).toBe(mustLength);
-    expect(Object.keys({ username: "a", roles: "b", accessToken: "c", extra: "d" }).length).not.toBe(mustLength);
+    expect(Object.keys({ username: "a", roles: "b" }).length).not.toBe(
+      mustLength
+    );
+    expect(
+      Object.keys({ username: "a", roles: "b", accessToken: "c" }).length
+    ).toBe(mustLength);
+    expect(
+      Object.keys({ username: "a", roles: "b", accessToken: "c", extra: "d" })
+        .length
+    ).not.toBe(mustLength);
   });
 });

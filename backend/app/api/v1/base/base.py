@@ -197,11 +197,8 @@ async def get_userinfo(session: SessionDep, current_user: DependUser):
 
 @router.get("/userMenu", summary="查看用户菜单")
 async def get_user_menu(session: SessionDep, current_user: DependUser):
-    statement = select(User).where(
-        col(User.id) == current_user.id
-    ).options(
-        selectinload(cast(InstrumentedAttribute, User.roles)).selectinload(cast(InstrumentedAttribute, Role.menus))
-    )
+    statement = select(User).where(col(User.id) == current_user.id).options(selectinload(
+        cast(InstrumentedAttribute, User.roles)).selectinload(cast(InstrumentedAttribute, Role.menus)))
     user_obj = session.exec(statement).first()
     if not user_obj:
         return FailAuth(msg="用户不存在或已被删除！")
@@ -233,11 +230,8 @@ async def get_user_menu(session: SessionDep, current_user: DependUser):
 
 @router.get("/userApi", summary="查看用户API")
 async def get_user_api(session: SessionDep, current_user: DependUser):
-    statement = select(User).where(
-        col(User.id) == current_user.id
-    ).options(
-        selectinload(cast(InstrumentedAttribute, User.roles)).selectinload(cast(InstrumentedAttribute, Role.apis))
-    )
+    statement = select(User).where(col(User.id) == current_user.id).options(selectinload(
+        cast(InstrumentedAttribute, User.roles)).selectinload(cast(InstrumentedAttribute, Role.apis)))
     user_obj = session.exec(statement).first()
     if not user_obj:
         return FailAuth(msg="用户不存在或已被删除！")
@@ -481,7 +475,6 @@ async def qq_login(session: SessionDep, qq_login_data: QQLoginSchema):
     except Exception as e:
         logger.error(f"QQ登录失败: {str(e)}")
         return FailAuth(msg="QQ登录失败，请稍后重试")
-
 
 
 @router.get("/file/download/{file_id}", summary="下载文件（签名URL）")

@@ -42,9 +42,7 @@ describe("tree utils", () => {
     });
 
     it("deletes children when only one child exists and builds uniqueId", () => {
-      const tree = [
-        { children: [{ name: "only" }], title: "parent" }
-      ];
+      const tree = [{ children: [{ name: "only" }], title: "parent" }];
       const result = deleteChildren(tree);
       expect(result[0].children).toBeUndefined();
       expect(result[0].id).toBe(0);
@@ -62,10 +60,7 @@ describe("tree utils", () => {
     it("builds uniqueId with pathList for nested nodes", () => {
       const tree = [
         {
-          children: [
-            { name: "a" },
-            { name: "b", children: [{ name: "c" }] }
-          ],
+          children: [{ name: "a" }, { name: "b", children: [{ name: "c" }] }],
           title: "parent"
         }
       ];
@@ -93,9 +88,7 @@ describe("tree utils", () => {
     });
 
     it("builds hierarchy for nested tree", () => {
-      const tree = [
-        { name: "root", children: [{ name: "child" }] }
-      ];
+      const tree = [{ name: "root", children: [{ name: "child" }] }];
       const result = buildHierarchyTree(tree);
       expect(result[0].pathList).toEqual([0]);
       expect(result[0].children[0].pathList).toEqual([0, 0]);
@@ -138,9 +131,7 @@ describe("tree utils", () => {
     });
 
     it("appends fields to nested node", () => {
-      const tree = [
-        { uniqueId: "a", children: [{ uniqueId: "b" }] }
-      ];
+      const tree = [{ uniqueId: "a", children: [{ uniqueId: "b" }] }];
       const result = appendFieldByUniqueId(tree, "b", { flag: 1 });
       expect(result[0].children[0].flag).toBe(1);
     });
@@ -201,9 +192,27 @@ describe("tree utils", () => {
 
     it("groups APIs by tags", () => {
       const data = [
-        { id: "1", method: "GET", path: "/api/users", summary: "List users", tags: "user" },
-        { id: "2", method: "POST", path: "/api/users", summary: "Create user", tags: "user" },
-        { id: "3", method: "GET", path: "/api/roles", summary: "List roles", tags: "role" }
+        {
+          id: "1",
+          method: "GET",
+          path: "/api/users",
+          summary: "List users",
+          tags: "user"
+        },
+        {
+          id: "2",
+          method: "POST",
+          path: "/api/users",
+          summary: "Create user",
+          tags: "user"
+        },
+        {
+          id: "3",
+          method: "GET",
+          path: "/api/roles",
+          summary: "List roles",
+          tags: "role"
+        }
       ];
       const result = buildApiTree(data);
       expect(result).toHaveLength(2);

@@ -16,7 +16,12 @@ vi.mock("@/layout/types", () => ({
 
 vi.mock("@pureadmin/utils", () => ({
   storageLocal: vi.fn(() => ({
-    getItem: vi.fn(() => ({ sidebarStatus: true, layout: "vertical", epThemeColor: "#409eff", theme: "light" })),
+    getItem: vi.fn(() => ({
+      sidebarStatus: true,
+      layout: "vertical",
+      epThemeColor: "#409eff",
+      theme: "light"
+    })),
     setItem: mockSetItem,
     removeItem: vi.fn()
   })),

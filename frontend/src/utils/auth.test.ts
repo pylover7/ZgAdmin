@@ -51,15 +51,25 @@ describe("auth utils", () => {
 
   describe("getToken", () => {
     it("returns parsed cookie value when cookie exists", () => {
-      const tokenData = { accessToken: "test", expires: 123, refreshToken: "refresh" };
-      (Cookies.get as ReturnType<typeof vi.fn>).mockReturnValue(JSON.stringify(tokenData));
+      const tokenData = {
+        accessToken: "test",
+        expires: 123,
+        refreshToken: "refresh"
+      };
+      (Cookies.get as ReturnType<typeof vi.fn>).mockReturnValue(
+        JSON.stringify(tokenData)
+      );
       const result = getToken();
       expect(result).toEqual(tokenData);
     });
 
     it("falls back to localStorage when cookie does not exist", () => {
       (Cookies.get as ReturnType<typeof vi.fn>).mockReturnValue(undefined);
-      const localData = { accessToken: "local", expires: 456, refreshToken: "r2" };
+      const localData = {
+        accessToken: "local",
+        expires: 456,
+        refreshToken: "r2"
+      };
       (storageLocal as ReturnType<typeof vi.fn>).mockReturnValue({
         getItem: vi.fn(() => localData)
       });
@@ -110,7 +120,11 @@ describe("auth utils", () => {
       };
 
       (storageLocal as ReturnType<typeof vi.fn>).mockReturnValue({
-        getItem: vi.fn(() => ({ username: "cached", roles: ["r"], permissions: [] })),
+        getItem: vi.fn(() => ({
+          username: "cached",
+          roles: ["r"],
+          permissions: []
+        })),
         setItem: vi.fn()
       });
 
@@ -137,11 +151,9 @@ describe("auth utils", () => {
       });
 
       setToken(data);
-      expect(Cookies.set).toHaveBeenCalledWith(
-        multipleTabsKey,
-        "true",
-        { expires: 30 }
-      );
+      expect(Cookies.set).toHaveBeenCalledWith(multipleTabsKey, "true", {
+        expires: 30
+      });
     });
   });
 

@@ -127,23 +127,31 @@ describe("HTTP PureHttp", () => {
   describe("request interceptor - whitelist URLs", () => {
     it("skips token for /refreshToken URLs", async () => {
       mockGetToken.mockReturnValue(null);
-      try { await http.request("post", "/api/v1/base/refreshToken"); } catch {}
+      try {
+        await http.request("post", "/api/v1/base/refreshToken");
+      } catch {}
       // Whitelist URLs should not trigger getToken-based token attachment
     });
 
     it("skips token for /accessToken URLs", async () => {
       mockGetToken.mockReturnValue(null);
-      try { await http.request("post", "/api/v1/base/accessToken"); } catch {}
+      try {
+        await http.request("post", "/api/v1/base/accessToken");
+      } catch {}
     });
 
     it("skips token for /base/init URLs", async () => {
       mockGetToken.mockReturnValue(null);
-      try { await http.request("get", "/api/v1/base/init"); } catch {}
+      try {
+        await http.request("get", "/api/v1/base/init");
+      } catch {}
     });
 
     it("skips token for /base/captcha URLs", async () => {
       mockGetToken.mockReturnValue(null);
-      try { await http.request("get", "/api/v1/base/captcha"); } catch {}
+      try {
+        await http.request("get", "/api/v1/base/captcha");
+      } catch {}
     });
   });
 
@@ -168,7 +176,9 @@ describe("HTTP PureHttp", () => {
         expires: futureTime,
         refreshToken: "refresh-token"
       });
-      try { await http.request("get", "/api/v1/system/user/list"); } catch {}
+      try {
+        await http.request("get", "/api/v1/system/user/list");
+      } catch {}
       expect(mockFormatToken).toHaveBeenCalledWith("valid-token");
     });
 
@@ -180,16 +190,26 @@ describe("HTTP PureHttp", () => {
         refreshToken: "old-refresh"
       });
       mockHandRefreshToken.mockResolvedValue({
-        data: { accessToken: "new-token", refreshToken: "new-refresh", expires: new Date() }
+        data: {
+          accessToken: "new-token",
+          refreshToken: "new-refresh",
+          expires: new Date()
+        }
       });
-      try { await http.request("get", "/api/v1/system/user/list"); } catch {}
-      expect(mockHandRefreshToken).toHaveBeenCalledWith({ refreshToken: "old-refresh" });
+      try {
+        await http.request("get", "/api/v1/system/user/list");
+      } catch {}
+      expect(mockHandRefreshToken).toHaveBeenCalledWith({
+        refreshToken: "old-refresh"
+      });
     });
 
     it("does not call formatToken when getToken returns null", async () => {
       mockGetToken.mockReturnValue(null);
       mockFormatToken.mockClear();
-      try { await http.request("get", "/api/v1/system/user/list"); } catch {}
+      try {
+        await http.request("get", "/api/v1/system/user/list");
+      } catch {}
       expect(mockFormatToken).not.toHaveBeenCalled();
     });
   });
@@ -198,14 +218,24 @@ describe("HTTP PureHttp", () => {
     it("post delegates to request", () => {
       const spy = vi.spyOn(http, "request").mockResolvedValue({} as any);
       http.post("/test", { data: { key: "value" } });
-      expect(spy).toHaveBeenCalledWith("post", "/test", { data: { key: "value" } }, undefined);
+      expect(spy).toHaveBeenCalledWith(
+        "post",
+        "/test",
+        { data: { key: "value" } },
+        undefined
+      );
       spy.mockRestore();
     });
 
     it("get delegates to request", () => {
       const spy = vi.spyOn(http, "request").mockResolvedValue({} as any);
       http.get("/test", { params: { q: 1 } });
-      expect(spy).toHaveBeenCalledWith("get", "/test", { params: { q: 1 } }, undefined);
+      expect(spy).toHaveBeenCalledWith(
+        "get",
+        "/test",
+        { params: { q: 1 } },
+        undefined
+      );
       spy.mockRestore();
     });
   });

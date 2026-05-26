@@ -15,8 +15,12 @@ describe("mitt emitter", () => {
   it("supports multiple event types", () => {
     let tagValue = "";
     let logoValue = false;
-    emitter.on("tagOnClick", (val: string) => { tagValue = val; });
-    emitter.on("logoChange", (val: boolean) => { logoValue = val; });
+    emitter.on("tagOnClick", (val: string) => {
+      tagValue = val;
+    });
+    emitter.on("logoChange", (val: boolean) => {
+      logoValue = val;
+    });
 
     emitter.emit("tagOnClick", "tag1");
     emitter.emit("logoChange", true);

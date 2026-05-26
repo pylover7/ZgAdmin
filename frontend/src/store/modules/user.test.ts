@@ -139,7 +139,10 @@ describe("store/modules/user", () => {
         data: { accessToken: "at", refreshToken: "rt", expires: new Date() }
       });
       const store = useUserStore();
-      const result = await store.loginByUsername({ username: "admin", password: "123456" });
+      const result = await store.loginByUsername({
+        username: "admin",
+        password: "123456"
+      });
       expect(setToken).toHaveBeenCalled();
       expect(result.success).toBe(true);
     });
@@ -147,7 +150,10 @@ describe("store/modules/user", () => {
     it("does not call setToken on failed login", async () => {
       mockGetLogin.mockResolvedValue({ success: false, msg: "wrong password" });
       const store = useUserStore();
-      const result = await store.loginByUsername({ username: "admin", password: "wrong" });
+      const result = await store.loginByUsername({
+        username: "admin",
+        password: "wrong"
+      });
       expect(setToken).not.toHaveBeenCalled();
       expect(result.success).toBe(false);
     });
@@ -155,7 +161,9 @@ describe("store/modules/user", () => {
     it("rejects on API error", async () => {
       mockGetLogin.mockRejectedValue(new Error("Network error"));
       const store = useUserStore();
-      await expect(store.loginByUsername({ username: "admin" })).rejects.toThrow("Network error");
+      await expect(
+        store.loginByUsername({ username: "admin" })
+      ).rejects.toThrow("Network error");
     });
   });
 
@@ -193,7 +201,11 @@ describe("store/modules/user", () => {
   describe("handRefreshToken", () => {
     it("calls setToken on successful refresh", async () => {
       mockRefreshToken.mockResolvedValue({
-        data: { accessToken: "new-at", refreshToken: "new-rt", expires: new Date() }
+        data: {
+          accessToken: "new-at",
+          refreshToken: "new-rt",
+          expires: new Date()
+        }
       });
       const store = useUserStore();
       await store.handRefreshToken({ refreshToken: "old-rt" });

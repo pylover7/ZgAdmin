@@ -62,7 +62,9 @@ describe("localforage StorageProxy", () => {
     it("rejects on error", async () => {
       mockStorage.setItem.mockRejectedValue(new Error("Write error"));
       const store = localForage();
-      await expect(store.setItem("key", "value")).rejects.toThrow("Write error");
+      await expect(store.setItem("key", "value")).rejects.toThrow(
+        "Write error"
+      );
     });
   });
 

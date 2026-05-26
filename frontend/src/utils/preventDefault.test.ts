@@ -21,9 +21,11 @@ describe("preventDefault", () => {
 
   it("keydown listener prevents F12", async () => {
     const listeners: Array<{ event: string; handler: Function }> = [];
-    mockUseEventListener.mockImplementation((_target: any, event: string, handler: Function) => {
-      listeners.push({ event, handler });
-    });
+    mockUseEventListener.mockImplementation(
+      (_target: any, event: string, handler: Function) => {
+        listeners.push({ event, handler });
+      }
+    );
 
     const { addPreventDefault } = await import("@/utils/preventDefault");
     addPreventDefault();
@@ -38,9 +40,11 @@ describe("preventDefault", () => {
 
   it("keydown listener does not prevent non-F12 keys", async () => {
     const listeners: Array<{ event: string; handler: Function }> = [];
-    mockUseEventListener.mockImplementation((_target: any, event: string, handler: Function) => {
-      listeners.push({ event, handler });
-    });
+    mockUseEventListener.mockImplementation(
+      (_target: any, event: string, handler: Function) => {
+        listeners.push({ event, handler });
+      }
+    );
 
     const { addPreventDefault } = await import("@/utils/preventDefault");
     addPreventDefault();
@@ -53,9 +57,11 @@ describe("preventDefault", () => {
 
   it("contextmenu listener prevents default", async () => {
     const listeners: Array<{ event: string; handler: Function }> = [];
-    mockUseEventListener.mockImplementation((_target: any, event: string, handler: Function) => {
-      listeners.push({ event, handler });
-    });
+    mockUseEventListener.mockImplementation(
+      (_target: any, event: string, handler: Function) => {
+        listeners.push({ event, handler });
+      }
+    );
 
     const { addPreventDefault } = await import("@/utils/preventDefault");
     addPreventDefault();
@@ -70,9 +76,11 @@ describe("preventDefault", () => {
 
   it("selectstart listener prevents default", async () => {
     const listeners: Array<{ event: string; handler: Function }> = [];
-    mockUseEventListener.mockImplementation((_target: any, event: string, handler: Function) => {
-      listeners.push({ event, handler });
-    });
+    mockUseEventListener.mockImplementation(
+      (_target: any, event: string, handler: Function) => {
+        listeners.push({ event, handler });
+      }
+    );
 
     const { addPreventDefault } = await import("@/utils/preventDefault");
     addPreventDefault();
@@ -87,9 +95,11 @@ describe("preventDefault", () => {
 
   it("dragstart listener is registered", async () => {
     const listeners: Array<{ event: string; handler: Function }> = [];
-    mockUseEventListener.mockImplementation((_target: any, event: string, handler: Function) => {
-      listeners.push({ event, handler });
-    });
+    mockUseEventListener.mockImplementation(
+      (_target: any, event: string, handler: Function) => {
+        listeners.push({ event, handler });
+      }
+    );
 
     const { addPreventDefault } = await import("@/utils/preventDefault");
     addPreventDefault();

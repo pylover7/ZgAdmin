@@ -86,7 +86,7 @@ function handleExceed() {
             v-model="form.file_type"
             :placeholder="transformI18n('system.file.fileTypePlaceholder')"
             clearable
-            class="!w-[150px]"
+            class="w-37.5!"
           >
             <el-option
               v-for="item in fileTypeOptions"
