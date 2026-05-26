@@ -9,7 +9,8 @@ from sqlmodel import select
 
 from app.models.login import JWTPayload
 from app.settings import settings
-from app.settings.config import base_config
+from app.core.database import DatabaseSession
+from app.models.config import OAuthConfig
 from app.models import User
 from app.models.login import QQAccessToken, QQUserInfo
 from app.settings.log import logger
@@ -46,10 +47,12 @@ def decode_access_token(token: str) -> JWTPayload:
 
 async def get_qq_access_token(code: str) -> QQAccessToken:
     """使用授权码获取access_token"""
-    # 优先读取运行时配置（管理后台设置），否则回退到 settings 默认值
-    app_id = base_config.get_config("login", "qq_app_id") or settings.QQ_APP_ID
-    app_key = base_config.get_config("login", "qq_app_key") or settings.QQ_APP_KEY
-    redirect_uri = base_config.get_config("login", "qq_redirect_uri") or settings.QQ_REDIRECT_URI
+    with DatabaseSession() as session:
+        oauth_config = session.exec(select(OAuthConfig)).first()
+
+    app_id = (oauth_config.qq_app_id if oauth_config and oauth_config.qq_app_id else None) or settings.QQ_APP_ID
+    app_key = (oauth_config.qq_app_key if oauth_config and oauth_config.qq_app_key else None) or settings.QQ_APP_KEY
+    redirect_uri = (oauth_config.qq_redirect_uri if oauth_config and oauth_config.qq_redirect_uri else None) or settings.QQ_REDIRECT_URI
 
     # URL编码确保参数安全
     encoded_redirect_uri = urllib.parse.quote(redirect_uri, safe='')
@@ -95,7 +98,10 @@ async def get_qq_access_token(code: str) -> QQAccessToken:
 
 async def get_qq_userinfo(access_token: str, openid: str) -> QQUserInfo:
     """获取QQ用户信息"""
-    app_id = base_config.get_config("login", "qq_app_id") or settings.QQ_APP_ID
+    with DatabaseSession() as session:
+        oauth_config = session.exec(select(OAuthConfig)).first()
+
+    app_id = (oauth_config.qq_app_id if oauth_config and oauth_config.qq_app_id else None) or settings.QQ_APP_ID
 
     userinfo_url = (
         f"https://graph.qq.com/user/get_user_info?"

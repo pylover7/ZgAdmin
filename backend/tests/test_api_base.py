@@ -54,7 +54,7 @@ class TestCaptcha:
 
 
 class TestInitConfig:
-    def test_get_init_config(self, client, security_policy):
+    def test_get_init_config(self, client, security_policy, site_config, oauth_config):
         resp = client.get("/api/v1/base/init")
         assert resp.status_code == 200
         data = resp.json()["data"]

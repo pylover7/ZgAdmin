@@ -23,6 +23,7 @@ from app.models import (  # noqa: F401
     LoginLog, OperationLog, SystemLog,
     Notice, NoticeRead,
     SecurityPolicy, IPRule,
+    SiteConfig, OAuthConfig, EmailConfig,
     UserRoleLink, RoleMenuLink, RoleApiLink,
 )
 from app.models.base import Success, Fail, SuccessExtra, FailAuth
@@ -216,6 +217,36 @@ def security_policy(db):
     db.commit()
     db.refresh(policy)
     return policy
+
+
+@pytest.fixture
+def site_config(db):
+    """创建默认站点配置"""
+    config = SiteConfig()
+    db.add(config)
+    db.commit()
+    db.refresh(config)
+    return config
+
+
+@pytest.fixture
+def oauth_config(db):
+    """创建默认 OAuth 配置"""
+    config = OAuthConfig()
+    db.add(config)
+    db.commit()
+    db.refresh(config)
+    return config
+
+
+@pytest.fixture
+def email_config(db):
+    """创建默认邮件配置"""
+    config = EmailConfig()
+    db.add(config)
+    db.commit()
+    db.refresh(config)
+    return config
 
 
 @pytest.fixture

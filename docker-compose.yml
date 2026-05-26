@@ -7,6 +7,8 @@ services:
     restart: unless-stopped
     environment:
       - ENVIRONMENT=production
+      # CORS 允许的域名（生产环境必须配置，不可为 *）
+      - BACKEND_CORS_ORIGINS=https://your-domain.com,https://admin.your-domain.com
       # 数据库：默认 SQLite（零配置启动），取消注释切换 PostgreSQL
       - DB_SCHEME=sqlite
       # - DB_SCHEME=postgresql
@@ -17,7 +19,6 @@ services:
       # - DB_PASSWORD=changethis
     volumes:
       - zgadmin_data:/backend/static
-      - zgadmin_config:/backend/config
     depends_on:
       postgres:
         condition: service_healthy
@@ -66,6 +67,5 @@ services:
 
 volumes:
   zgadmin_data:
-  zgadmin_config:
   pgdata:
   redisdata:

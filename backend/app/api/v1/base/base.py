@@ -25,8 +25,8 @@ from app.core.redis import get_redis
 from app.models import Api, Menu, Role, User, UpdatePassword, UpdateProfile, UpdatePreferences
 from app.models.file import File
 from app.models.base import Fail, Success, FailAuth, SuccessExtra
+from app.controllers.config import siteConfigController, oauthConfigController, securityPolicyController
 from app.settings import settings
-from app.settings.config import base_config
 from app.utils import menuTree
 from app.utils.captcha import generate_captcha, verify_captcha
 from app.utils.jwtt import create_access_token, decode_access_token, \
@@ -54,24 +54,26 @@ async def get_captcha():
 async def get_init_config(session: SessionDep):
     """一次性返回前端初始化所需的所有公开数据：站点信息、功能开关、安全配置"""
     # 站点信息
-    site = {
-        "site_name": base_config.get_config("general", "site_name", fallback="ZgAdmin"),
-        "site_desc": base_config.get_config("general", "site_desc", fallback="一个开源的在线工具箱"),
-        "logo": base_config.get_config("general", "logo", fallback=""),
-        "default_lang": base_config.get_config("general", "default_lang", fallback="zh-CN"),
-        "copyright": base_config.get_config("general", "copyright", fallback=""),
-        "icp": base_config.get_config("general", "icp", fallback=""),
+    site_config = siteConfigController.get(session)
+    site = (await site_config.to_dict()) if site_config else {
+        "site_name": "ZgAdmin",
+        "site_desc": "一个开源的在线工具箱",
+        "logo": "",
+        "default_lang": "zh-CN",
+        "copyright": "",
+        "icp": "",
     }
     # 功能开关
+    oauth_config = oauthConfigController.get(session)
     features = {
-        "qq_login": settings.FEATURE_QQ_LOGIN and bool(
-            base_config.get_config("login", "qq_app_id") or settings.QQ_APP_ID),
+        "qq_login": settings.FEATURE_QQ_LOGIN and (
+            bool(oauth_config.qq_app_id) if oauth_config else bool(settings.QQ_APP_ID)),
         "wechat_login": settings.FEATURE_WECHAT_LOGIN,
         "email": settings.FEATURE_EMAIL,
         "monitor_log": settings.FEATURE_MONITOR_LOG,
     }
     # 安全配置
-    policy = session.exec(select(SecurityPolicy)).first()
+    policy = securityPolicyController.get(session)
     security = {
         "captcha_enabled": policy.captcha_enabled if policy else True,
     }
@@ -398,13 +400,13 @@ async def get_login_logs(
 
 
 @router.get("/qq/auth-url", summary="获取QQ授权链接")
-async def get_qq_auth_url():
+async def get_qq_auth_url(session: SessionDep):
     """获取QQ登录授权URL"""
-    # 优先读取运行时配置（管理后台设置），否则回退到 settings 默认值
-    app_id = base_config.get_config("login", "qq_app_id") or settings.QQ_APP_ID
-    redirect_uri = base_config.get_config("login", "qq_redirect_uri") or settings.QQ_REDIRECT_URI
+    oauth_config = oauthConfigController.get(session)
+    app_id = (oauth_config.qq_app_id if oauth_config and oauth_config.qq_app_id else None) or settings.QQ_APP_ID
+    redirect_uri = (oauth_config.qq_redirect_uri if oauth_config and oauth_config.qq_redirect_uri else None) or settings.QQ_REDIRECT_URI
     qq_enabled = settings.FEATURE_QQ_LOGIN and (
-        (base_config.get_config("login", "qq_enabled", fallback="false") or "").lower() == "true")
+        oauth_config.qq_enabled if oauth_config else False)
 
     if not qq_enabled:
         return Fail(msg="QQ登录未启用")

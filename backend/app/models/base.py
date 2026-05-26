@@ -8,6 +8,17 @@ from fastapi.responses import JSONResponse
 
 from app.settings import settings
 
+# 约束命名约定 — 让 Alembic 迁移能通过名称引用约束，解决 SQLite batch mode 下
+# drop_constraint(None) 报 ValueError 的问题
+NAMING_CONVENTION = {
+    "ix": "ix_%(column_0_label)s",
+    "uq": "uq_%(table_name)s_%(column_0_name)s",
+    "ck": "ck_%(table_name)s_%(constraint_name)s",
+    "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
+    "pk": "pk_%(table_name)s",
+}
+SQLModel.metadata.naming_convention = NAMING_CONVENTION
+
 
 class BaseModel(SQLModel):
     id: UUID = Field(

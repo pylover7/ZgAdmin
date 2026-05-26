@@ -72,8 +72,6 @@ class Settings(BaseSettings):
     STATIC_PATH: str = str(
         Path(__file__).parent.parent.parent.joinpath("static"))
     MAX_UPLOAD_SIZE: int = 100 * 1024 * 1024
-    CONFIG_PATH: str = str(
-        Path(__file__).parent.parent.parent.joinpath("config"))
 
     SENTRY_DSN: HttpUrl | None = None
 
@@ -177,7 +175,7 @@ class Settings(BaseSettings):
             if cors_origins in (["*"], "*"):
                 raise ValueError(
                     '生产环境 BACKEND_CORS_ORIGINS 不可为 ["*"]，'
-                    "请在 .env 或 config/base.ini [security] cors_origins 中配置具体域名"
+                    "请在 .env 或环境变量中配置具体域名"
                 )
         return self
 

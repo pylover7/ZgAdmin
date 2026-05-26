@@ -1,4 +1,4 @@
-"""API 集成测试 — settings 路由（安全策略 + 登录配置 + 通用配置）"""
+"""API 集成测试 — settings 路由（安全策略 + 登录配置 + 通用配置 + 邮件配置）"""
 import pytest
 
 from app.models.security import SecurityPolicy, IPRule
@@ -18,7 +18,6 @@ class TestSecurityPolicyAPI:
     def test_get_policy_not_initialized(self, client, admin_headers, db):
         """无策略 → Fail"""
         resp = client.get("/api/v1/settings/security/policy", headers=admin_headers)
-        # 可能已存在 policy（其他测试创建的），但也可能返回 Fail
         body = resp.json()
         assert body["code"] in (200, 400)
 
@@ -39,7 +38,6 @@ class TestSecurityPolicyAPI:
             "min_password_length": 10,
         })
         body = resp.json()
-        # 没有 policy 会返回 Fail
         assert body["code"] in (200, 400)
 
 
@@ -164,21 +162,22 @@ class TestIPRuleAPI:
 # ═══════════════════════════════════════════════════════════════════════
 
 class TestLoginConfigAPI:
-    def test_get_login_config(self, client, admin_headers, db):
+    def test_get_login_config(self, client, admin_headers, db, oauth_config):
         resp = client.get("/api/v1/settings/login", headers=admin_headers)
         body = resp.json()
         assert body["code"] == 200
-        assert "qq" in body["data"]
-        assert "wechat" in body["data"]
+        # 扁平结构，直接包含 qq_app_id 等字段
+        assert "qq_app_id" in body["data"]
+        assert "wechat_app_id" in body["data"]
+        # 敏感字段应返回空值
+        assert body["data"]["qq_app_key"] == ""
+        assert body["data"]["wechat_app_secret"] == ""
 
-    def test_update_login_config(self, client, admin_headers, db):
+    def test_update_login_config(self, client, admin_headers, db, oauth_config):
         resp = client.post("/api/v1/settings/login", headers=admin_headers, json={
-            "qq": {
-                "app_id": "test_id",
-                "app_key": "test_key",
-                "redirect_uri": "http://localhost/callback",
-                "enabled": False,
-            },
+            "qq_app_id": "test_id",
+            "qq_redirect_uri": "http://localhost/callback",
+            "qq_enabled": False,
         })
         body = resp.json()
         assert body["code"] == 200
@@ -189,16 +188,57 @@ class TestLoginConfigAPI:
 # ═══════════════════════════════════════════════════════════════════════
 
 class TestGeneralConfigAPI:
-    def test_get_general_config(self, client, admin_headers, db):
+    def test_get_general_config(self, client, admin_headers, db, site_config):
         resp = client.get("/api/v1/settings/general", headers=admin_headers)
         body = resp.json()
         assert body["code"] == 200
         assert "site_name" in body["data"]
 
-    def test_update_general_config(self, client, admin_headers, db):
+    def test_update_general_config(self, client, admin_headers, db, site_config):
         resp = client.post("/api/v1/settings/general", headers=admin_headers, json={
             "site_name": "测试站点",
             "site_desc": "测试描述",
+        })
+        body = resp.json()
+        assert body["code"] == 200
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# 邮件配置
+# ═══════════════════════════════════════════════════════════════════════
+
+class TestEmailConfigAPI:
+    def test_get_email_config(self, client, admin_headers, db, email_config):
+        resp = client.get("/api/v1/settings/email", headers=admin_headers)
+        body = resp.json()
+        assert body["code"] == 200
+        assert "host" in body["data"]
+        # 敏感字段应返回空值
+        assert body["data"]["password"] == ""
+
+    def test_update_email_config(self, client, admin_headers, db, email_config):
+        resp = client.post("/api/v1/settings/email", headers=admin_headers, json={
+            "host": "smtp.test.com",
+            "port": 587,
+            "username": "test@test.com",
+            "password": "new_password",
+            "sender": "test@test.com",
+        })
+        body = resp.json()
+        assert body["code"] == 200
+        # 响应中密码应为空值
+        assert body["data"]["password"] == ""
+
+    def test_update_email_config_empty_password_keeps_old(self, client, admin_headers, db, email_config):
+        """空密码不更新（保留原值）"""
+        # 先设置一个密码
+        client.post("/api/v1/settings/email", headers=admin_headers, json={
+            "password": "original_password",
+        })
+        # 用空密码更新，应保留原值
+        resp = client.post("/api/v1/settings/email", headers=admin_headers, json={
+            "host": "smtp.new.com",
+            "password": "",
         })
         body = resp.json()
         assert body["code"] == 200

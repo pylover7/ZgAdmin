@@ -7,6 +7,7 @@ from app.core.schedule import update_expired_orders
 from app.models import User, UserCreate, Api
 from app.models.link import RoleApiLink
 from app.models.security import SecurityPolicy
+from app.models.config import SiteConfig, OAuthConfig, EmailConfig
 from app.settings.log import logger
 from app.settings import settings
 from app.utils.staticFileUtils import check_dir_exists
@@ -92,6 +93,27 @@ async def init_data(app: FastAPI) -> None:
             logger.info("创建默认安全策略...")
             security_policy = SecurityPolicy()
             session.add(security_policy)
+            session.commit()
+
+        # 确保站点配置存在
+        site_config = session.exec(select(SiteConfig)).first()
+        if not site_config:
+            logger.info("创建默认站点配置...")
+            session.add(SiteConfig())
+            session.commit()
+
+        # 确保 OAuth 配置存在
+        oauth_config = session.exec(select(OAuthConfig)).first()
+        if not oauth_config:
+            logger.info("创建默认OAuth配置...")
+            session.add(OAuthConfig())
+            session.commit()
+
+        # 确保邮件配置存在
+        email_config = session.exec(select(EmailConfig)).first()
+        if not email_config:
+            logger.info("创建默认邮件配置...")
+            session.add(EmailConfig())
             session.commit()
 
         # 同步 API 路由到数据库

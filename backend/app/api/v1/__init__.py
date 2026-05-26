@@ -9,6 +9,7 @@ from .settings import settingsRouter
 from .settings.login import loginProtectedRouter
 from .settings.general import generalProtectedRouter
 from .settings.security import securityProtectedRouter
+from .settings.email import emailProtectedRouter
 from .resource import resourceRouter
 
 v1_router = APIRouter()
@@ -32,6 +33,11 @@ v1_router.include_router(
 v1_router.include_router(
     securityProtectedRouter,
     prefix="/settings/security",
+    dependencies=[DependPermission])
+# 邮件设置 - 管理接口（需要认证）
+v1_router.include_router(
+    emailProtectedRouter,
+    prefix="/settings/email",
     dependencies=[DependPermission])
 # 其他设置接口需要认证
 v1_router.include_router(

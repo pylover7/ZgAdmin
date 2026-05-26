@@ -7,10 +7,11 @@ from sqlmodel import select, col
 
 from app.core.dependency import DependUser, SessionDep
 from app.models.security import (
-    SecurityPolicy, SecurityPolicyUpdate,
+    SecurityPolicyUpdate,
     IPRule, IPRuleCreate, IPRuleUpdate,
 )
 from app.models.base import Success, Fail
+from app.controllers.config import securityPolicyController
 from app.core.redis import get_redis
 from app.settings.log import logger
 
@@ -25,10 +26,11 @@ securityProtectedRouter = APIRouter()
 
 @securityProtectedRouter.get("/policy", summary="获取安全策略")
 async def get_security_policy(session: SessionDep):
-    policy = session.exec(select(SecurityPolicy)).first()
+    policy = securityPolicyController.get(session)
     if not policy:
         return Fail(msg="安全策略未初始化")
     data = await policy.to_dict()
+    data = securityPolicyController.mask_sensitive(data)
     return Success(data=data)
 
 
@@ -37,20 +39,13 @@ async def update_security_policy(
         session: SessionDep,
         current_user: DependUser,
         data: SecurityPolicyUpdate):
-    policy = session.exec(select(SecurityPolicy)).first()
+    policy = securityPolicyController.update(session, data)
     if not policy:
         return Fail(msg="安全策略未初始化")
 
-    update_data = data.model_dump(exclude_unset=True, exclude={"id"})
-    for key, value in update_data.items():
-        setattr(policy, key, value)
-
-    session.add(policy)
-    session.commit()
-    session.refresh(policy)
-
     await logger.operationInfo(user=current_user.username, msg="更新安全策略")
     result = await policy.to_dict()
+    result = securityPolicyController.mask_sensitive(result)
     return Success(data=result, msg="安全策略更新成功")
 
 

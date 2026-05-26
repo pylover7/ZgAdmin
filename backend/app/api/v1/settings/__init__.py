@@ -1,7 +1,6 @@
 from fastapi import APIRouter
 
-from .general import generalProtectedRouter
-from .security import securityProtectedRouter
+from .email import emailProtectedRouter
 
 settingsRouter = APIRouter()
 
