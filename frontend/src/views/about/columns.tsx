@@ -1,5 +1,6 @@
 import { getSystemVersion } from "@/api/system";
 import { onMounted, ref } from "vue";
+import { transformI18n } from "@/plugins/i18n";
 
 export function useColumns() {
   const { pkg, lastBuildTime, projectVersion } = __APP_INFO__;
@@ -27,7 +28,7 @@ export function useColumns() {
 
   const appColums = [
     {
-      label: "当前版本",
+      label: transformI18n("system.about.currentVersion"),
       minWidth: 100,
       cellRenderer: () => {
         return (
@@ -38,7 +39,7 @@ export function useColumns() {
       }
     },
     {
-      label: "Python 版本",
+      label: transformI18n("system.about.pythonVersion"),
       minWidth: 120,
       cellRenderer: () => (
         <el-tag size="large" class="text-base!">
@@ -47,7 +48,7 @@ export function useColumns() {
       )
     },
     {
-      label: "uv 版本",
+      label: transformI18n("system.about.uvVersion"),
       minWidth: 120,
       cellRenderer: () => (
         <el-tag size="large" class="text-base!">
@@ -56,7 +57,7 @@ export function useColumns() {
       )
     },
     {
-      label: "代码仓库",
+      label: transformI18n("system.about.codeRepository"),
       minWidth: 140,
       cellRenderer: () => {
         return (
@@ -67,7 +68,7 @@ export function useColumns() {
       }
     },
     {
-      label: "报告问题",
+      label: transformI18n("system.about.reportIssue"),
       minWidth: 140,
       cellRenderer: () => {
         return (
@@ -84,7 +85,7 @@ export function useColumns() {
 
   const columns = [
     {
-      label: "当前版本",
+      label: transformI18n("system.about.currentVersion"),
       minWidth: 100,
       cellRenderer: () => {
         return (
@@ -95,7 +96,7 @@ export function useColumns() {
       }
     },
     {
-      label: "最后编译时间",
+      label: transformI18n("system.about.lastBuildTime"),
       minWidth: 120,
       cellRenderer: () => {
         return (
@@ -106,7 +107,7 @@ export function useColumns() {
       }
     },
     {
-      label: "推荐 node 版本",
+      label: transformI18n("system.about.recommendedNodeVersion"),
       minWidth: 140,
       cellRenderer: () => {
         return (
@@ -117,7 +118,7 @@ export function useColumns() {
       }
     },
     {
-      label: "推荐 bun 版本",
+      label: transformI18n("system.about.recommendedBunVersion"),
       minWidth: 140,
       cellRenderer: () => {
         return (
@@ -128,7 +129,7 @@ export function useColumns() {
       }
     },
     {
-      label: "完整版代码地址",
+      label: transformI18n("system.about.fullVersionAddress"),
       minWidth: 140,
       className: "pure-version",
       cellRenderer: () => {
@@ -137,13 +138,15 @@ export function useColumns() {
             href="https://github.com/pure-admin/vue-pure-admin"
             target="_blank"
           >
-            <span style="color: var(--el-color-primary)">完整版代码链接</span>
+            <span style="color: var(--el-color-primary)">
+              {transformI18n("system.about.fullVersionLink")}
+            </span>
           </a>
         );
       }
     },
     {
-      label: "精简版代码地址",
+      label: transformI18n("system.about.thinVersionAddress"),
       minWidth: 140,
       className: "pure-version",
       cellRenderer: () => {
@@ -152,31 +155,37 @@ export function useColumns() {
             href="https://github.com/pure-admin/pure-admin-thin"
             target="_blank"
           >
-            <span style="color: var(--el-color-primary)">精简版代码链接</span>
+            <span style="color: var(--el-color-primary)">
+              {transformI18n("system.about.thinVersionLink")}
+            </span>
           </a>
         );
       }
     },
     {
-      label: "文档地址",
+      label: transformI18n("system.about.docAddress"),
       minWidth: 100,
       className: "pure-version",
       cellRenderer: () => {
         return (
           <a href="https://pure-admin.cn/" target="_blank">
-            <span style="color: var(--el-color-primary)">文档链接</span>
+            <span style="color: var(--el-color-primary)">
+              {transformI18n("system.about.docLink")}
+            </span>
           </a>
         );
       }
     },
     {
-      label: "预览地址",
+      label: transformI18n("system.about.previewAddress"),
       minWidth: 100,
       className: "pure-version",
       cellRenderer: () => {
         return (
           <a href="https://pure-admin.github.io/vue-pure-admin" target="_blank">
-            <span style="color: var(--el-color-primary)">预览链接</span>
+            <span style="color: var(--el-color-primary)">
+              {transformI18n("system.about.previewLink")}
+            </span>
           </a>
         );
       }

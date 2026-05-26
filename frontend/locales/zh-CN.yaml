@@ -571,6 +571,145 @@ system:
   os: 操作系统
   browser: 浏览器类型
   module: 所属模块
+  menu:
+    menuLabel: 菜单
+    externalLink: 外链
+    btnLabel: 按钮
+    showLabel: 显示
+    showTip: 会在菜单中显示
+    hideLabel: 隐藏
+    hideTip: 不会在菜单中显示
+    fixed: 固定
+    fixedTip: 当前菜单名称固定显示在标签页且不可关闭
+    unfixed: 不固定
+    unfixedTip: 当前菜单名称不固定显示在标签页且可关闭
+    cache: 缓存
+    cacheTip: 会保存该页面的整体状态，刷新后会清空状态
+    noCache: 不缓存
+    noCacheTip: 不会保存该页面的整体状态
+    allow: 允许
+    allowTip: 当前菜单名称或自定义信息允许添加到标签页
+    forbid: 禁止
+    forbidTip: 当前菜单名称或自定义信息禁止添加到标签页
+    showParent: 显示
+    showParentTip: 会显示父级菜单
+    hideParent: 隐藏
+    hideParentTip: 不会显示父级菜单
+    loadingOn: 开启
+    loadingOnTip: 有首次加载动画
+    loadingOff: 关闭
+    loadingOffTip: 无首次加载动画
+    parentMenu: 上级菜单
+    selectParentMenu: 请选择上级菜单
+    enterMenuName: 请输入菜单名称
+    enterRouteName: 请输入路由名称
+    enterRoutePath: 请输入路由路径
+    enterComponent: 请输入组件路径
+    menuSort: 菜单排序
+    redirect: 路由重定向
+    enterRedirect: 请输入默认跳转地址
+    menuIcon: 菜单图标
+    extraIcon: 右侧图标
+    extraIconPlaceholder: 菜单名称右侧的额外图标
+    enterTransition: 进场动画
+    selectEnterTransition: 请选择页面进场加载动画
+    leaveTransition: 离场动画
+    selectLeaveTransition: 请选择页面离场加载动画
+    activeMenu: 菜单激活
+    enterActiveMenu: 请输入需要激活的菜单
+    authLabel: 权限标识
+    enterAuth: 请输入权限标识
+    frameUrl: 链接地址
+    enterFrameUrl: 请输入 iframe 链接地址
+    frameLoading: 加载动画
+    showLinkLabel: 菜单
+    showParentLabel: 父级菜单
+    keepAliveLabel: 缓存页面
+    hiddenTagLabel: 标签页
+    fixedTagLabel: 固定标签页
+    titleRequired: 菜单名称为必填项
+    routeNameRequired: 路由名称为必填项
+    routePathRequired: 路由路径为必填项
+    authRequired: 权限标识为必填项
+    menuAuth: 菜单权限
+    apiAuth: API权限
+  nicknamePlaceholder: 请输入用户昵称
+  usernamePlaceholder: 请输入用户名称
+  passwordPlaceholder: 请输入用户密码
+  phonePlaceholder: 请输入手机号
+  emailPlaceholder: 请输入邮箱
+  sexPlaceholder: 请选择用户性别
+  deptPlaceholder: 请选择归属部门
+  remarkPlaceholder: 请输入备注信息
+  userNickname: 用户昵称
+  userName: 用户名称
+  userPassword: 用户密码
+  userPhone: 手机号
+  userEmail: 邮箱
+  userSex: 用户性别
+  userDept: 归属部门
+  userStatus: 用户状态
+  roleNameRequired: 角色名称为必填项
+  roleCodeRequired: 角色标识为必填项
+  enterRoleName: 请输入角色名称
+  enterRoleCode: 请输入角色标识
+  roleList: 角色列表
+  deptSearchPlaceholder: 请输入部门名称
+  collapseAll: 折叠全部
+  expandAll: 展开全部
+  usernameRequired: 用户名称为必填项
+  passwordRequired: 用户密码为必填项
+  phoneInputRequired: 请输入手机号
+  emailInputRequired: 请输入邮箱
+  deptNameRequired: 部门名称为必填项
+  back: 返回
+  qqConnect: QQ互联
+  wechatOpenPlatform: 微信开放平台
+  qqAccountLogin: QQ账号登录
+  qqSecureLogin: 使用QQ安全登录，无需记住密码
+  qqAuthUrlFail: 获取QQ授权链接失败，请稍后重试
+  qqMissingParams: 缺少必要的授权参数
+  qqStateVerifyFail: 授权状态验证失败，请重新登录
+  qqLoginFail: QQ登录失败，请稍后重试
+  qqAuthUrlUnavailable: 无法获取QQ授权链接，请稍后重试
+  loggingIn: 正在登录中...
+  clickRefreshCaptcha: 点击刷新验证码
+  simplifiedChinese: 简体中文
+  langZhCN: 简体中文
+  langEn: English
+  deletedSelectedLogs: 已删除选中日志数据
+  sysManagement: 系统管理
+  sysSystem: 系统
+  sysDatabase: 数据库
+  moduleLabel: 所属模块
+  logLevelLabel: 日志级别
+  operationLabel: 操作
+  datePicker:
+    today: 今天
+    yesterday: 昨天
+    dayBeforeYesterday: 前天
+    thisWeek: 本周
+    lastWeek: 上周
+    thisMonth: 本月
+    lastMonth: 上个月
+    thisYear: 本年
+  about:
+    currentVersion: 当前版本
+    pythonVersion: Python 版本
+    uvVersion: uv 版本
+    codeRepository: 代码仓库
+    reportIssue: 报告问题
+    lastBuildTime: 最后编译时间
+    recommendedNodeVersion: 推荐 node 版本
+    recommendedBunVersion: 推荐 bun 版本
+    fullVersionAddress: 完整版代码地址
+    fullVersionLink: 完整版代码链接
+    thinVersionAddress: 精简版代码地址
+    thinVersionLink: 精简版代码链接
+    docAddress: 文档地址
+    docLink: 文档链接
+    previewAddress: 预览地址
+    previewLink: 预览链接
   notice:
     title: 通知标题
     type: 通知类型

@@ -29,7 +29,7 @@ const generateQQQRCode = async () => {
     }
   } catch (error) {
     console.error("获取QQ授权链接失败:", error);
-    message("获取QQ授权链接失败，请稍后重试", { type: "error" });
+    message(t("system.qqAuthUrlFail"), { type: "error" });
   }
 };
 
@@ -38,14 +38,14 @@ const handleQQCallback = async () => {
   const { code, state } = route.query;
 
   if (!code || !state) {
-    message("缺少必要的授权参数", { type: "error" });
+    message(t("system.qqMissingParams"), { type: "error" });
     return;
   }
 
   // 验证state参数
   const storedState = sessionStorage.getItem("qq_login_state");
   if (state !== storedState) {
-    message("授权状态验证失败，请重新登录", { type: "error" });
+    message(t("system.qqStateVerifyFail"), { type: "error" });
     sessionStorage.removeItem("qq_login_state");
     return;
   }
@@ -58,15 +58,15 @@ const handleQQCallback = async () => {
     })
     .then(res => {
       if (res.success) {
-        message("登录成功", { type: "success" });
+        message(t("login.pureLoginSuccess"), { type: "success" });
         router.push("/");
       } else {
-        message(res.msg || "QQ登录失败，请稍后重试", { type: "error" });
+        message(res.msg || t("system.qqLoginFail"), { type: "error" });
       }
     })
     .catch((error: any) => {
       console.error("QQ登录失败:", error);
-      message(error.message || "QQ登录失败，请稍后重试", { type: "error" });
+      message(error.message || t("system.qqLoginFail"), { type: "error" });
     })
     .finally(() => {
       loading.value = false;
@@ -79,7 +79,7 @@ const redirectToQQ = () => {
   if (qrCodeUrl.value) {
     window.location.href = qrCodeUrl.value;
   } else {
-    message("无法获取QQ授权链接，请稍后重试", { type: "error" });
+    message(t("system.qqAuthUrlUnavailable"), { type: "error" });
   }
 };
 
@@ -99,11 +99,13 @@ onMounted(() => {
 </script>
 
 <template>
-  <div v-loading="loading" element-loading-text="正在登录中...">
+  <div v-loading="loading" :element-loading-text="$t('system.loggingIn')">
     <Motion v-if="!route.query.code" class="-my-2">
       <div class="text-center mb-4">
-        <h3 class="text-lg font-semibold mb-2">QQ账号登录</h3>
-        <p class="text-gray-500 text-sm">使用QQ安全登录，无需记住密码</p>
+        <h3 class="text-lg font-semibold mb-2">
+          {{ $t("system.qqAccountLogin") }}
+        </h3>
+        <p class="text-gray-500 text-sm">{{ $t("system.qqSecureLogin") }}</p>
       </div>
 
       <!-- QQ登录按钮 -->
@@ -115,7 +117,7 @@ onMounted(() => {
           size="large"
           @click="redirectToQQ"
         >
-          QQ账号登录
+          {{ $t("system.qqAccountLogin") }}
         </el-button>
       </div>
 

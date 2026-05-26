@@ -120,7 +120,7 @@ defineExpose({ onTreeReset });
         v-model="searchValue"
         class="ml-2"
         size="small"
-        placeholder="请输入部门名称"
+        :placeholder="$t('system.deptSearchPlaceholder')"
         clearable
       >
         <template #suffix>
@@ -144,7 +144,9 @@ defineExpose({ onTreeReset });
                 :icon="useRenderIcon(isExpand ? ExpandIcon : UnExpandIcon)"
                 @click="toggleRowExpansionAll(isExpand ? false : true)"
               >
-                {{ isExpand ? "折叠全部" : "展开全部" }}
+                {{
+                  isExpand ? $t("system.collapseAll") : $t("system.expandAll")
+                }}
               </el-button>
             </el-dropdown-item>
             <!-- <el-dropdown-item>

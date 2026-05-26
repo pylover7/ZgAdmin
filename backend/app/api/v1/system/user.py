@@ -12,6 +12,7 @@ from app.models.user import UserCreate, UserUpdate, User, UserFiter, UserResetPw
     UpdateUserRoles
 from app.models.role import Role
 from app.settings.log import logger
+from app.models.logs import LogModule
 from app.utils.password import get_password_hash
 
 userRouter = APIRouter()
@@ -30,10 +31,10 @@ async def create_user(
         )
     try:
         await userController.create(session, data)
-        await logger.systemInfo("系统管理", f"创建用户: {data.username}")
+        await logger.systemInfo(LogModule.SYSTEM_MANAGEMENT, f"创建用户: {data.username}")
         return Success(msg="用户创建成功！")
     except Exception as e:
-        await logger.systemError("系统管理", f"用户创建失败 [{data.username}]: {e}")
+        await logger.systemError(LogModule.SYSTEM_MANAGEMENT, f"用户创建失败 [{data.username}]: {e}")
         raise HTTPException(status_code=400, detail="用户创建失败！") from e
 
 
@@ -44,10 +45,10 @@ async def delete_user(
 ):
     try:
         await userController.delete(session, data)
-        await logger.systemInfo("系统管理", f"删除用户: {[str(d) for d in data]}")
+        await logger.systemInfo(LogModule.SYSTEM_MANAGEMENT, f"删除用户: {[str(d) for d in data]}")
         return Success(msg="Deleted Successfully")
     except Exception as e:
-        await logger.systemError("系统管理", f"用户删除失败: {e}")
+        await logger.systemError(LogModule.SYSTEM_MANAGEMENT, f"用户删除失败: {e}")
         raise HTTPException(status_code=400, detail="用户删除失败！") from e
 
 
@@ -124,7 +125,7 @@ async def update_user(
             raise HTTPException(status_code=400, detail="用户名已存在！")
     del data.username
     await userController.update(session, user.id, data)
-    await logger.systemInfo("系统管理", f"更新用户信息: {user.username}")
+    await logger.systemInfo(LogModule.SYSTEM_MANAGEMENT, f"更新用户信息: {user.username}")
     return Success(msg="用户信息更新成功！")
 
 
@@ -141,7 +142,7 @@ async def update_roles(
     user.roles = roleList
     session.add(user)
     session.commit()
-    await logger.systemInfo("系统管理", f"更新用户角色: {user.username}")
+    await logger.systemInfo(LogModule.SYSTEM_MANAGEMENT, f"更新用户角色: {user.username}")
     return Success(msg="用户角色信息更新成功！")
 
 
@@ -153,7 +154,7 @@ async def update_status(session: SessionDep, data: UpdateStatus):
     user.status = data.status
     session.add(user)
     session.commit()
-    await logger.systemInfo("系统管理", f"更新用户状态: {user.username} -> {data.status}")
+    await logger.systemInfo(LogModule.SYSTEM_MANAGEMENT, f"更新用户状态: {user.username} -> {data.status}")
     return Success(msg="用户状态更新成功！")
 
 
@@ -168,7 +169,7 @@ async def reset_pwd(
     user.password = get_password_hash(data.newPwd)
     session.add(user)
     session.commit()
-    await logger.systemInfo("系统管理", f"重置用户密码: {user.username}")
+    await logger.systemInfo(LogModule.SYSTEM_MANAGEMENT, f"重置用户密码: {user.username}")
     return Success(msg="密码重置成功！")
 
 
@@ -181,5 +182,5 @@ async def unlock_user(session: SessionDep, data: BaseModel):
     if not user.locked_until and (user.failed_login_count or 0) == 0:
         return Success(msg="该用户未处于锁定状态")
     user = await userController.unlock_user(session, user.id)
-    await logger.systemInfo("系统管理", f"解锁用户: {user.username}")
+    await logger.systemInfo(LogModule.SYSTEM_MANAGEMENT, f"解锁用户: {user.username}")
     return Success(msg="用户解锁成功！")

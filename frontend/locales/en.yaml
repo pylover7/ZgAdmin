@@ -297,7 +297,13 @@ system:
   confirm: Confirm
   select: Select
   success: Success
+  fail: Failed
   createTime: Created
+  startTime: Start Time
+  endTime: End Time
+  selected: Selected
+  deptName: Department Name
+  expandCollapse: Expand/Collapse
   show: Yes
   hide: No
   pleaseSelect: Please Select
@@ -565,6 +571,145 @@ system:
   os: OS
   browser: Browser Type
   module: Module
+  menu:
+    menuLabel: Menu
+    externalLink: External Link
+    btnLabel: Button
+    showLabel: Show
+    showTip: Will be displayed in the menu
+    hideLabel: Hide
+    hideTip: Will not be displayed in the menu
+    fixed: Fixed
+    fixedTip: Current menu name is fixed in the tab and cannot be closed
+    unfixed: Unfixed
+    unfixedTip: Current menu name is not fixed in the tab and can be closed
+    cache: Cache
+    cacheTip: Will save the page state, cleared on refresh
+    noCache: No Cache
+    noCacheTip: Will not save the page state
+    allow: Allow
+    allowTip: Allow the menu name to be added to the tab
+    forbid: Forbid
+    forbidTip: Forbid the menu name from being added to the tab
+    showParent: Show
+    showParentTip: Will show parent menu
+    hideParent: Hide
+    hideParentTip: Will not show parent menu
+    loadingOn: On
+    loadingOnTip: Has first load animation
+    loadingOff: Off
+    loadingOffTip: No first load animation
+    parentMenu: Parent Menu
+    selectParentMenu: Please select parent menu
+    enterMenuName: Please enter menu name
+    enterRouteName: Please enter route name
+    enterRoutePath: Please enter route path
+    enterComponent: Please enter component path
+    menuSort: Menu Sort
+    redirect: Redirect
+    enterRedirect: Please enter redirect URL
+    menuIcon: Menu Icon
+    extraIcon: Extra Icon
+    extraIconPlaceholder: Extra icon on the right side of menu name
+    enterTransition: Enter Transition
+    selectEnterTransition: Please select enter transition
+    leaveTransition: Leave Transition
+    selectLeaveTransition: Please select leave transition
+    activeMenu: Active Menu
+    enterActiveMenu: Please enter active menu
+    authLabel: Permission
+    enterAuth: Please enter permission
+    frameUrl: Frame URL
+    enterFrameUrl: Please enter iframe URL
+    frameLoading: Frame Loading
+    showLinkLabel: Menu
+    showParentLabel: Parent Menu
+    keepAliveLabel: Keep Alive
+    hiddenTagLabel: Tab
+    fixedTagLabel: Fixed Tab
+    titleRequired: Menu name is required
+    routeNameRequired: Route name is required
+    routePathRequired: Route path is required
+    authRequired: Permission is required
+    menuAuth: Menu Permission
+    apiAuth: API Permission
+  nicknamePlaceholder: Please enter nickname
+  usernamePlaceholder: Please enter username
+  passwordPlaceholder: Please enter password
+  phonePlaceholder: Please enter phone number
+  emailPlaceholder: Please enter email
+  sexPlaceholder: Please select gender
+  deptPlaceholder: Please select department
+  remarkPlaceholder: Please enter remark
+  userNickname: Nickname
+  userName: Username
+  userPassword: Password
+  userPhone: Phone
+  userEmail: Email
+  userSex: Gender
+  userDept: Department
+  userStatus: Status
+  roleNameRequired: Role name is required
+  roleCodeRequired: Role code is required
+  enterRoleName: Please enter role name
+  enterRoleCode: Please enter role code
+  roleList: Role List
+  deptSearchPlaceholder: Enter department name
+  collapseAll: Collapse All
+  expandAll: Expand All
+  usernameRequired: Username is required
+  passwordRequired: Password is required
+  phoneInputRequired: Please enter phone number
+  emailInputRequired: Please enter email
+  deptNameRequired: Department name is required
+  back: Back
+  qqConnect: QQ Connect
+  wechatOpenPlatform: WeChat Open Platform
+  qqAccountLogin: QQ Account Login
+  qqSecureLogin: Login securely with QQ, no password needed
+  qqAuthUrlFail: Failed to get QQ auth URL, please retry later
+  qqMissingParams: Missing required authorization parameters
+  qqStateVerifyFail: State verification failed, please login again
+  qqLoginFail: QQ login failed, please retry later
+  qqAuthUrlUnavailable: Unable to get QQ auth URL, please retry later
+  loggingIn: Logging in...
+  clickRefreshCaptcha: Click to refresh captcha
+  simplifiedChinese: Simplified Chinese
+  langZhCN: Simplified Chinese
+  langEn: English
+  deletedSelectedLogs: Selected logs have been deleted
+  sysManagement: System Management
+  sysSystem: System
+  sysDatabase: Database
+  moduleLabel: Module
+  logLevelLabel: Log Level
+  operationLabel: Actions
+  datePicker:
+    today: Today
+    yesterday: Yesterday
+    dayBeforeYesterday: Day Before Yesterday
+    thisWeek: This Week
+    lastWeek: Last Week
+    thisMonth: This Month
+    lastMonth: Last Month
+    thisYear: This Year
+  about:
+    currentVersion: Current Version
+    pythonVersion: Python Version
+    uvVersion: uv Version
+    codeRepository: Code Repository
+    reportIssue: Report Issue
+    lastBuildTime: Last Build Time
+    recommendedNodeVersion: Recommended Node Version
+    recommendedBunVersion: Recommended Bun Version
+    fullVersionAddress: Full Version Code
+    fullVersionLink: Full Version Link
+    thinVersionAddress: Thin Version Code
+    thinVersionLink: Thin Version Link
+    docAddress: Documentation
+    docLink: Documentation Link
+    previewAddress: Preview
+    previewLink: Preview Link
   notice:
     title: Notice Title
     type: Notice Type

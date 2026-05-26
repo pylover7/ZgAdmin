@@ -247,7 +247,7 @@ onMounted(() => {
             <span :class="iconClass">
               <IconifyIconOffline
                 v-tippy="{
-                  content: '关闭'
+                  content: $t('buttons.pureClose')
                 }"
                 class="dark:text-white"
                 width="18px"

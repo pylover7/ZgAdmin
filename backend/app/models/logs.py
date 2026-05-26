@@ -1,8 +1,16 @@
 from datetime import datetime
+from enum import StrEnum
 
 from sqlmodel import Field, SQLModel
 
 from .base import BaseModel
+
+
+class LogModule(StrEnum):
+    """系统日志模块常量，作为 module 字段的值存储到数据库"""
+    SYSTEM = "system"
+    SYSTEM_MANAGEMENT = "system_management"
+    DATABASE = "database"
 
 
 class Log(BaseModel):

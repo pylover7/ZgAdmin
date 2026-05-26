@@ -8,8 +8,8 @@ import type { GeneralConfig } from "@/types/settings";
 
 /** 语言选项 */
 const langOptions = [
-  { label: "简体中文", value: "zh-CN" },
-  { label: "English", value: "en" }
+  { label: transformI18n("system.langZhCN"), value: "zh-CN" },
+  { label: transformI18n("system.langEn"), value: "en" }
 ];
 
 /** 表单校验规则 */

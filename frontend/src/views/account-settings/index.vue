@@ -5,6 +5,7 @@ import Profile from "./components/Profile.vue";
 import Preferences from "./components/Preferences.vue";
 import SecurityLog from "./components/SecurityLog.vue";
 import { useGlobal, deviceDetection } from "@pureadmin/utils";
+import { transformI18n } from "@/plugins/i18n";
 import AccountManagement from "./components/AccountManagement.vue";
 import { useDataThemeChange } from "@/layout/hooks/useDataThemeChange";
 import LaySidebarTopCollapse from "@/layout/components/lay-sidebar/components/SidebarTopCollapse.vue";
@@ -29,25 +30,25 @@ onBeforeMount(() => {
 const panes = [
   {
     key: "profile",
-    label: "个人信息",
+    label: transformI18n("system.profile"),
     icon: ProfileIcon,
     component: Profile
   },
   {
     key: "preferences",
-    label: "偏好设置",
+    label: transformI18n("system.preferences"),
     icon: PreferencesIcon,
     component: Preferences
   },
   {
     key: "securityLog",
-    label: "安全日志",
+    label: transformI18n("system.systemLog"),
     icon: SecurityLogIcon,
     component: SecurityLog
   },
   {
     key: "accountManagement",
-    label: "账户管理",
+    label: transformI18n("system.accountManagement"),
     icon: AccountManagementIcon,
     component: AccountManagement
   }
@@ -71,7 +72,7 @@ const witchPane = ref("profile");
             class="h-full flex items-center px-(--el-menu-base-level-padding)"
           >
             <IconifyIconOffline :icon="leftLine" />
-            <span class="ml-2">返回</span>
+            <span>{{ $t("system.back") }}</span>
           </div>
         </div>
         <el-menu-item

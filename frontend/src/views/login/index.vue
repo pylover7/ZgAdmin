@@ -208,7 +208,7 @@ onMounted(async () => {
                 class="check-zh"
                 :icon="Check"
               />
-              简体中文
+              {{ $t("system.simplifiedChinese") }}
             </el-dropdown-item>
             <el-dropdown-item
               :style="getDropdownItemStyle(locale, 'en')"
@@ -295,7 +295,7 @@ onMounted(async () => {
                         cursor: pointer;
                         border-radius: 0 4px 4px 0;
                       "
-                      title="点击刷新验证码"
+                      :title="$t('system.clickRefreshCaptcha')"
                       @click="refreshCaptcha"
                     />
                   </template>
