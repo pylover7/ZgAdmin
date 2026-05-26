@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from fastapi import APIRouter
 
 from app.controllers.menu import menuController
@@ -18,7 +20,7 @@ async def add_menu(session: SessionDep, data: MenuCreate):
 
 
 @menuRouter.post("/delete", summary="删除菜单")
-async def delete_menu(session: SessionDep, data: list[str]):
+async def delete_menu(session: SessionDep, data: list[UUID]):
     await menuController.delete(session, data)
     await logger.systemInfo(LogModule.SYSTEM_MANAGEMENT, f"删除菜单: {data}")
     return Success(msg="菜单删除成功！")
