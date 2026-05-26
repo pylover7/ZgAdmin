@@ -3,8 +3,6 @@ from pathlib import Path
 
 from app.settings import settings
 
-config_path = Path.joinpath(Path(__file__).parent.parent.parent, "config", "config.yml")
-
 
 class Config:
     def __init__(self, path: Path):

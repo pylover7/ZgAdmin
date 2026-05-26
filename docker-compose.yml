@@ -17,6 +17,7 @@ services:
       # - DB_PASSWORD=changethis
     volumes:
       - zgadmin_data:/backend/static
+      - zgadmin_config:/backend/config
     depends_on:
       postgres:
         condition: service_healthy
@@ -65,5 +66,6 @@ services:
 
 volumes:
   zgadmin_data:
+  zgadmin_config:
   pgdata:
   redisdata:
