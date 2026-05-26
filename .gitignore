@@ -19,6 +19,7 @@ dist-ssr
 .eslintcache
 report.html
 vite.config.*.timestamp*
+frontend/coverage
 
 yarn.lock
 npm-debug.log*

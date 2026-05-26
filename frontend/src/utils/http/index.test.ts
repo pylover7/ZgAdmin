@@ -1,5 +1,29 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
+// ─── Mock axios: 保留真实拦截器，替换 adapter 阻止真实网络请求 ───
+vi.mock("axios", async () => {
+  const actual = await vi.importActual<typeof import("axios")>("axios");
+  const mockAdapter = () =>
+    Promise.resolve({
+      data: {},
+      status: 200,
+      statusText: "OK",
+      headers: {},
+      config: {}
+    });
+  return {
+    default: {
+      ...actual.default,
+      create: vi.fn((config: any) => {
+        const instance = actual.default.create(config);
+        instance.defaults.adapter = mockAdapter as any;
+        return instance;
+      }),
+      isCancel: actual.default.isCancel
+    }
+  };
+});
+
 const { mockGetToken, mockFormatToken } = vi.hoisted(() => ({
   mockGetToken: vi.fn(),
   mockFormatToken: vi.fn((token: string) => `Bearer ${token}`)
