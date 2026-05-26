@@ -79,7 +79,7 @@ class RoleFilter(SQLModel):
         schema_extra={"examples": ["0"]})
 
 
-class UpdateRoleAuth(BaseModel):
+class UpdateRoleAuth(SQLModel):
     id: UUID = Field(
         description="角色ID",
         schema_extra={"examples": ["550e8400-e29b-41d4-a716-446655440000"]})

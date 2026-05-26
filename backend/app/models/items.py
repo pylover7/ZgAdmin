@@ -22,13 +22,17 @@ class ItemCreate(ItemBase):
 
 
 # Properties to receive on item update
-class ItemUpdate(ItemBase):
+class ItemUpdate(SQLModel):
     title: str | None = Field(
         default=None,
         min_length=1,
         max_length=255,
         description="标题",
         schema_extra={"examples": ["更新后的标题"]})
+    description: str | None = Field(
+        default=None, max_length=255,
+        description="描述",
+        schema_extra={"examples": ["这是一个示例描述"]})
 
 
 # Database model, database table inferred from class name
