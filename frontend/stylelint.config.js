@@ -84,5 +84,14 @@ export default {
       { severity: "warning" }
     ]
   },
-  ignoreFiles: ["**/*.js", "**/*.ts", "**/*.jsx", "**/*.tsx", "report.html"]
+  ignoreFiles: [
+    "**/*.js",
+    "**/*.ts",
+    "**/*.jsx",
+    "**/*.tsx",
+    "report.html",
+    "**/iconfont/**",
+    "playwright-report/**",
+    "coverage/**"
+  ]
 };

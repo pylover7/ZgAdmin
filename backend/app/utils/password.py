@@ -17,7 +17,7 @@ def md5_encrypt(input_string) -> str:
     return encrypted_string
 
 
-def verify_password(plain_password: str, hashed_password: str) -> bool:
+def verify_password(plain_password: str | None, hashed_password: str | None) -> bool:
     """验证密码 — 纯bcrypt"""
     try:
         if plain_password is None or hashed_password is None:

@@ -22,7 +22,6 @@
 | `feat/data-io` | Phase 5 | 数据导入导出 | 用户 / 日志模型 | 🟢 |
 | `feat/audit-log` | Phase 5 | 操作审计日志（含变更 diff） | Phase 1（统一日志层） | 🟡 |
 | `feat/system-health` | Phase 5 | 系统健康检查 / 监控端点 | 无 | 🟢 |
-| `feat/payment` | Phase 6 | 微信支付模块 | 订单模型 | 🟡 |
 | `feat/data-backup` | Phase 7 | 数据备份与恢复 | 无 | 🟡 |
 | `test/core-coverage` | Phase 7 | 后端单元测试 / 集成测试 / 前端 E2E | 所有功能完成 | 🟢 |
 | `chore/i18n-docs` | Phase 7 | 国际化 + 文档补充 | 所有功能完成 | 🟢 |
@@ -30,7 +29,7 @@
 ### 执行顺序
 
 ```
-Phase 0 (立即) → Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 → Phase 6 → Phase 7
+Phase 0 (立即) → Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 → Phase 7
                     ↑          ↑
                     └─ 注意 ──┘ Phase 2 依赖 Phase 1 完成（通知需要稳定的日志层）
 ```
@@ -52,8 +51,6 @@ Phase 0 (立即) → Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 →
 
 ### 0.1 后端 Bug
 
-- [x] `pay/setting.py`：`pay_setting_update` 的 `wechat` 分支补充 `set_config` 实现
-- [x] `pay/test.py`：发送邮件测试接口加 `DependPermission` 鉴权 ⚠️ 安全
 - [x] `settings/login.py`：`update_login_config` 异常时 `Success(msg="保存成功！")` 改为 `Fail`
 - [x] `system/role.py`：`delete_role` 补充缺失的 `return` 语句
 - [x] `system/user.py`：`update_user` 逻辑修正 — `if user.id != data.id` 永远不会为 True（先查了 `data.id` 再判断）
@@ -236,16 +233,16 @@ Phase 0 (立即) → Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 →
 > **分支**：`feat/file-manager`
 > **风险**：🟢 低 — 标准模块，注意存储容量和文件类型安全。
 
-- [ ] 后端新增文件上传接口（支持本地存储 / S3 兼容 OSS，通过配置切换）
-- [ ] 后端文件列表 / 删除接口
-- [ ] 后端新增 `File` 模型（文件名、路径、大小、类型、上传者、创建时间）
-- [ ] 🔄 生成 Alembic 迁移脚本
-- [ ] 前端新增 `system/file/index.vue` 文件管理页
-- [ ] 头像上传切换为使用文件管理模块统一接口
-- [ ] 上传安全：文件类型白名单、大小限制、病毒扫描（可选）
-- [ ] `seed/data/menus.py` 新增菜单项
+- [x] 后端新增文件上传接口（支持本地存储 / S3 兼容 OSS，通过配置切换）
+- [x] 后端文件列表 / 删除接口
+- [x] 后端新增 `File` 模型（文件名、路径、大小、类型、上传者、创建时间）
+- [x] 🔄 生成 Alembic 迁移脚本
+- [x] 前端新增 `system/file/index.vue` 文件管理页
+- [ ] ~~头像上传切换为使用文件管理模块统一接口~~
+- [x] 上传安全：文件类型白名单、大小限制、病毒扫描（可选）
+- [x] `seed/data/menus.py` 新增菜单项
 
-### 5.3 部门 / 组织架构管理
+### 5.3 ~~部门 / 组织架构管理~~
 
 > **分支**：`feat/dept-manage`
 > **风险**：🟢 低 — 标准树形 CRUD。
@@ -257,7 +254,7 @@ Phase 0 (立即) → Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 →
 - [ ] 用户管理页面增加"所属部门"筛选和展示
 - [ ] `seed/data/menus.py` 新增菜单项
 
-### 5.4 定时任务
+### 5.4 ~~定时任务~~
 
 > **分支**：`feat/scheduled-tasks`
 > **风险**：🟡 中 — APScheduler / Celery 引入新依赖；Cron 错误可能导致任务堆积。
@@ -270,7 +267,7 @@ Phase 0 (立即) → Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 →
 - [ ] 前端新增 `monitor/task/index.vue` 定时任务管理页
 - [ ] `seed/data/menus.py` 新增菜单项
 
-### 5.5 数据导入导出
+### 5.5 ~~数据导入导出~~
 
 > **分支**：`feat/data-io`
 > **风险**：🟢 低 — 标准功能。
@@ -281,7 +278,7 @@ Phase 0 (立即) → Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 →
 - [ ] 前端用户管理页增加"批量导入"按钮（上传文件 + 预览 + 确认导入）
 - [ ] 导入模板下载功能
 
-### 5.6 操作审计日志（含变更 diff）
+### 5.6 ~~操作审计日志（含变更 diff）~~
 
 > **分支**：`feat/audit-log`
 > **风险**：🟡 中 — 需在现有操作日志基础上扩展 diff 记录；存储量可能较大。
@@ -297,27 +294,13 @@ Phase 0 (立即) → Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 →
 > **分支**：`feat/system-health`
 > **风险**：🟢 低 — 标准端点，无业务依赖。
 
-- [ ] 后端新增 `GET /api/v1/health` 端点（数据库连接、Redis 连接、磁盘使用率、内存）
-- [ ] 后端新增 `GET /api/v1/metrics` 端点（Prometheus 格式，请求计数、延迟分位数、错误率）
-- [ ] Docker 健康检查指令指向 `/api/v1/health`
+- [x] 后端新增 `GET /api/v1/health` 端点（数据库连接、Redis 连接、磁盘使用率、内存）
+- [x] 后端新增 `GET /api/v1/metrics` 端点（Prometheus 格式，请求计数、延迟分位数、错误率）
+- [x] Docker 健康检查指令指向 `/api/v1/health`
 
 ---
 
-## Phase 6 — 支付模块（P2）
-
-> **分支**：`feat/payment`
-> **风险**：🟡 中 — 支付涉及资金安全；回调处理需防重复通知。
-
-- [ ] 取消 `base.py` 中 `notify/wechat` 和 `websocket/wechat` 注释，完善支付回调逻辑
-- [ ] 实现 `Order` 数据模型 + `OrderController`
-- [ ] 🔄 生成 Alembic 迁移脚本（订单表）
-- [ ] 实现 `backend/app/core/schedule.py` 中 `update_expired_orders` 订单过期自动取消
-- [ ] 前端新增支付页面或支付弹窗组件
-- [ ] 支付回调幂等处理（防重复通知）
-
----
-
-## Phase 7 — 质量保障（P3）
+## Phase 6 — 质量保障（P3）
 
 ### 7.1 数据备份与恢复
 
@@ -335,9 +318,9 @@ Phase 0 (立即) → Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 →
 > **分支**：`test/core-coverage`
 > **风险**：🟢 低。
 
-- [ ] 后端单元测试：用户、角色、权限、通知模块
-- [ ] 后端集成测试：所有 API 端点（login → CRUD → logout 完整流程）
-- [ ] 前端 E2E 测试：登录、用户 CRUD、通知收发关键路径
+- [x] 后端单元测试：用户、角色、权限、通知模块
+- [x] 后端集成测试：所有 API 端点（login → CRUD → logout 完整流程）
+- [x] 前端 E2E 测试：登录、用户 CRUD、通知收发关键路径
 
 ### 7.3 国际化与文档
 
@@ -363,7 +346,6 @@ Phase 0 (立即) → Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 →
 | 🟡 中 | `feat/security` | IP 黑名单误封；2FA 锁死 | IP 白名单优先于黑名单；2FA 提供恢复码 |
 | 🟡 中 | `feat/scheduled-tasks` | 新依赖引入；Cron 配置错误 | APScheduler 任务隔离；默认暂停状态 |
 | 🟡 中 | `feat/audit-log` | diff 存储量可能较大 | 日志保留天数配置 + 定期清理 |
-| 🟡 中 | `feat/payment` | 资金安全；回调重复 | 回调幂等 key；事务保证 |
 | 🟡 中 | `feat/data-backup` | 恢复操作不可逆 | 二次确认 + 超级管理员权限 + 操作日志 |
 | 🟢 低 | 其余 10 个分支 | 标准 CRUD / 页面开发 | 常规 review 即可 |
 

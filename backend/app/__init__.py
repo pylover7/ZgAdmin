@@ -4,7 +4,6 @@ from contextlib import asynccontextmanager
 import sentry_sdk
 from fastapi import FastAPI
 from fastapi.routing import APIRoute
-from fastapi.staticfiles import StaticFiles
 
 from app.core.database import init_data
 from app.core.exceptions import SettingNotFound
@@ -34,7 +33,6 @@ def create_app() -> FastAPI:
     )
     register_exceptions(application)
     register_routers(application, prefix="/api")
-    application.mount("/static", StaticFiles(directory=settings.STATIC_PATH), name="static")
     return application
 
 

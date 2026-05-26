@@ -2,7 +2,7 @@ import dayjs from "dayjs";
 import { message } from "@/utils/message";
 import type { PaginationProps } from "@pureadmin/table";
 import { transformI18n } from "@/plugins/i18n";
-import { type Ref, reactive, ref, onMounted } from "vue";
+import { type Ref, reactive, ref, computed, onMounted } from "vue";
 import { getKeyList } from "@pureadmin/utils";
 import {
   getSystemLogsList,
@@ -15,6 +15,13 @@ import {
   formatDateTimeRange
 } from "@/views/system/hooks";
 import { paginationConf } from "@/config";
+
+/** module 值到 i18n key 的映射 */
+const moduleI18nMap: Record<string, string> = {
+  system_management: "system.sysManagement",
+  system: "system.sysSystem",
+  database: "system.sysDatabase"
+};
 
 export function useRole(tableRef: Ref) {
   const { levelTagStyle } = usePublicHooks();
@@ -29,13 +36,22 @@ export function useRole(tableRef: Ref) {
 
   const pagination = reactive<PaginationProps>({ ...paginationConf });
 
-  const selectOpt = [
-    { label: "系统管理", value: "系统管理" },
-    { label: "系统", value: "系统" },
-    { label: "数据库", value: "数据库" }
-  ];
+  const selectOpt = computed(() => [
+    {
+      label: transformI18n("system.sysManagement"),
+      value: "system_management"
+    },
+    {
+      label: transformI18n("system.sysSystem"),
+      value: "system"
+    },
+    {
+      label: transformI18n("system.sysDatabase"),
+      value: "database"
+    }
+  ]);
 
-  const columns: TableColumnList = [
+  const columns = computed<TableColumnList>(() => [
     {
       label: transformI18n("system.select"),
       type: "selection",
@@ -45,17 +61,21 @@ export function useRole(tableRef: Ref) {
     {
       type: "index",
       label: "#",
-      minWidth: 60
+      width: 60
     },
     {
-      label: "所属模块",
+      label: transformI18n("system.moduleLabel"),
       prop: "module",
-      minWidth: 100
+      width: 120,
+      cellRenderer: ({ row }) => {
+        const i18nKey = moduleI18nMap[row.module];
+        return i18nKey ? transformI18n(i18nKey) : row.module;
+      }
     },
     {
-      label: "日志级别",
+      label: transformI18n("system.logLevelLabel"),
       prop: "level",
-      minWidth: 90,
+      width: 90,
       cellRenderer: ({ row, props }) => (
         <el-tag size={props.size} style={levelTagStyle.value(row.level)}>
           {levelTextMap[row.level] || row.level}
@@ -75,12 +95,12 @@ export function useRole(tableRef: Ref) {
       formatter: ({ time }) => dayjs(time).format("YYYY-MM-DD HH:mm:ss")
     },
     {
-      label: "操作",
+      label: transformI18n("system.operationLabel"),
       fixed: "right",
       width: 80,
       slot: "operation"
     }
-  ];
+  ]);
 
   function handleSizeChange(val: number) {
     pagination.pageSize = val;
@@ -105,7 +125,7 @@ export function useRole(tableRef: Ref) {
   function onbatchDel() {
     const curSelected = tableRef.value.getTableRef().getSelectionRows();
     deleteSystemLogs(getKeyList(curSelected, "id")).then(() => {
-      message("已删除选中日志数据", {
+      message(transformI18n("system.deletedSelectedLogs"), {
         type: "success"
       });
       selectedNum.value = 0;

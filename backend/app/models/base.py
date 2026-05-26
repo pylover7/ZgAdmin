@@ -10,14 +10,17 @@ from app.settings import settings
 
 
 class BaseModel(SQLModel):
-    id: UUID = Field(default_factory=uuid4, primary_key=True)
+    id: UUID = Field(
+        default_factory=uuid4, primary_key=True,
+        description="主键UUID",
+        schema_extra={"examples": ["550e8400-e29b-41d4-a716-446655440000"]})
 
     async def to_dict(self, exclude_fields: list[str] | None = None):
         if exclude_fields is None:
             exclude_fields = []
 
         d = {}
-        for field in self.model_fields:
+        for field in self.__class__.model_fields:
             if field not in exclude_fields:
                 value = getattr(self, field)
                 if isinstance(value, datetime):
@@ -31,22 +34,36 @@ class BaseModel(SQLModel):
 class TimestampMixin(SQLModel):
     created_at: datetime = Field(
         default_factory=datetime.now,
-        description="创建时间")
+        description="创建时间",
+        schema_extra={"examples": ["2026-05-26T10:30:00"]})
 
 
 class Token(SQLModel):
-    access_token: str
-    token_type: str = "bearer"
+    access_token: str = Field(
+        description="访问令牌",
+        schema_extra={"examples": ["eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."]})
+    token_type: str = Field(
+        default="bearer",
+        description="令牌类型",
+        schema_extra={"examples": ["bearer"]})
 
 
 # Contents of JWT token
 class TokenPayload(SQLModel):
-    sub: str | None = None
+    sub: str | None = Field(
+        default=None,
+        description="令牌主体（用户标识）",
+        schema_extra={"examples": ["550e8400-e29b-41d4-a716-446655440000"]})
 
 
 class NewPassword(SQLModel):
-    token: str
-    new_password: str = Field(min_length=8, max_length=40)
+    token: str = Field(
+        description="重置密码令牌",
+        schema_extra={"examples": ["reset-token-string"]})
+    new_password: str = Field(
+        min_length=8, max_length=40,
+        description="新密码",
+        schema_extra={"examples": ["NewP@ssw0rd123"]})
 
 
 class Success(JSONResponse):
@@ -114,7 +131,9 @@ class FailAuth(JSONResponse):
 
 
 class Image(SQLModel):
-    base64: str
+    base64: str = Field(
+        description="Base64编码的图片数据",
+        schema_extra={"examples": ["data:image/png;base64,iVBORw0KGgo..."]})
 
     class Meta:
         extra = "allow"

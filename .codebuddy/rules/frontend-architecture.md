@@ -148,6 +148,66 @@ export const getXxxList = (params) => http.request<ResultTable>("post", xxxUrl("
 
 **分页响应类型**：`ResultTable` = `{ code, success, msg, data, total, currentPage, pageSize }`
 
+## 模板规则
+
+### 单一根节点（铁律）
+
+所有路由页面组件的 `<template>` **必须只有一个根元素**，用 `<div>` 包裹全部内容。
+
+**原因**：布局组件 `lay-content/index.vue` 使用 `<Transition>` 包裹 `<router-view>` 渲染的路由组件，`<Transition>` 要求子组件为单根节点，多根节点（fragment）会导致 Vue 警告且动画失效：
+
+```
+[Vue warn]: Component inside <Transition> renders non-element root node that cannot be animated.
+```
+
+**正确**：
+```vue
+<template>
+  <div>
+    <div>搜索表单</div>
+    <PureTableBar>表格</PureTableBar>
+    <el-dialog>弹窗</el-dialog>
+  </div>
+</template>
+```
+
+**错误**：
+```vue
+<template>
+  <div>搜索表单</div>       <!-- 根节点 1 -->
+  <PureTableBar>表格</PureTableBar>  <!-- 根节点 2 -->
+  <el-dialog>弹窗</el-dialog>        <!-- 根节点 3 -->
+</template>
+```
+
+**ESLint 自动强制**：`eslint.config.js` 中已对 `src/views/**/*.vue` 启用 `vue/no-multiple-template-root` 规则（error 级别），违反时构建/lint 直接报错，无需人工记忆。非 views 目录的组件（如公共组件）不受此限制。
+
+### 表格自适应高度（adaptiveConfig）
+
+`<pure-table adaptive>` 用于让表格自动撑满剩余视口高度，**禁止硬编码 `adaptiveConfig` 对象字面量**。
+
+**正确用法**：
+```vue
+<script setup lang="ts">
+import { inject, type ComputedRef } from "vue";
+import type { AdaptiveConfig } from "@/layout/hooks/useTableAdaptive";
+
+const adaptiveConfig = inject<ComputedRef<AdaptiveConfig>>("adaptiveConfig");
+</script>
+
+<template>
+  <pure-table adaptive :adaptiveConfig="adaptiveConfig" ... />
+</template>
+```
+
+**错误用法**：
+```vue
+<!-- 禁止：硬编码 offsetBottom -->
+<pure-table adaptive :adaptiveConfig="{ offsetBottom: 108 }" ... />
+```
+
+**ESLint 自动强制**：`eslint-rules/enforce-adaptive-config.js` 规则在 `src/views/` 下检测到 `<pure-table adaptive>` 时，要求必须绑定 `:adaptiveConfig` 且不能是对象字面量。特殊场景需要不同 offset 时，加 `// eslint-disable-next-line zg-admin/enforce-adaptive-config` 注释并说明原因。
+
 ## 配置加载流程
 
 1. 读取 `public/platform-config.json`（静态配置：标题、主题、布局等）

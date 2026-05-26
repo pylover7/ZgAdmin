@@ -71,7 +71,7 @@ class Settings(BaseSettings):
             return "unknown"
     STATIC_PATH: str = str(
         Path(__file__).parent.parent.parent.joinpath("static"))
-    GOODS_PATH: str = str(Path(STATIC_PATH).joinpath("goods"))
+    MAX_UPLOAD_SIZE: int = 100 * 1024 * 1024
     CONFIG_PATH: str = str(
         Path(__file__).parent.parent.parent.joinpath("config"))
 

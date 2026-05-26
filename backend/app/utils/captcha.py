@@ -98,7 +98,7 @@ async def generate_captcha(redis: RedisClient) -> tuple[str, str]:
 async def verify_captcha(
     redis: RedisClient,
     captcha_key: str,
-    captcha_code: str
+    captcha_code: str | None
 ) -> bool:
     """
     验证验证码（一次性使用，验证后立即删除）
@@ -108,6 +108,9 @@ async def verify_captcha(
     :param captcha_code: 用户输入的验证码
     :return: 是否验证通过
     """
+    if captcha_code is None:
+        return False
+
     redis_key = f"{CAPTCHA_KEY_PREFIX}{captcha_key}"
 
     # 获取并删除（原子操作用 pipeline）

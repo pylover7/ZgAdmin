@@ -3,13 +3,16 @@ import urllib.parse
 from datetime import timedelta, datetime
 # from uuid import uuid4
 
-from fastapi import APIRouter, Request, HTTPException, Query
-# from fastapi.websockets import WebSocketState
-from sqlalchemy.orm import selectinload
+from pathlib import Path
+from uuid import UUID
+
+from fastapi import APIRouter, Request, HTTPException, Query, Depends
+from fastapi.responses import FileResponse
+from sqlalchemy.orm import selectinload, InstrumentedAttribute
 from sqlalchemy import func
-from sqlmodel import select, col
+from sqlmodel import select, col, Session
 from jwt.exceptions import ExpiredSignatureError
-# from wechatpayv3 import WeChatPayType
+from typing import cast
 
 from app.controllers.department import deptController
 from app.controllers.user import userController
@@ -18,9 +21,10 @@ from app.models.login import CredentialsSchema, JWTPayload, JWTOut, refreshToken
     JWTReOut, QQLoginSchema
 from app.models.logs import LoginLog
 from app.models.security import SecurityPolicy
-from app.core.dependency import DependUser, DependRateLimit, SessionDep
+from app.core.dependency import DependUser, DependRateLimit, SessionDep, get_db
 from app.core.redis import get_redis
 from app.models import Api, Menu, Role, User, UpdatePassword, UpdateProfile, UpdatePreferences
+from app.models.file import File
 from app.models.base import Fail, Success, FailAuth, SuccessExtra
 from app.settings import settings
 from app.settings.config import base_config
@@ -31,8 +35,7 @@ from app.utils.jwtt import create_access_token, decode_access_token, \
     create_oauth_state, verify_oauth_state
 from app.utils.password import get_password_hash, verify_password
 from app.utils.password_policy import validate_password_strength, check_password_history, update_password_history
-# from app.utils.pay import notify_url
-# from app.utils.pay.wechat import wxpay
+from app.utils.signed_url import verify_signed_url
 
 router = APIRouter()
 
@@ -194,11 +197,8 @@ async def get_userinfo(session: SessionDep, current_user: DependUser):
 
 @router.get("/userMenu", summary="查看用户菜单")
 async def get_user_menu(session: SessionDep, current_user: DependUser):
-    statement = select(User).where(
-        col(User.id) == current_user.id
-    ).options(
-        selectinload(User.roles).selectinload(Role.menus)
-    )
+    statement = select(User).where(col(User.id) == current_user.id).options(selectinload(
+        cast(InstrumentedAttribute, User.roles)).selectinload(cast(InstrumentedAttribute, Role.menus)))
     user_obj = session.exec(statement).first()
     if not user_obj:
         return FailAuth(msg="用户不存在或已被删除！")
@@ -230,11 +230,8 @@ async def get_user_menu(session: SessionDep, current_user: DependUser):
 
 @router.get("/userApi", summary="查看用户API")
 async def get_user_api(session: SessionDep, current_user: DependUser):
-    statement = select(User).where(
-        col(User.id) == current_user.id
-    ).options(
-        selectinload(User.roles).selectinload(Role.apis)
-    )
+    statement = select(User).where(col(User.id) == current_user.id).options(selectinload(
+        cast(InstrumentedAttribute, User.roles)).selectinload(cast(InstrumentedAttribute, Role.apis)))
     user_obj = session.exec(statement).first()
     if not user_obj:
         return FailAuth(msg="用户不存在或已被删除！")
@@ -365,7 +362,7 @@ async def get_login_logs(
     total = session.exec(count_stmt).one()
     stmt = select(LoginLog).where(
         LoginLog.username == user.username
-    ).order_by(LoginLog.time.desc()).offset(offset).limit(pageSize)
+    ).order_by(col(LoginLog.time).desc()).offset(offset).limit(pageSize)
     logs = session.exec(stmt).all()
     list_data = []
     for log in logs:
@@ -383,7 +380,7 @@ async def get_qq_auth_url():
     app_id = base_config.get_config("login", "qq_app_id") or settings.QQ_APP_ID
     redirect_uri = base_config.get_config("login", "qq_redirect_uri") or settings.QQ_REDIRECT_URI
     qq_enabled = settings.FEATURE_QQ_LOGIN and (
-        base_config.get_config("login", "qq_enabled", fallback="false").lower() == "true")
+        (base_config.get_config("login", "qq_enabled", fallback="false") or "").lower() == "true")
 
     if not qq_enabled:
         return Fail(msg="QQ登录未启用")
@@ -480,71 +477,25 @@ async def qq_login(session: SessionDep, qq_login_data: QQLoginSchema):
         return FailAuth(msg="QQ登录失败，请稍后重试")
 
 
-# @router.post("/notify/{name}", summary="支付回调")
-# async def notify(name: str, request: Request, session: SessionDep):
-#     match name:
-#         case "wechat":
-#             result = wxpay.callback(headers=request.headers, body=await request.body())
-#             if result and result.get('event_type') == 'TRANSACTION.SUCCESS':
-#                 resource = result.get('resource')
-#                 out_trade_no = resource.get('out_trade_no')
-#                 # appid = resource.get('appid')
-#                 # mchid = resource.get('mchid')
-#                 # transaction_id = resource.get('transaction_id')
-#                 # trade_type = resource.get('trade_type')
-#                 # trade_state = resource.get('trade_state')
-#                 # trade_state_desc = resource.get('trade_state_desc')
-#                 # bank_type = resource.get('bank_type')
-#                 # attach = resource.get('attach')
-#                 # success_time = resource.get('success_time')
-#                 # payer = resource.get('payer')
-#                 # amount = resource.get('amount').get('total')
-#                 await orderController.complete(session, out_trade_no)
-
-#                 return Success(msg="支付成功")
-#             else:
-#                 return Fail(msg="支付失败")
-
-
-# @router.websocket("/wechat", name="微信支付")
-# async def wechat_pay(websocket: WebSocket, session: SessionDep):
-#     await websocket.accept()
-#     order_code = uuid4().__str__().replace("-", "")[:10] + "-" + now(3)
-#     try:
-#         while True:
-#             data = await websocket.receive_json()
-#             # 检查是否有新的消息
-#             if data.get("type") == "heartbeat":
-#                 logger.debug("心跳中...")
-#                 continue
-#             else:
-#                 # 处理普通信息
-#                 data["code"] = order_code
-#                 obj_in = OrderCreate.model_validate(data)
-#                 order_obj = await orderController.get(session, data["id"])
-#                 if order_obj is None:
-#                     order_obj = await orderController.create(session, obj_in)
-#                     code_url, message = wxpay.pay(
-#                         description=order_obj.goods.name,
-#                         out_trade_no=order_code,
-#                         amount={"total": order_obj.amount},
-#                         pay_type=WeChatPayType.NATIVE,
-#                         notify_url=notify_url("wechat"),
-#                     )
-#                     code_url = json.loads(message)["code_url"]
-#                     result = await order_obj.to_dict()
-#                     coupon = {"code": ""}
-#                     result["coupon"] = coupon
-#                 else:
-#                     session.refresh(order_obj)
-#                     result = await order_obj.to_dict()
-#                     code_url = data["code_url"]
-#                 result["code_url"] = code_url
-#                 await websocket.send_json(result)
-
-#     except Exception as e:
-#         logger.debug(e)
-#         if websocket.client_state == WebSocketState.DISCONNECTED:
-#             logger.debug("客户端已断开连接")
-#         else:
-#             await websocket.close()
+@router.get("/file/download/{file_id}", summary="下载文件（签名URL）")
+async def download_file(
+    file_id: UUID,
+    expires: int = Query(..., description="过期时间戳"),
+    sign: str = Query(..., description="签名"),
+    session: Session | None = Depends(get_db),
+):
+    if not verify_signed_url(file_id, expires, sign):
+        return Fail(msg="签名无效或已过期")
+    if not session:
+        return Fail(msg="数据库连接失败")
+    file_obj = session.get(File, file_id)
+    if not file_obj:
+        return Fail(msg="文件不存在")
+    abs_path = Path(settings.STATIC_PATH) / file_obj.path
+    if not abs_path.exists():
+        return Fail(msg="文件已丢失")
+    return FileResponse(
+        path=str(abs_path),
+        media_type=file_obj.mime_type,
+        filename=file_obj.name,
+    )

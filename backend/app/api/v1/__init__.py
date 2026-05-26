@@ -4,12 +4,12 @@ from app.core.dependency import DependPermission
 
 from .base import base_router
 from .system import systemRouter
-from .pay import payRouter
 from .monitor import monitorRouter
 from .settings import settingsRouter
 from .settings.login import loginProtectedRouter
 from .settings.general import generalProtectedRouter
 from .settings.security import securityProtectedRouter
+from .resource import resourceRouter
 
 v1_router = APIRouter()
 
@@ -39,12 +39,12 @@ v1_router.include_router(
     prefix="/settings",
     dependencies=[DependPermission])
 v1_router.include_router(
-    payRouter,
-    prefix="/pay",
+    monitorRouter,
+    prefix="/monitor",
     dependencies=[DependPermission]
 )
 v1_router.include_router(
-    monitorRouter,
-    prefix="/monitor",
+    resourceRouter,
+    prefix="/resource",
     dependencies=[DependPermission]
 )

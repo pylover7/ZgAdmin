@@ -8,20 +8,22 @@ const { t } = useI18n();
 </script>
 
 <template>
-  <Motion class="-my-2">
-    <ReQrcode :text="t('login.pureTest')" />
-  </Motion>
-  <Motion :delay="100">
-    <el-divider>
-      <p class="text-gray-500 text-xs">{{ t("login.pureTip") }}</p>
-    </el-divider>
-  </Motion>
-  <Motion :delay="150">
-    <el-button
-      class="w-full mt-4!"
-      @click="useUserStoreHook().SET_CURRENTPAGE(0)"
-    >
-      {{ t("login.pureBack") }}
-    </el-button>
-  </Motion>
+  <div>
+    <Motion class="-my-2">
+      <ReQrcode :text="t('login.pureTest')" />
+    </Motion>
+    <Motion :delay="100">
+      <el-divider>
+        <p class="text-gray-500 text-xs">{{ t("login.pureTip") }}</p>
+      </el-divider>
+    </Motion>
+    <Motion :delay="150">
+      <el-button
+        class="w-full mt-4!"
+        @click="useUserStoreHook().SET_CURRENTPAGE(0)"
+      >
+        {{ t("login.pureBack") }}
+      </el-button>
+    </Motion>
+  </div>
 </template>

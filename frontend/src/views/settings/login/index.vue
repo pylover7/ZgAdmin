@@ -192,7 +192,7 @@ const {
               href="https://connect.qq.com/"
               target="_blank"
             >
-              QQ互联
+              {{ $t("system.qqConnect") }}
             </el-link>
           </li>
           <li class="my-1.5 leading-relaxed">{{ $t("system.qqStep2") }}</li>
@@ -211,7 +211,7 @@ const {
               href="https://open.weixin.qq.com/"
               target="_blank"
             >
-              微信开放平台
+              {{ $t("system.wechatOpenPlatform") }}
             </el-link>
           </li>
           <li class="my-1.5 leading-relaxed">{{ $t("system.wechatStep2") }}</li>

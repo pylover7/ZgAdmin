@@ -44,8 +44,8 @@ export function useRole(treeRef: Ref, apiTreeRef: Ref) {
   const isSelectAll = ref(false);
   const tabIndex = ref(0);
   const tabOptions = [
-    { label: "菜单权限", value: 0 },
-    { label: "API权限", value: 1 }
+    { label: transformI18n("system.menu.menuAuth"), value: 0 },
+    { label: transformI18n("system.menu.apiAuth"), value: 1 }
   ];
   const { switchStyle } = usePublicHooks();
   const treeProps = {

@@ -3,9 +3,6 @@ from pathlib import Path
 
 from app.settings import settings
 
-pay_path = Path(settings.CONFIG_PATH).joinpath("pay.ini")
-config_path = Path.joinpath(Path(__file__).parent.parent.parent, "config", "config.yml")
-
 
 class Config:
     def __init__(self, path: Path):
@@ -32,9 +29,4 @@ class Config:
             self.config.write(f)
 
 
-pay_config = Config(pay_path)
 base_config = Config(Path(settings.CONFIG_PATH).joinpath("base.ini"))
-
-if __name__ == '__main__':
-    pay_config = Config(pay_path)
-    print(pay_config.get_config('mysql', 'host'))

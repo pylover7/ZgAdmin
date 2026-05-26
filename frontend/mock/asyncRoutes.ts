@@ -1,6 +1,11 @@
 // 模拟后端动态生成路由
 import { defineFakeRoute } from "vite-plugin-fake-server/client";
-import { system, monitor, permission, frame, tabs } from "@/router/enums";
+// 模拟路由的 rank 值（后端返回菜单排序权重，从非 0 开始）
+const system = 10,
+  monitor = 20,
+  permission = 30,
+  frame = 40,
+  tabs = 50;
 
 /**
  * roles：页面级别权限，这里模拟二种 "admin"、"common"

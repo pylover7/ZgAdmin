@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, inject, computed, type ComputedRef } from "vue";
 import { useDept } from "./utils/hook";
 import { PureTableBar } from "@/components/RePureTableBar";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
+import type { AdaptiveConfig } from "@/layout/hooks/useTableAdaptive";
 
 import Delete from "~icons/ep/delete";
 import EditPen from "~icons/ep/edit-pen";
@@ -15,6 +16,14 @@ defineOptions({
 
 const formRef = ref();
 const tableRef = ref();
+const injectConfig = inject<ComputedRef<AdaptiveConfig>>("adaptiveConfig");
+// 部门管理是树形表格，无分页器，需要减去分页器高度预算（~32px + margin 16px×2 = 64px）
+const adaptiveConfig = computed<AdaptiveConfig>(() => ({
+  offsetBottom: (injectConfig?.value?.offsetBottom ?? 108) - 64,
+  fixHeader: injectConfig?.value?.fixHeader ?? true,
+  timeout: injectConfig?.value?.timeout ?? 60,
+  zIndex: injectConfig?.value?.zIndex ?? 3
+}));
 const {
   form,
   loading,
@@ -96,7 +105,7 @@ function onFullscreen() {
         <pure-table
           ref="tableRef"
           adaptive
-          :adaptiveConfig="{ offsetBottom: 45 }"
+          :adaptiveConfig="adaptiveConfig"
           align-whole="center"
           row-key="id"
           showOverflowTooltip

@@ -110,6 +110,10 @@
     "代码风格检查": {
       "path": "/bin/zsh",
       "args": ["-c", "zsh /workspace/scripts/lint.sh && zsh"]
+    },
+    "Test": {
+      "path": "/bin/zsh",
+      "args": ["-c", "bash /workspace/scripts/test.sh && zsh"]
     }
   },
   "gitblame.inlineMessageEnabled": true,
