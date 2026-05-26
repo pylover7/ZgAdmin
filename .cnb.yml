@@ -1,4 +1,20 @@
 main:
+  # ===== 每日 9:00 依赖版本检测 =====
+  "crontab: 0 9 * * *":
+    - name: dependency-check
+      docker:
+        image: docker.cnb.cool/pylover/tools/zgadmin:env
+        volumes:
+          - ./backend/.venv:rw
+          - ./frontend/node_modules:rw
+      imports:
+        - https://cnb.cool/pylover/key/-/blob/main/deepseek.yml
+      services:
+        - docker
+      stages:
+        - name: check dependencies
+          script: bash scripts/deps-check.sh
+
   push:
     - stages:
         - name: sync to github
