@@ -42,6 +42,7 @@ $:
         - vscode
       imports:
         - https://cnb.cool/pylover/key/-/blob/main/deepseek.yml
+        - https://cnb.cool/pylover/key/-/blob/main/edgeone.yml
       stages:
         - name: ls
           script: ls -la

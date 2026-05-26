@@ -10,8 +10,8 @@ hero:
       text: 快速开始
       link: /guide/quick-start
     - theme: alt
-      text: GitHub
-      link: https://github.com/pylover7/ZgAdmin
+      text: CNB
+      link: https://cnb.cool/pylover/Tools/ZgAdmin
 
 features:
   - title: 一键启动
