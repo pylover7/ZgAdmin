@@ -1,14 +1,16 @@
 """单行配置表统一控制器 — 所有全局配置表共享同一模式：
 获取唯一行 / 更新字段 / 敏感字段脱敏"""
-from typing import Type, TypeVar
+from typing import Generic, Type, TypeVar
 
 from sqlmodel import Session, select, SQLModel
 
-T = TypeVar("T", bound=SQLModel)
+from app.models.base import BaseModel
+
+T = TypeVar("T", bound=BaseModel)
 U = TypeVar("U", bound=SQLModel)
 
 
-class ConfigController:
+class ConfigController(Generic[T, U]):
     """单行配置表控制器 — 不继承 CRUDBase，因为单行表的访问模式与多行 CRUD 完全不同"""
 
     def __init__(self, model: Type[T], update_model: Type[U]):

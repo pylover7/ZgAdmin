@@ -1,6 +1,9 @@
 from sqlmodel import Session, SQLModel, select
 from fastapi import FastAPI
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from alembic.config import Config
+from alembic import command
+from pathlib import Path
 
 from app.controllers.user import userController
 from app.core.schedule import update_expired_orders
@@ -124,3 +127,8 @@ async def init_data(app: FastAPI) -> None:
         logger.info("启动定时任务...")
         scheduler.add_job(update_expired_orders, "interval", seconds=120)
         scheduler.start()
+
+    # 同步 alembic 版本标记，确保 create_all 建表后 alembic 不会重复跑迁移
+    alembic_cfg = Config(str(Path(__file__).resolve().parent.parent.parent / "alembic.ini"))
+    command.stamp(alembic_cfg, "head")
+    logger.info("Alembic 版本已标记为 head")
