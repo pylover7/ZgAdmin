@@ -20,7 +20,7 @@ class BaseModel(SQLModel):
             exclude_fields = []
 
         d = {}
-        for field in self.model_fields:
+        for field in self.__class__.model_fields:
             if field not in exclude_fields:
                 value = getattr(self, field)
                 if isinstance(value, datetime):
