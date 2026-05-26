@@ -318,9 +318,9 @@ Phase 0 (立即) → Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 →
 > **分支**：`test/core-coverage`
 > **风险**：🟢 低。
 
-- [ ] 后端单元测试：用户、角色、权限、通知模块
-- [ ] 后端集成测试：所有 API 端点（login → CRUD → logout 完整流程）
-- [ ] 前端 E2E 测试：登录、用户 CRUD、通知收发关键路径
+- [x] 后端单元测试：用户、角色、权限、通知模块
+- [x] 后端集成测试：所有 API 端点（login → CRUD → logout 完整流程）
+- [x] 前端 E2E 测试：登录、用户 CRUD、通知收发关键路径
 
 ### 7.3 国际化与文档
 

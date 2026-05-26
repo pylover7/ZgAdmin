@@ -486,6 +486,8 @@ async def download_file(
 ):
     if not verify_signed_url(file_id, expires, sign):
         return Fail(msg="签名无效或已过期")
+    if not session:
+        return Fail(msg="数据库连接失败")
     file_obj = session.get(File, file_id)
     if not file_obj:
         return Fail(msg="文件不存在")
