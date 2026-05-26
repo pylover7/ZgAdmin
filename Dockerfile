@@ -75,6 +75,8 @@ COPY --from=frontend /usr/share/nginx/html /usr/share/nginx/html
 
 # 从后端阶段复制后端应用
 COPY --from=backend /app /backend
+# 保留默认配置模板（bind mount 可能覆盖 /backend/config/）
+RUN cp -r /backend/config /backend/config.default
 # 安装后端依赖
 WORKDIR /backend
 RUN uv sync --frozen --no-dev

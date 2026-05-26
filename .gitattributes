@@ -1,2 +1,5 @@
-public/wasm/capture.worker.js linguist-language=Vue
-public/wasm/index.js linguist-language=Vue
+# 第三方 JS 库 — 排除语言统计
+public/wasm/** linguist-vendored
+src/assets/iconfont/** linguist-vendored
+src/components/ReSplitPane/iconfont/** linguist-vendored
+src/components/ReFlowChart/src/assets/iconfont/** linguist-vendored

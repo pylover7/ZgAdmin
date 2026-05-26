@@ -7,8 +7,8 @@
 .venv/
 */migrations
 */logs
-*/config
 material-*/
+htmlcov/
 
 # frontend
 node_modules

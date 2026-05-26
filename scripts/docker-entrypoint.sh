@@ -36,21 +36,16 @@ trap shutdown SIGTERM SIGINT SIGQUIT
 # ── 初始化配置目录 ───────────────────────────────────────────────────────────
 # 当使用 bind mount 时，挂载的 config 目录可能为空，需要写入默认配置
 CONFIG_DIR="/backend/config"
+CONFIG_DEFAULT="/backend/config.default/base.ini"
 if [ ! -f "$CONFIG_DIR/base.ini" ]; then
     echo "[ENTRYPOINT] 初始化配置文件..."
     mkdir -p "$CONFIG_DIR"
-    cat > "$CONFIG_DIR/base.ini" << 'EOF'
-[login]
-qq_app_id = test_id
-qq_app_key = test_key
-qq_redirect_uri = http://localhost/callback
-qq_enabled = false
-
-[general]
-site_name = 测试站点
-site_desc = 测试描述
-EOF
-    echo "[ENTRYPOINT] 已生成默认配置: $CONFIG_DIR/base.ini"
+    if [ -f "$CONFIG_DEFAULT" ]; then
+        cp "$CONFIG_DEFAULT" "$CONFIG_DIR/base.ini"
+        echo "[ENTRYPOINT] 已从默认模板复制配置: $CONFIG_DIR/base.ini"
+    else
+        echo "[ENTRYPOINT] 警告: 默认配置模板不存在，跳过初始化"
+    fi
 fi
 
 # ── 启动 nginx（前端） ─────────────────────────────────────────────────────────
