@@ -1,10 +1,6 @@
-from pydantic import (
-    PostgresDsn,
-    MySQLDsn,
-)
-from pydantic_core import MultiHostUrl
-from typing import Optional
 from pathlib import Path
+
+from pydantic_core import MultiHostUrl
 
 
 def db_engine(
@@ -17,24 +13,24 @@ def db_engine(
 ) -> str:
     match scheme:
         case "postgresql":
-            return MultiHostUrl.build(
+            return str(MultiHostUrl.build(
                 scheme="postgresql+psycopg",
                 username=username,
                 password=password,
                 host=host,
                 port=port,
                 path=path
-            ).__str__()
+            ))
         case "mysql":
-            return MultiHostUrl.build(
+            return str(MultiHostUrl.build(
                 scheme="mysql+pymysql",
                 username=username,
                 password=password,
                 host=host,
                 port=port,
                 path=path
-            ).__str__()
+            ))
         case _:
             return f"sqlite:////{
                 Path(__file__).parent.parent.parent.joinpath(
-                    "static", "pytool.sqlite")}"
+                    "static", "zgadmin.sqlite")}"

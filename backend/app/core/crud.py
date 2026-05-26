@@ -37,11 +37,11 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         for item in result:
             session.delete(item)
         session.commit()
-        return result.__len__()
+        return len(result)
 
-    async def update(self, session: Session, id: UUID,
+    async def update(self, session: Session, pk: UUID,
                      obj_in: UpdateSchemaType) -> Optional[ModelType]:
-        db_obj: Optional[ModelType] = session.get(self.model, id)
+        db_obj: Optional[ModelType] = session.get(self.model, pk)
         if db_obj is None:
             return None
         # Update fields manually
@@ -53,11 +53,11 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         session.refresh(db_obj)
         return db_obj
 
-    async def get(self, session: Session, id: UUID) -> ModelType | None:
-        return session.get(self.model, id)
+    async def get(self, session: Session, pk: UUID) -> ModelType | None:
+        return session.get(self.model, pk)
 
     async def get_latest(self, session: Session) -> ModelType | None:
-        statement = select(self.model).order_by(col("id").desc())
+        statement = select(self.model).order_by(col(self.model.id).desc())
         return session.exec(statement).first()
 
     async def all(self, session: Session) -> list[ModelType]:
@@ -75,7 +75,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         id_column = getattr(self.model, "id", None)
         if id_column is None:
             raise AttributeError(f"{self.model.__name__} does not have an 'id' attribute")
-        count_stmt = select(func.count(id_column))
+        count_stmt = select(func.count()).select_from(self.model)
         if where is not None:
             count_stmt = count_stmt.where(where)
         total = session.exec(count_stmt).one()

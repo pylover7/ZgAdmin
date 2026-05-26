@@ -1,3 +1,5 @@
+import { transformI18n } from "@/plugins/i18n";
+
 /** 日期、时间选择器快捷选项，常搭配 [DatePicker](https://element-plus.org/zh-CN/component/date-picker.html) 和 [DateTimePicker](https://element-plus.org/zh-CN/component/datetime-picker.html) 的`shortcuts`属性使用 */
 export const getPickerShortcuts = (): Array<{
   text: string;
@@ -5,7 +7,7 @@ export const getPickerShortcuts = (): Array<{
 }> => {
   return [
     {
-      text: "今天",
+      text: transformI18n("system.datePicker.today"),
       value: () => {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -15,7 +17,7 @@ export const getPickerShortcuts = (): Array<{
       }
     },
     {
-      text: "昨天",
+      text: transformI18n("system.datePicker.yesterday"),
       value: () => {
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
@@ -27,7 +29,7 @@ export const getPickerShortcuts = (): Array<{
       }
     },
     {
-      text: "前天",
+      text: transformI18n("system.datePicker.dayBeforeYesterday"),
       value: () => {
         const beforeYesterday = new Date();
         beforeYesterday.setDate(beforeYesterday.getDate() - 2);
@@ -39,7 +41,7 @@ export const getPickerShortcuts = (): Array<{
       }
     },
     {
-      text: "本周",
+      text: transformI18n("system.datePicker.thisWeek"),
       value: () => {
         const today = new Date();
         const startOfWeek = new Date(
@@ -60,7 +62,7 @@ export const getPickerShortcuts = (): Array<{
       }
     },
     {
-      text: "上周",
+      text: transformI18n("system.datePicker.lastWeek"),
       value: () => {
         const today = new Date();
         const startOfLastWeek = new Date(
@@ -81,7 +83,7 @@ export const getPickerShortcuts = (): Array<{
       }
     },
     {
-      text: "本月",
+      text: transformI18n("system.datePicker.thisMonth"),
       value: () => {
         const today = new Date();
         const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
@@ -96,7 +98,7 @@ export const getPickerShortcuts = (): Array<{
       }
     },
     {
-      text: "上个月",
+      text: transformI18n("system.datePicker.lastMonth"),
       value: () => {
         const today = new Date();
         const startOfLastMonth = new Date(
@@ -115,7 +117,7 @@ export const getPickerShortcuts = (): Array<{
       }
     },
     {
-      text: "本年",
+      text: transformI18n("system.datePicker.thisYear"),
       value: () => {
         const today = new Date();
         const startOfYear = new Date(today.getFullYear(), 0, 1);

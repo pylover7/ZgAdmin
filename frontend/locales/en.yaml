@@ -19,6 +19,8 @@ buttons:
   pureBackTop: BackTop
   pureOpenText: Open
   pureCloseText: Close
+  pureWatchMore: Watch More
+  pureMarkAsRead: Mark As Read
 search:
   pureTotal: Total
   pureHistory: History
@@ -79,6 +81,7 @@ menus:
   pureSysSettings: Settings
   pureGenSettings: General
   pureLoginSettings: Login Settings
+  pureSecuritySettings: Security
   pureCodeMirror: CodeMirror
   pureMarkdown: Markdown
   pureEditor: Editor
@@ -191,6 +194,9 @@ menus:
   pureMindMap: Mind Map
   pureMenuOverflow: Menu Overflow Show Tooltip Text
   pureChildMenuOverflow: Child Menu Overflow Show Tooltip Text
+  zgNoticeSettings: Notice Manage
+  zgResourceManagement: Resource
+  zgFileManager: File Manager
 status:
   pureLoad: Loading...
   pureMessage: Message
@@ -243,6 +249,23 @@ login:
   purePassWordSureReg: Please confirm password
   purePassWordDifferentReg: Passwords do not match!
   purePassWordUpdateReg: Password updated successfully
+tableBar:
+  pureList: List
+  pureLarge: Large
+  pureDefault: Default
+  pureSmall: Small
+  pureColumnSettings: Column Settings
+  pureCollapse: Collapse
+  pureExpand: Expand
+  pureRefresh: Refresh
+  pureDensity: Density
+  pureColumnDisplay: Column Display
+  pureReset: Reset
+  pureExitFullScreen: Exit FullScreen
+  pureFullScreen: FullScreen
+  purePinLeft: Pin Left
+  purePinRight: Pin Right
+  pureUnpin: Unpin
 system:
   username: Username
   email: Email
@@ -274,7 +297,13 @@ system:
   confirm: Confirm
   select: Select
   success: Success
+  fail: Failed
   createTime: Created
+  startTime: Start Time
+  endTime: End Time
+  selected: Selected
+  deptName: Department Name
+  expandCollapse: Expand/Collapse
   show: Yes
   hide: No
   pleaseSelect: Please Select
@@ -347,6 +376,38 @@ system:
     loginLog: Login Log
     operationLog: Operation Log
     systemLog: System Log
+    load: Load
+    cpu: CPU
+    memory: Memory
+    disk: Disk
+    network: Network
+    diskIO: Disk IO
+    load1: 1 min
+    load5: 5 min
+    load15: 15 min
+    cores: Cores
+    status: Status
+    cpuFreq: Frequency
+    physicalCores: Physical
+    logicalCores: Logical
+    total: Total
+    used: Used
+    available: Available
+    cached: Cached
+    buffers: Buffers
+    free: Free
+    shared: Shared
+    pause: Pause refresh
+    resume: Resume refresh
+    fetchError: Failed to fetch data, please retry later
+    systemStatus: Status
+    realtimeMonitor: Monitor
+    totalSent: Total Sent
+    totalRecv: Total Recv
+    upload: Upload
+    download: Download
+    read: Read
+    write: Write
   settings:
     title: System Settings
     general: General
@@ -361,6 +422,10 @@ system:
     siteName: Site Name
     siteDesc: Description
     logo: Logo
+    defaultLang: Default Language
+    enableEmail: Enable Email
+    copyright: Copyright
+    icp: ICP License
   loginSettings:
     title: Login Settings
     qqConfig: QQ Login
@@ -368,3 +433,340 @@ system:
   appId: App ID
   appKey: App Key
   redirectUri: Redirect URI
+  siteInfo: Site Information
+  funcSettings: Feature Settings
+  otherInfo: Other Information
+  saveSuccess: Saved successfully
+  saveFail: Save failed
+  resetConfirm: Are you sure to reset all settings?
+  resetSuccess: Reset successfully
+  tip: Tip
+  enableEmailTip: System will not send any email notifications when disabled
+  loadFailed: Load failed
+  passwordStrength: Strong
+  passwordModified: Password changed successfully
+  passwordModifyFail: Failed to change password
+  fieldModified: Modified successfully
+  fieldModifyFail: Modification failed
+  notImplemented: Not implemented yet
+  accountPassword: Account Password
+  passwordStrengthCurrent: "Current password strength: Strong"
+  securityPhone: Security Phone
+  bindPhoneTip: Bind phone to recover password via SMS
+  boundPhone: Bound phone
+  securityQuestion: Security Question
+  securityQuestionTip: No security question set. It can effectively protect your account
+  backupEmail: Backup Email
+  boundEmail: Bound email
+  bindEmailTip: Bound email can be used to recover password
+  changePassword: Change Password
+  confirmNewPassword: Confirm New Password
+  pleaseEnterCurrentPwd: Please enter current password
+  pleaseEnterNewPwd: Please enter new password
+  pleaseReenterNewPwd: Please re-enter new password
+  pwdLengthRange: Password must be 8-40 characters
+  pwdNotMatch: Passwords do not match
+  confirmModify: Confirm
+  pleaseEnterNewPhone: Please enter new phone
+  pleaseEnterNewEmail: Please enter new email
+  pleaseEnterPhone: Please enter phone number
+  pleaseEnterEmail: Please enter email
+  emailFormatError: Please enter a valid email address
+  phoneFormatError: Please enter a valid phone number
+  modify: Modify
+  accountManagement: Account Management
+  modifySecurityPhone: Modify Security Phone
+  modifyBackupEmail: Modify Backup Email
+  preferences: Preferences
+  notifyAccount: Account Password
+  notifyAccountTip: Other users' messages will be notified via in-app message
+  notifySystem: System Messages
+  notifySystemTip: System messages will be notified via in-app message
+  notifyTask: Todo Tasks
+  notifyTaskTip: Todo tasks will be notified via in-app message
+  settingSuccess: Setting saved
+  settingFail: Setting failed
+  yes: Yes
+  no: No
+  profile: Profile
+  nicknameRequired: Nickname is required
+  emailRequired: Email is required
+  pleaseEnterNickname: Please enter nickname
+  contactPhone: Contact Phone
+  pleaseEnterContactPhone: Please enter contact phone
+  introduction: Introduction
+  pleaseEnterIntroduction: Please enter introduction
+  updateProfile: Update Profile
+  updateProfileSuccess: Profile updated successfully
+  updateProfileFail: Failed to update profile
+  copyrightPlaceholder: e.g. Copyright © 2024 ZgAdmin
+  icpPlaceholder: e.g. ICP License No.
+  siteNameMax: Site name must not exceed 50 characters
+  siteDescMax: Site description must not exceed 200 characters
+  pleaseSelectLang: Please select default language
+  qqLoginDisabled: QQ Login is disabled
+  wechatLoginDisabled: WeChat Login is disabled
+  qqRedirectTip: This URL needs to be configured in QQ Connect backend, e.g. http://localhost:7000/login/qq/callback
+  wechatRedirectTip: This URL needs to be configured in WeChat Open Platform backend, e.g. http://localhost:7000/login/wechat/callback
+  invalidUrl: Please enter a valid URL
+  configGuide: Configuration Guide
+  qqConfigSteps: "QQ Login Configuration Steps:"
+  qqStep1: Visit QQ Connect and sign in
+  qqStep2: Create an application and get App ID and App Key
+  qqStep3: Configure the callback domain, must match the above
+  qqStep4: Wait for review approval
+  wechatConfigSteps: "WeChat Login Configuration Steps:"
+  wechatStep1: Visit WeChat Open Platform and sign in
+  wechatStep2: Create a web application and get AppID and AppSecret
+  wechatStep3: Configure the authorization callback domain, must match the above
+  wechatStep4: Wait for review approval
+  security:
+    policyConfig: Security Policy
+    passwordPolicy: Password Policy
+    loginProtection: Login Protection
+    ipBlackWhiteList: IP Blacklist/Whitelist
+    minPasswordLength: Min Password Length
+    requireUppercase: Require Uppercase
+    requireLowercase: Require Lowercase
+    requireDigit: Require Digit
+    requireSpecial: Require Special Character
+    passwordHistory: Password History Check
+    passwordHistoryTip: Cannot reuse last N passwords, 0 means no check
+    maxLoginAttempts: Max Login Attempts
+    maxLoginAttemptsTip: Lock account after N consecutive failures
+    lockoutDuration: Lockout Duration (min)
+    lockoutDurationTip: Wait time after account locked
+    captchaEnabled: Enable Login Captcha
+    savePolicy: Save Policy
+    policySaveSuccess: Security policy saved successfully
+    ipPriorityNote: "Whitelist takes priority: if whitelist rules exist, only whitelisted IPs can access; blacklisted IPs are directly denied."
+    noIpRules: No IP rules yet
+    addRule: Add Rule
+    editRule: Edit IP Rule
+    ipCidr: IP/CIDR
+    ruleType: Rule Type
+    whitelist: Whitelist
+    blacklist: Blacklist
+    description: Description
+    enabled: Enabled
+    disabled: Disabled
+    createdAt: Created At
+    ipRuleAddSuccess: IP rule added successfully
+    ipRuleUpdateSuccess: IP rule updated successfully
+    ipRuleDeleteConfirm: Are you sure to delete the selected IP rules?
+    enterIpCidr: Please enter IP address or CIDR
+    ipCidrPlaceholder: e.g. 192.168.1.0/24 or 10.0.0.1
+    optionalRemark: Optional remark
+    deleteLogConfirm: Are you sure to delete this log?
+  requestTime: Request Time
+  requestMethod: Request Method
+  requestDuration: Request Duration
+  requestUrl: Request URL
+  responseHeaders: Response Headers
+  responseBody: Response Body
+  requestHeaders: Request Headers
+  requestBody: Request Body
+  ip: IP Address
+  location: Location
+  os: OS
+  browser: Browser Type
+  module: Module
+  menu:
+    menuLabel: Menu
+    externalLink: External Link
+    btnLabel: Button
+    showLabel: Show
+    showTip: Will be displayed in the menu
+    hideLabel: Hide
+    hideTip: Will not be displayed in the menu
+    fixed: Fixed
+    fixedTip: Current menu name is fixed in the tab and cannot be closed
+    unfixed: Unfixed
+    unfixedTip: Current menu name is not fixed in the tab and can be closed
+    cache: Cache
+    cacheTip: Will save the page state, cleared on refresh
+    noCache: No Cache
+    noCacheTip: Will not save the page state
+    allow: Allow
+    allowTip: Allow the menu name to be added to the tab
+    forbid: Forbid
+    forbidTip: Forbid the menu name from being added to the tab
+    showParent: Show
+    showParentTip: Will show parent menu
+    hideParent: Hide
+    hideParentTip: Will not show parent menu
+    loadingOn: On
+    loadingOnTip: Has first load animation
+    loadingOff: Off
+    loadingOffTip: No first load animation
+    parentMenu: Parent Menu
+    selectParentMenu: Please select parent menu
+    enterMenuName: Please enter menu name
+    enterRouteName: Please enter route name
+    enterRoutePath: Please enter route path
+    enterComponent: Please enter component path
+    menuSort: Menu Sort
+    redirect: Redirect
+    enterRedirect: Please enter redirect URL
+    menuIcon: Menu Icon
+    extraIcon: Extra Icon
+    extraIconPlaceholder: Extra icon on the right side of menu name
+    enterTransition: Enter Transition
+    selectEnterTransition: Please select enter transition
+    leaveTransition: Leave Transition
+    selectLeaveTransition: Please select leave transition
+    activeMenu: Active Menu
+    enterActiveMenu: Please enter active menu
+    authLabel: Permission
+    enterAuth: Please enter permission
+    frameUrl: Frame URL
+    enterFrameUrl: Please enter iframe URL
+    frameLoading: Frame Loading
+    showLinkLabel: Menu
+    showParentLabel: Parent Menu
+    keepAliveLabel: Keep Alive
+    hiddenTagLabel: Tab
+    fixedTagLabel: Fixed Tab
+    titleRequired: Menu name is required
+    routeNameRequired: Route name is required
+    routePathRequired: Route path is required
+    authRequired: Permission is required
+    menuAuth: Menu Permission
+    apiAuth: API Permission
+  nicknamePlaceholder: Please enter nickname
+  usernamePlaceholder: Please enter username
+  passwordPlaceholder: Please enter password
+  phonePlaceholder: Please enter phone number
+  emailPlaceholder: Please enter email
+  sexPlaceholder: Please select gender
+  deptPlaceholder: Please select department
+  remarkPlaceholder: Please enter remark
+  userNickname: Nickname
+  userName: Username
+  userPassword: Password
+  userPhone: Phone
+  userEmail: Email
+  userSex: Gender
+  userDept: Department
+  userStatus: Status
+  roleNameRequired: Role name is required
+  roleCodeRequired: Role code is required
+  enterRoleName: Please enter role name
+  enterRoleCode: Please enter role code
+  roleList: Role List
+  deptSearchPlaceholder: Enter department name
+  collapseAll: Collapse All
+  expandAll: Expand All
+  usernameRequired: Username is required
+  passwordRequired: Password is required
+  phoneInputRequired: Please enter phone number
+  emailInputRequired: Please enter email
+  deptNameRequired: Department name is required
+  back: Back
+  qqConnect: QQ Connect
+  wechatOpenPlatform: WeChat Open Platform
+  qqAccountLogin: QQ Account Login
+  qqSecureLogin: Login securely with QQ, no password needed
+  qqAuthUrlFail: Failed to get QQ auth URL, please retry later
+  qqMissingParams: Missing required authorization parameters
+  qqStateVerifyFail: State verification failed, please login again
+  qqLoginFail: QQ login failed, please retry later
+  qqAuthUrlUnavailable: Unable to get QQ auth URL, please retry later
+  loggingIn: Logging in...
+  clickRefreshCaptcha: Click to refresh captcha
+  simplifiedChinese: Simplified Chinese
+  langZhCN: Simplified Chinese
+  langEn: English
+  deletedSelectedLogs: Selected logs have been deleted
+  sysManagement: System Management
+  sysSystem: System
+  sysDatabase: Database
+  moduleLabel: Module
+  logLevelLabel: Log Level
+  operationLabel: Actions
+  datePicker:
+    today: Today
+    yesterday: Yesterday
+    dayBeforeYesterday: Day Before Yesterday
+    thisWeek: This Week
+    lastWeek: Last Week
+    thisMonth: This Month
+    lastMonth: Last Month
+    thisYear: This Year
+  about:
+    currentVersion: Current Version
+    pythonVersion: Python Version
+    uvVersion: uv Version
+    codeRepository: Code Repository
+    reportIssue: Report Issue
+    lastBuildTime: Last Build Time
+    recommendedNodeVersion: Recommended Node Version
+    recommendedBunVersion: Recommended Bun Version
+    fullVersionAddress: Full Version Code
+    fullVersionLink: Full Version Link
+    thinVersionAddress: Thin Version Code
+    thinVersionLink: Thin Version Link
+    docAddress: Documentation
+    docLink: Documentation Link
+    previewAddress: Preview
+    previewLink: Preview Link
+  notice:
+    title: Notice Title
+    type: Notice Type
+    level: Notice Level
+    content: Content
+    status: Status
+    sysNotice: System Notice
+    bizNotice: Business Notice
+    announce: Announcement
+    sys: System
+    biz: Business
+    info: Info
+    warn: Warning
+    important: Important
+    draft: Draft
+    published: Published
+    publishNotice: Publish Notice
+    enterTitle: Enter notice title
+    selectType: Select notice type
+    selectLevel: Select notice level
+    enterContent: Enter notice content
+    selectStatus: Select status
+    titleRequired: Notice title is required
+    typeRequired: Please select notice type
+    levelRequired: Please select notice level
+    atLeastOne: Please select at least one item
+    batchDeleteSuccess: Batch delete successful
+    deleteSuccess: Deleted successfully
+    deleteNoticeConfirm: Confirm to delete this notice?
+    noticeLabel: Notice
+  file:
+    name: File Name
+    namePlaceholder: Enter file name
+    fileType: File Type
+    fileTypePlaceholder: Select file type
+    size: Size
+    uploader: Uploader
+    typeImage: Image
+    typeDocument: Document
+    typeVideo: Video
+    typeAudio: Audio
+    typeOther: Other
+    upload: Upload
+    dragTip: Drop files here, or
+    clickUpload: click to upload
+    preview: Preview
+    download: Download
+    rename: Rename
+    delete: Delete
+    batchDelete: Batch Delete
+    newName: Enter new file name
+    nameRequired: File name is required
+    renameSuccess: Renamed successfully
+    deleteSuccess: Deleted successfully
+    confirmDelete: Confirm to delete this file?
+    atLeastOne: Please select at least one file
+    batchDeleteSuccess: Batch delete successful
+    uploadSuccess: Upload successful
+    uploadFail: Upload failed
+    uploadPartial: Partial upload completed

@@ -20,7 +20,7 @@ from app.settings.database import db_engine
 def parse_cors(v: Any) -> list[str] | str:
     if isinstance(v, str) and not v.startswith("["):
         return [i.strip() for i in v.split(",")]
-    elif isinstance(v, list | str):
+    if isinstance(v, list | str):
         return v
     raise ValueError(v)
 
@@ -37,7 +37,7 @@ class Settings(BaseSettings):
     # 60 minutes * 24 hours * 8 days = 8 days
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 2
-    REFRESH_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 2
+    REFRESH_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 3
     FRONTEND_HOST: str = "http://localhost:7000"
     HOST: str = "0.0.0.0"
     PORT: int = 7001
@@ -50,17 +50,17 @@ class Settings(BaseSettings):
         list[AnyUrl] | list[str] | str, BeforeValidator(parse_cors)
     ] = ["*"]
 
-    @computed_field  # type: ignore[prop-decorator]
+    @computed_field
     @property
     def all_cors_origins(self) -> list[str]:
         return [str(origin).rstrip("/") for origin in self.BACKEND_CORS_ORIGINS] + [
             self.FRONTEND_HOST
         ]
 
-    PROJECT_NAME: str = "PyTool"
+    PROJECT_NAME: str = "ZgAdmin"
     PROJECT_DESCRIPTION: str = "一个开源的在线工具箱"
 
-    @computed_field  # type: ignore[prop-decorator]
+    @computed_field
     @property
     def VERSION(self) -> str:
         """从 VERSION 文件读取版本号"""
@@ -69,29 +69,27 @@ class Settings(BaseSettings):
             return version_file.read_text().strip()
         except Exception:
             return "unknown"
-    STATIC_PATH: str = Path(
-        __file__).parent.parent.parent.joinpath("static").__str__()
-    AVATAR_PATH: str = Path(STATIC_PATH).joinpath("avatar").__str__()
-    GOODS_PATH: str = Path(STATIC_PATH).joinpath("goods").__str__()
-    CONFIG_PATH: str = Path(
-        __file__).parent.parent.parent.joinpath("config").__str__()
+    STATIC_PATH: str = str(
+        Path(__file__).parent.parent.parent.joinpath("static"))
+    MAX_UPLOAD_SIZE: int = 100 * 1024 * 1024
 
     SENTRY_DSN: HttpUrl | None = None
 
     # 功能开关 — 设为 false 可关闭对应模块
-    FEATURE_QQ_LOGIN: bool = False         # QQ 登录
-    FEATURE_WECHAT_LOGIN: bool = False     # 微信登录
-    FEATURE_EMAIL: bool = False            # 邮件发送
-    FEATURE_MONITOR_LOG: bool = True       # 操作日志/登录日志记录
+    FEATURE_QQ_LOGIN: bool = False
+    FEATURE_WECHAT_LOGIN: bool = False
+    FEATURE_EMAIL: bool = False
+    FEATURE_MONITOR_LOG: bool = True
 
     DB_SCHEME: str = "sqlite"
     DB_SERVER: str = "localhost"
     DB_PORT: int = 5432
     DB_USER: str = "postgres"
     DB_PASSWORD: str = "test"
-    DB_PATH: str = "pytool.sqlite"
+    DB_PATH: str = "zgadmin.sqlite"
+    REDIS_URL: str = ""  # 空=自动（dev用内存，prod需配置redis://host:port/db）
 
-    @computed_field  # type: ignore[prop-decorator]
+    @computed_field
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> str:
         return db_engine(
@@ -120,7 +118,7 @@ class Settings(BaseSettings):
 
     EMAIL_RESET_TOKEN_EXPIRE_HOURS: int = 48
 
-    @computed_field  # type: ignore[prop-decorator]
+    @computed_field
     @property
     def emails_enabled(self) -> bool:
         return bool(self.SMTP_HOST and self.EMAILS_FROM_EMAIL)
@@ -171,6 +169,14 @@ class Settings(BaseSettings):
     def _enforce_non_default_secrets(self) -> Self:
         if not self.SECRET_KEY:
             self.SECRET_KEY = self._resolve_secret_key()
+        # 生产环境检查 CORS 不为 *
+        if self.ENVIRONMENT == "production":
+            cors_origins = self.BACKEND_CORS_ORIGINS
+            if cors_origins in (["*"], "*"):
+                raise ValueError(
+                    '生产环境 BACKEND_CORS_ORIGINS 不可为 ["*"]，'
+                    "请在 .env 或环境变量中配置具体域名"
+                )
         return self
 
     APP_LOG_CONFIG: dict = {
@@ -221,4 +227,4 @@ class Settings(BaseSettings):
     }
 
 
-settings = Settings()  # type: ignore
+settings = Settings()

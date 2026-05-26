@@ -1,6 +1,6 @@
 {
-  "Version": "0.0.1",
-  "Title": "PyTool",
+  "Version": "0.0.3",
+  "Title": "ZgAdmin",
   "FixedHeader": true,
   "HiddenSideBar": false,
   "MultiTagsCache": false,
@@ -9,7 +9,7 @@
   "Layout": "vertical",
   "Theme": "light",
   "DarkMode": false,
-  "OverallStyle": "light",
+  "ThemeMode": "light",
   "Grey": false,
   "Weak": false,
   "HideTabs": false,
@@ -18,7 +18,9 @@
   "SidebarStatus": true,
   "EpThemeColor": "#409EFF",
   "ShowLogo": true,
-  "ShowModel": "smart",
+  "Watermark": false,
+  "WatermarkText": "ZgAdmin",
+  "TagsStyle": "smart",
   "MenuArrowIconNoTransition": false,
   "CachingAsyncRoutes": false,
   "TooltipEffect": "light",
@@ -30,6 +32,8 @@
       "resizeEnable": true,
       "center": [113.6401, 34.72468],
       "zoom": 12
-    }
+    },
+  "RepositoryUrl": "https://cnb.cool/pylover/Tools/ZgAdmin",
+  "IssuesUrl": "https://cnb.cool/pylover/Tools/ZgAdmin/-/issues"
   }
 }

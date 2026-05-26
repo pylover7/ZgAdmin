@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, inject, type ComputedRef } from "vue";
 import { useRole } from "./hook";
 import { getPickerShortcuts } from "../../utils";
 import { PureTableBar } from "@/components/RePureTableBar";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
+import type { AdaptiveConfig } from "@/layout/hooks/useTableAdaptive";
 
 import Delete from "~icons/ep/delete";
 import Refresh from "~icons/ep/refresh";
@@ -14,6 +15,7 @@ defineOptions({
 
 const formRef = ref();
 const tableRef = ref();
+const adaptiveConfig = inject<ComputedRef<AdaptiveConfig>>("adaptiveConfig");
 
 const {
   form,
@@ -40,14 +42,14 @@ const {
       ref="formRef"
       :inline="true"
       :model="form"
-      class="search-form bg-bg_color w-full pl-8 pt-[12px] overflow-auto"
+      class="search-form bg-bg_color w-full pl-8 pt-3 overflow-auto"
     >
       <el-form-item :label="$t('system.logModule')" prop="module">
         <el-select
           v-model="form.module"
-          placeholder="请选择所属模块"
+          :placeholder="$t('system.pleaseSelect') + $t('system.logModule')"
           clearable
-          class="w-[170px]!"
+          class="w-42.5!"
           @change="onSearch"
         >
           <el-option
@@ -75,20 +77,27 @@ const {
           :loading="loading"
           @click="onSearch"
         >
-          搜索
+          {{ $t("system.search") }}
         </el-button>
         <el-button :icon="useRenderIcon(Refresh)" @click="resetForm(formRef)">
-          重置
+          {{ $t("system.reset") }}
         </el-button>
       </el-form-item>
     </el-form>
 
-    <PureTableBar :title="$t('system.systemLog')" :columns="columns" @refresh="onSearch">
+    <PureTableBar
+      :title="$t('system.systemLog')"
+      :columns="columns"
+      @refresh="onSearch"
+    >
       <template #buttons>
-        <el-popconfirm :title="$t('system.clearLogConfirm')" @confirm="clearAll">
+        <el-popconfirm
+          :title="$t('system.clearLogConfirm')"
+          @confirm="clearAll"
+        >
           <template #reference>
             <el-button type="danger" :icon="useRenderIcon(Delete)">
-              清空日志
+              {{ $t("system.clearLog") }}
             </el-button>
           </template>
         </el-popconfirm>
@@ -97,22 +106,27 @@ const {
         <div
           v-if="selectedNum > 0"
           v-motion-fade
-          class="bg-[var(--el-fill-color-light)] w-full h-[46px] mb-2 pl-4 flex items-center"
+          class="bg-(--el-fill-color-light) w-full h-11.5 mb-2 pl-4 flex items-center"
         >
           <div class="flex-auto">
             <span
               style="font-size: var(--el-font-size-base)"
               class="text-[rgba(42,46,54,0.5)] dark:text-[rgba(220,220,242,0.5)]"
             >
-              {{ selectedNum }} {{ $t('system.selected') }}
+              {{ selectedNum }} {{ $t("system.selected") }}
             </span>
             <el-button type="primary" text @click="onSelectionCancel">
-              取消选择
+              {{ $t("system.cancel") }}
             </el-button>
           </div>
-          <el-popconfirm :title="$t('system.deleteConfirm')" @confirm="onbatchDel">
+          <el-popconfirm
+            :title="$t('system.deleteConfirm')"
+            @confirm="onbatchDel"
+          >
             <template #reference>
-              <el-button type="danger" text class="mr-1!"> 批量删除 </el-button>
+              <el-button type="danger" text class="mr-1!">
+                {{ $t("system.batchDelete") }}
+              </el-button>
             </template>
           </el-popconfirm>
         </div>
@@ -124,7 +138,7 @@ const {
           :loading="loading"
           :size="size"
           adaptive
-          :adaptiveConfig="{ offsetBottom: 108 }"
+          :adaptiveConfig="adaptiveConfig"
           :data="dataList"
           :columns="dynamicColumns"
           :pagination="{ ...pagination, size }"
@@ -138,7 +152,7 @@ const {
         >
           <template #operation="{ row }">
             <el-popconfirm
-              title="确定要删除该条日志吗？"
+              :title="$t('system.security.deleteLogConfirm')"
               @confirm="
                 onbatchDel();
                 tableRef.getTableRef().toggleRowSelection(row, false);
@@ -152,7 +166,7 @@ const {
                   :size="size"
                   :icon="useRenderIcon(Delete)"
                 >
-                  删除
+                  {{ $t("system.delete") }}
                 </el-button>
               </template>
             </el-popconfirm>
@@ -166,15 +180,5 @@ const {
 <style lang="scss" scoped>
 :deep(.el-dropdown-menu__item i) {
   margin: 0;
-}
-
-.main-content {
-  margin: 24px 24px 0 !important;
-}
-
-.search-form {
-  :deep(.el-form-item) {
-    margin-bottom: 12px;
-  }
 }
 </style>

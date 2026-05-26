@@ -1,176 +1,156 @@
 {
-    "editor.formatOnType": true,
-    "editor.formatOnSave": true,
-    "[vue]": {
-      "editor.defaultFormatter": "esbenp.prettier-vscode"
+  "editor.formatOnType": true,
+  "editor.formatOnSave": true,
+  "[vue]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "editor.tabSize": 2,
+  "editor.formatOnPaste": true,
+  "editor.guides.bracketPairs": "active",
+  "files.autoSave": "afterDelay",
+  "git.confirmSync": false,
+  "workbench.startupEditor": "newUntitledFile",
+  "editor.suggestSelection": "first",
+  "editor.acceptSuggestionOnCommitCharacter": false,
+  "css.lint.propertyIgnoredDueToDisplay": "ignore",
+  "editor.quickSuggestions": {
+    "other": true,
+    "comments": true,
+    "strings": true
+  },
+  "files.associations": {
+    "editor.snippetSuggestions": "top"
+  },
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "i18n-ally.localesPaths": "locales",
+  "i18n-ally.keystyle": "nested",
+  "i18n-ally.sortKeys": true,
+  "i18n-ally.namespace": true,
+  "i18n-ally.enabledParsers": ["yaml", "js"],
+  "i18n-ally.sourceLanguage": "en",
+  "i18n-ally.displayLanguage": "zh-CN",
+  "i18n-ally.enabledFrameworks": ["vue"],
+  "iconify.excludes": ["el"],
+  "vsmqtt.brokerProfiles": [
+    {
+      "name": "broker.emqx.io",
+      "host": "broker.emqx.io/mqtt",
+      "port": 1883,
+      "clientId": "vsmqtt_client_db34"
+    }
+  ],
+  "vscodeCustomCodeColor.highlightValue": [
+    "v-loading",
+    "v-auth",
+    "v-copy",
+    "v-longpress",
+    "v-optimize",
+    "v-perms",
+    "v-ripple"
+  ],
+  "vscodeCustomCodeColor.highlightValueColor": "#b392f0",
+  "terminal.integrated.defaultProfile.linux": "zsh",
+  "terminal.integrated.profiles.linux": {
+    "nvitop": {
+      "path": "/bin/zsh",
+      "args": ["-c", "nvitop"],
+      "name": "Start nvitop",
+      "description": "Terminal profile that runs a command on startup"
     },
-    "editor.tabSize": 2,
-    "editor.formatOnPaste": true,
-    "editor.guides.bracketPairs": "active",
-    "files.autoSave": "afterDelay",
-    "git.confirmSync": false,
-    "workbench.startupEditor": "newUntitledFile",
-    "editor.suggestSelection": "first",
-    "editor.acceptSuggestionOnCommitCharacter": false,
-    "css.lint.propertyIgnoredDueToDisplay": "ignore",
-    "editor.quickSuggestions": {
-      "other": true,
-      "comments": true,
-      "strings": true
+    "nload": {
+      "path": "/bin/zsh",
+      "args": ["-c", "nload -u M eth0"],
+      "name": "Start nvitop",
+      "description": "Terminal profile that runs a command on startup"
     },
-    "files.associations": {
-      "editor.snippetSuggestions": "top"
+    "btop": {
+      "path": "/bin/zsh",
+      "args": ["-c", "btop -u 1000"],
+      "name": "Start btop",
+      "description": "Terminal profile that runs a command on startup"
     },
-    "[css]": {
-      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "构建开发环境": {
+      "path": "/bin/zsh",
+      "args": ["-c", "zsh /workspace/scripts/build-env.sh"],
+      "name": "Start build env image",
+      "description": "Terminal profile that runs a command on startup"
     },
-    "editor.codeActionsOnSave": {
-      "source.fixAll.eslint": "explicit"
+    "构建项目镜像": {
+      "path": "/bin/zsh",
+      "args": ["-c", "zsh /workspace/scripts/build.sh"],
+      "name": "Start build image",
+      "description": "Terminal profile that runs a command on startup"
     },
-    "i18n-ally.localesPaths": "locales",
-    "i18n-ally.keystyle": "nested",
-    "i18n-ally.sortKeys": true,
-    "i18n-ally.namespace": true,
-    "i18n-ally.enabledParsers": [
-      "yaml",
-      "js"
-    ],
-    "i18n-ally.sourceLanguage": "en",
-    "i18n-ally.displayLanguage": "zh-CN",
-    "i18n-ally.enabledFrameworks": [
-      "vue"
-    ],
-    "iconify.excludes": [
-      "el"
-    ],
-    "vsmqtt.brokerProfiles": [
-      {
-        "name": "broker.emqx.io",
-        "host": "broker.emqx.io/mqtt",
-        "port": 1883,
-        "clientId": "vsmqtt_client_db34"
-      }
-    ],
-    "vscodeCustomCodeColor.highlightValue": [
-      "v-loading",
-      "v-auth",
-      "v-copy",
-      "v-longpress",
-      "v-optimize",
-      "v-perms",
-      "v-ripple"
-    ],
-    "vscodeCustomCodeColor.highlightValueColor": "#b392f0",
-    "terminal.integrated.defaultProfile.linux": "zsh",
-    "terminal.integrated.profiles.linux": {
-        "nvitop":{
-            "path": "/bin/zsh",
-            "args": [
-                "-c",
-                "nvitop"
-                ],
-                "name": "Start nvitop",
-                "description": "Terminal profile that runs a command on startup"
-        },
-        "nload":{
-            "path": "/bin/zsh",
-            "args": [
-                "-c",
-                "nload -u M eth0"
-                ],
-                "name": "Start nvitop",
-                "description": "Terminal profile that runs a command on startup"
-        },
-        "btop":{
-            "path": "/bin/zsh",
-            "args": [
-                "-c",
-                "btop -u 1000"
-                ],
-                "name": "Start btop",
-                "description": "Terminal profile that runs a command on startup"
-        },
-        "构建开发环境":{
-            "path": "/bin/zsh",
-            "args": [
-                "-c",
-                "zsh /workspace/scripts/build-env.sh"
-                ],
-                "name": "Start build env image",
-                "description": "Terminal profile that runs a command on startup"
-        },
-        "构建项目镜像":{
-            "path": "/bin/zsh",
-            "args": [
-                "-c",
-                "zsh /workspace/scripts/build.sh"
-                ],
-                "name": "Start build image",
-                "description": "Terminal profile that runs a command on startup"
-        },
-        "晚安！":{
-            "path": "/bin/zsh",
-            "args": [
-                "-c",
-                "kill 1"
-                ],
-                "name": "Go to sleep",
-                "description": "Terminal profile that runs a command on startup"
-        },
-        "zsh": {
-            "path": "/bin/zsh"
-        },
-        "启动 PyTool": {
-            "path": "/bin/zsh",
-            "args": [
-                "-c",
-                "zsh /workspace/scripts/start.sh dev"
-                ],
-                "name": "Start PyTool",
-                "description": "Terminal profile that runs start.sh to launch PyTool"
-        },
-        "代码风格检查": {
-            "path": "/bin/zsh",
-            "args": [
-                "-c",
-                "zsh /workspace/scripts/lint.sh && zsh"
-                ],
-        }
+    "晚安！": {
+      "path": "/bin/zsh",
+      "args": ["-c", "kill 1"],
+      "name": "Go to sleep",
+      "description": "Terminal profile that runs a command on startup"
     },
-    "gitblame.inlineMessageEnabled": true,
-    "gitblame.inlineMessageFormat": "${author.name}, (${time.ago}) · ${commit.summary}",
-    "python.analysis.autoImportCompletions": true,
-    "python.linting.enabled": true,
-    "python.linting.lintOnSave": true,
-    "python.languageServer": "Pylance",
-    "python.defaultInterpreterPath": "/workspace/backend/.venv/bin/python",
-    "workbench.iconTheme": "vscode-icons",
-    "codingcopilot.welcomeMessage": "never",
-    "gitlens.showWelcomeOnInstall": false,
-    "vue.showWelcomePage": false,
-    "editor.fontFamily": "'JetBrains Mono', Consolas, 'Courier New', monospace",
-    "editor.fontLigatures": true,
-    "editor.fontSize": 15,
-    "editor.fontWeight": "normal",
-    "vsicons.dontShowNewVersionMessage": true,
-    "yaml.schemaStore.enable": false,
-    "yaml.trace.server": "off",
-    "redhat.telemetry.enabled": false,
-    "github.copilot.enable": false,
-    "sqltools.connections": [
-      {
-        "previewLimit": 50,
-        "driver": "SQLite",
-        "name": "test",
-        "group": "test",
-        "database": "${workspaceFolder:workspace}/backend/static/pytool.sqlite"
-      }
-    ],
-    "sqltools.useNodeRuntime": true,
-    "gitblame.inlineMessageEnabled": true,
-    "gitblame.inlineMessageFormat": "${author.name}, (${time.ago}) · ${commit.summary}",
-    "terminal.integrated.suggest.enabled": true,
-    "workbench.secondarySideBar.defaultVisibility": "hidden",
-    "terminal.integrated.shellIntegration.environmentReporting": true,
-    "codingcopilot.autoRun": true
+    "zsh": {
+      "path": "/bin/zsh"
+    },
+    "启动 ZgAdmin": {
+      "path": "/bin/zsh",
+      "args": ["-c", "bash /workspace/scripts/start.sh dev"],
+      "name": "Start ZgAdmin",
+      "description": "Terminal profile that runs start.sh to launch ZgAdmin"
+    },
+    "版本号同步": {
+      "path": "/bin/zsh",
+      "args": ["-c", "zsh /workspace/scripts/version-sync.sh && zsh"],
+      "name": "Sync version",
+      "description": "将所有的版本号同步"
+    },
+    "代码风格检查": {
+      "path": "/bin/zsh",
+      "args": ["-c", "zsh /workspace/scripts/lint.sh && zsh"]
+    },
+    "Test": {
+      "path": "/bin/zsh",
+      "args": ["-c", "bash /workspace/scripts/test.sh && zsh"]
+    }
+  },
+  "gitblame.inlineMessageEnabled": true,
+  "gitblame.inlineMessageFormat": "${author.name}, (${time.ago}) · ${commit.summary}",
+  "python.analysis.autoImportCompletions": true,
+  "python.linting.enabled": true,
+  "python.linting.lintOnSave": true,
+  "python.languageServer": "Pylance",
+  "python.defaultInterpreterPath": "/workspace/backend/.venv/bin/python",
+  "workbench.iconTheme": "vscode-icons",
+  "codingcopilot.welcomeMessage": "never",
+  "gitlens.showWelcomeOnInstall": false,
+  "vue.showWelcomePage": false,
+  "editor.fontFamily": "'JetBrains Mono', Consolas, 'Courier New', monospace",
+  "editor.fontLigatures": true,
+  "editor.fontSize": 15,
+  "editor.fontWeight": "normal",
+  "vsicons.dontShowNewVersionMessage": true,
+  "yaml.schemaStore.enable": false,
+  "yaml.trace.server": "off",
+  "redhat.telemetry.enabled": false,
+  "github.copilot.enable": false,
+  "sqltools.connections": [
+    {
+      "previewLimit": 50,
+      "driver": "SQLite",
+      "name": "test",
+      "group": "test",
+      "database": "${workspaceFolder:workspace}/backend/static/zgadmin.sqlite"
+    }
+  ],
+  "sqltools.useNodeRuntime": true,
+  "gitblame.inlineMessageEnabled": true,
+  "gitblame.inlineMessageFormat": "${author.name}, (${time.ago}) · ${commit.summary}",
+  "terminal.integrated.suggest.enabled": true,
+  "workbench.secondarySideBar.defaultVisibility": "hidden",
+  "terminal.integrated.shellIntegration.environmentReporting": true,
+  "python-envs.defaultEnvManager": "ms-python.python:venv",
+  "chat.disableAIFeatures": true,
 }

@@ -2,13 +2,12 @@ FROM docker.cnb.cool/pylover/docker
 
 # 安装一些常用的工具
 RUN apt-get update && \
-    apt-get install -y sqlite3 && \
+    apt-get install -y sqlite3 libmagic1 file jq && \
     apt-get -y autoremove && \
     rm -rf /var/lib/apt/lists/*
 
 # 安装 code-server 和 vscode 常用插件
 RUN curl -fsSL https://code-server.dev/install.sh | sh \
-    && code-server --install-extension ms-python.python \
     && code-server --install-extension christian-kohler.path-intellisense \
     && code-server --install-extension vscode-icons-team.vscode-icons \
     && code-server --install-extension davidanson.vscode-markdownlint \

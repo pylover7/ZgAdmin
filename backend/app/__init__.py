@@ -4,17 +4,12 @@ from contextlib import asynccontextmanager
 import sentry_sdk
 from fastapi import FastAPI
 from fastapi.routing import APIRoute
-from fastapi.staticfiles import StaticFiles
 
 from app.core.database import init_data
 from app.core.exceptions import SettingNotFound
 from app.core.init import make_middlewares, register_routers, register_exceptions
 from app.settings import settings
-
-try:
-    from app.settings import settings
-except ImportError:
-    raise SettingNotFound("无法加载配置文件，请检查配置文件是否存在！！！")
+from app.settings.log import logger
 
 
 def custom_generate_unique_id(route: APIRoute) -> str:
@@ -28,7 +23,7 @@ if settings.SENTRY_DSN and settings.ENVIRONMENT != "local":
 def create_app() -> FastAPI:
     Path(settings.STATIC_PATH).mkdir(parents=True, exist_ok=True)
 
-    app = FastAPI(
+    application = FastAPI(
         title=settings.PROJECT_NAME,
         description=settings.PROJECT_DESCRIPTION,
         version=settings.VERSION,
@@ -36,18 +31,20 @@ def create_app() -> FastAPI:
         middleware=make_middlewares(),
         lifespan=lifespan_context,
     )
-    register_exceptions(app)
-    register_routers(app, prefix="/api")
-    app.mount("/static", StaticFiles(directory=settings.STATIC_PATH), name="static")
-    return app
+    register_exceptions(application)
+    register_routers(application, prefix="/api")
+    return application
 
 
 @asynccontextmanager
-async def lifespan_context(app: FastAPI):
+async def lifespan_context(application: FastAPI):
     # 启动时执行的逻辑
-    await init_data(app)
+    from app.core.redis import init_redis, close_redis  # pylint: disable=import-outside-toplevel
+    await init_redis()
+    await init_data(application)
     yield
-    # 关闭时执行的逻辑（如果需要）
+    # 关闭时执行的逻辑
+    await close_redis()
 
 
 app = create_app()

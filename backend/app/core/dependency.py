@@ -1,15 +1,17 @@
 from uuid import UUID
+import hashlib
 import time
-import asyncio
-import jwt
 from collections.abc import Generator
-from sqlmodel import Session
 from typing import Annotated
+
+import jwt
+from sqlmodel import Session
 from fastapi import Depends, Header, HTTPException, Request
 
 from app.controllers.user import userController
 from app.core.database import engine
 from app.core.ctx import CTX_USER_ID
+from app.core.redis import get_redis
 from app.models import Role, User
 from app.settings import settings
 from app.settings.log import logger
@@ -23,12 +25,25 @@ def get_db() -> Generator[Session, None, None]:
 SessionDep = Annotated[Session, Depends(get_db)]
 
 
+async def _is_token_blacklisted(token: str) -> bool:
+    """检查 Token 是否在黑名单中"""
+    redis = get_redis()
+    token_hash = hashlib.sha256(token.encode()).hexdigest()[:16]
+    key = f"token:blacklist:{token_hash}"
+    return await redis.exists(key)
+
+
 class AuthControl:
     @classmethod
     async def is_authed(cls, session: SessionDep,
                         authorization: str = Header(..., description="token验证")):
         try:
             token = authorization.split(" ")[1]
+
+            # 检查 Token 黑名单
+            if await _is_token_blacklisted(token):
+                raise HTTPException(status_code=401, detail="Token已失效")
+
             decode_data = jwt.decode(
                 token,
                 settings.SECRET_KEY,
@@ -46,10 +61,10 @@ class AuthControl:
                 if not item.status:
                     raise HTTPException(status_code=400, detail="用户已被禁用")
             return user
-        except jwt.DecodeError:
-            raise HTTPException(status_code=401, detail="无效的Token")
-        except jwt.ExpiredSignatureError:
-            raise HTTPException(status_code=401, detail="登录已过期")
+        except jwt.DecodeError as exc:
+            raise HTTPException(status_code=401, detail="无效的Token") from exc
+        except jwt.ExpiredSignatureError as exc:
+            raise HTTPException(status_code=401, detail="登录已过期") from exc
 
 
 class PermissionControl:
@@ -76,10 +91,9 @@ class PermissionControl:
             raise HTTPException(
                 status_code=403,
                 detail=f"Permission denied method:{method} path:{path}")
-        else:
-            logger.debug(
-                f"已允许用户 {
-                    current_user.username} 访问 {method} {path} 接口")
+        logger.debug(
+            f"已允许用户 {
+                current_user.username} 访问 {method} {path} 接口")
 
 
 DependAuth = Depends(AuthControl.is_authed)
@@ -89,34 +103,30 @@ DependUser = Annotated[User, DependAuth]
 
 
 class RateLimiter:
-    """IP 级别请求限流 — 防止登录暴力破解"""
+    """IP 级别请求限流 — 基于 Redis 的滑动窗口"""
 
     def __init__(self, max_requests: int = 10, window_seconds: int = 60):
         self.max = max_requests
         self.window = window_seconds
-        self._attempts: dict[str, list[float]] = {}
-        self._lock = asyncio.Lock()
-
-    async def _cleanup(self):
-        now = time.monotonic()
-        cutoff = now - self.window
-        self._attempts = {
-            ip: [t for t in times if t > cutoff]
-            for ip, times in self._attempts.items() if any(t > cutoff for t in times)
-        }
 
     async def check(self, request: Request) -> None:
+        redis = get_redis()
         ip = request.client.host if request.client else "unknown"
-        async with self._lock:
-            await self._cleanup()
-            attempts = self._attempts.get(ip, [])
-            if len(attempts) >= self.max:
-                raise HTTPException(
-                    status_code=429,
-                    detail="请求过于频繁，请稍后再试"
-                )
-            attempts.append(time.monotonic())
-            self._attempts[ip] = attempts
+        key = f"rate_limit:{ip}"
+        now = time.monotonic()
+
+        results = await redis.pipeline_exec([
+            ("zremrangebyscore", key, 0, now - self.window),
+            ("zcard", key),
+            ("zadd", key, {str(now): now}),
+            ("expire", key, self.window),
+        ])
+        count = results[1]
+        if count >= self.max:
+            raise HTTPException(
+                status_code=429,
+                detail="请求过于频繁，请稍后再试"
+            )
 
 
 rate_limiter = RateLimiter()

@@ -11,10 +11,22 @@ if TYPE_CHECKING:
 
 
 class Api(BaseModel, TimestampMixin, table=True):
-    path: str = Field(max_length=100, description="API路径")
-    method: MethodType = Field("GET", description="请求方法")
-    summary: str = Field(max_length=500, description="请求简介")
-    tags: str = Field(max_length=100, description="API标签")
+    path: str = Field(
+        max_length=100,
+        description="API路径",
+        schema_extra={"examples": ["/api/v1/system/notice/list"]})
+    method: MethodType = Field(
+        "GET",
+        description="请求方法：GET/POST/PUT/DELETE",
+        schema_extra={"examples": ["POST"]})
+    summary: str = Field(
+        max_length=500,
+        description="接口简介",
+        schema_extra={"examples": ["获取通知列表"]})
+    tags: str = Field(
+        max_length=100,
+        description="API标签/分组",
+        schema_extra={"examples": ["通知管理"]})
 
     roles: list["Role"] = Relationship(
         back_populates="apis", link_model=RoleApiLink)

@@ -1,14 +1,30 @@
 import { defineConfig } from 'vitepress'
 
 export default defineConfig({
-  title: "PyTool",
+  title: "ZgAdmin",
   description: "全栈管理平台模板 — FastAPI + Vue 3",
+  lang: 'zh-CN',
+  head: [
+    ['link', { rel: 'icon', href: '/favicon.ico' }],
+    ['meta', { name: 'theme-color', content: '#386BF3' }],
+    ['style', {}, `
+      .VPHero .image-bg {
+        background-image: radial-gradient(circle at center, rgba(56,107,243,0.35) 0%, rgba(56,107,243,0.15) 40%, transparent 70%);
+        filter: blur(60px);
+        transform: scale(1.2);
+      }
+      .VPHero .VPImage {
+        filter: drop-shadow(0 0 30px rgba(56,107,243,0.25));
+      }
+    `],
+  ],
   themeConfig: {
+    logo: '/logo.svg',
+    siteTitle: 'ZgAdmin',
     nav: [
       { text: '首页', link: '/' },
-      { text: '指南', link: '/guide/quick-start' }
+      { text: '指南', link: '/guide/quick-start' },
     ],
-
     sidebar: [
       {
         text: '指南',
@@ -17,11 +33,49 @@ export default defineConfig({
           { text: '添加新模块', link: '/guide/add-module' },
           { text: '自定义配置', link: '/guide/customization' },
         ]
+      },
+      {
+        text: '模块文档',
+        items: [
+          { text: '通知系统', link: '/guide/notice' },
+          { text: '文件管理', link: '/guide/file-manager' },
+          { text: '安全设置', link: '/guide/security' },
+          { text: '系统设置', link: '/guide/settings' },
+          { text: '系统监控与日志', link: '/guide/monitor' },
+          { text: 'API 权限管理', link: '/guide/api-permission' },
+          { text: '账户设置', link: '/guide/account-settings' },
+        ]
       }
     ],
-
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/pylover7/PyTool' }
-    ]
+      {
+        icon: {
+          svg: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><g><path d="M11.5286 1.87149C11.5769 1.73005 11.5356 1.5733 11.4233 1.47452C11.0472 1.14247 10.0965 0.443125 8.66911 0.339708C7.07054 0.223769 6.08089 0.652279 5.58096 0.969951C5.36531 1.10676 5.35326 1.41748 5.55499 1.57422L9.62723 4.73936C9.98617 5.01807 10.5125 4.8604 10.6591 4.43003L11.5286 1.87149Z"/><path d="M1.49017 11.2664C1.32368 11.3781 1.24855 11.584 1.30235 11.7774C1.45724 12.3339 1.91868 13.4919 3.22833 14.5456C4.53797 15.5992 6.08738 15.7128 6.74962 15.6966C6.94764 15.692 7.12016 15.5617 7.17998 15.3724L9.79046 7.11064C9.97875 6.51425 9.31048 6.01386 8.79154 6.3626L1.49017 11.2664Z"/><path d="M3.39813 2.54827C3.27013 2.49773 3.12683 2.50607 3.00579 2.57193C2.52256 2.83488 1.28526 3.64506 0.647135 5.30947C0.154627 6.59222 0.328071 8.01085 0.463488 8.70463C0.508009 8.9314 0.747306 9.06218 0.962489 8.97824L8.79485 5.92024C9.35414 5.70181 9.35646 4.91111 8.7981 4.6899L3.39813 2.54827Z"/><path d="M15.0167 8.46843C15.243 8.62194 15.5528 8.48652 15.5922 8.21569C15.6961 7.49872 15.7861 6.25076 15.371 5.30933C14.8177 4.05487 13.8786 3.28133 13.433 2.9669C13.292 2.86766 13.1019 2.87786 12.9725 2.99241L10.9959 4.74541C10.6732 5.03154 10.7066 5.54492 11.0636 5.78746L15.0167 8.46936V8.46843Z"/><path d="M9.49413 15.1604C9.47372 15.3937 9.67128 15.5866 9.90409 15.5616C10.6531 15.4813 12.1918 15.1841 13.3447 14.0827C14.467 13.0109 14.832 11.7384 14.9382 11.2319C14.9669 11.0951 14.9326 10.9528 14.8445 10.8442L11.3886 6.57909C11.0143 6.11719 10.2681 6.34535 10.2162 6.93757L9.49366 15.1604H9.49413Z"/></g></svg>'
+        },
+        link: 'https://cnb.cool/pylover/Tools/ZgAdmin',
+        ariaLabel: 'CNB 源代码'
+      }
+    ],
+    search: {
+      provider: 'local'
+    },
+    outline: {
+      label: '页面导航'
+    },
+    docFooter: {
+      prev: '上一页',
+      next: '下一页'
+    },
+    lastUpdated: {
+      text: '最后更新于',
+      formatOptions: {
+        dateStyle: 'short',
+        timeStyle: 'medium'
+      }
+    },
+    footer: {
+      message: '基于 MIT 许可发布',
+      copyright: 'Copyright © 2026-present 拾叶zzz'
+    }
   }
 })

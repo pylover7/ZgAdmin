@@ -18,13 +18,13 @@ import LoginQQ from "./components/LoginQQ.vue";
 import { useUserStoreHook } from "@/store/modules/user";
 import { initRouter, getTopMenu } from "@/router/utils";
 import { bg, avatar, illustration } from "./utils/static";
-import { ReImageVerify } from "@/components/ReImageVerify";
 import { ref, toRaw, reactive, watch, computed, onMounted } from "vue";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 import { useTranslationLang } from "@/layout/hooks/useTranslationLang";
 import { useDataThemeChange } from "@/layout/hooks/useDataThemeChange";
-import { getLoginMethods } from "@/api/user";
-import type { loginType, loginResult } from "@/types/login";
+import { getCaptcha } from "@/api/base";
+import type { Features, SecurityConfig } from "@/types/base";
+import { getConfig } from "@/config";
 
 import dayIcon from "@/assets/svg/day.svg?component";
 import darkIcon from "@/assets/svg/dark.svg?component";
@@ -40,6 +40,8 @@ defineOptions({
 });
 
 const imgCode = ref("");
+const captchaKey = ref("");
+const captchaImage = ref("");
 const loginDay = ref(7);
 const router = useRouter();
 const route = useRoute();
@@ -50,20 +52,29 @@ const ruleFormRef = ref<FormInstance>();
 const currentPage = computed(() => {
   return useUserStoreHook().currentPage;
 });
-const loginMethods = ref<loginType>({
-  qq: { enabled: false },
-  wechat: { enabled: false }
-});
+const features = ref<Features>(
+  (getConfig("Features") as Features | undefined) ?? {
+    qq_login: false,
+    wechat_login: false,
+    email: false,
+    monitor_log: false
+  }
+);
+const captchaEnabled = ref(
+  (getConfig("Security") as SecurityConfig | undefined)?.captcha_enabled ?? true
+);
+const TITLE = getConfig("Title");
+const COPYRIGHT = getConfig("Copyright");
+const ICP = getConfig("Icp");
 
 // 计算可用的登录方式（根据配置过滤）
 const availableOperates = computed(() => {
   return operates.filter((_, index) => {
-    // operates数组的index 0对应QQ登录 (currentPage=1)，index 1对应微信登录 (currentPage=2)
     if (index === 0) {
-      return loginMethods.value.qq.enabled;
+      return features.value.qq_login;
     }
     if (index === 1) {
-      return loginMethods.value.wechat.enabled;
+      return features.value.wechat_login;
     }
     return false;
   });
@@ -83,6 +94,20 @@ const ruleForm = reactive({
   verifyCode: ""
 });
 
+/** 获取服务端验证码 */
+const refreshCaptcha = async () => {
+  try {
+    const res = await getCaptcha();
+    if (res.success && res.data) {
+      captchaKey.value = res.data.captcha_key;
+      captchaImage.value = res.data.captcha_image;
+      ruleForm.verifyCode = "";
+    }
+  } catch (error) {
+    console.error("获取验证码失败:", error);
+  }
+};
+
 const onLogin = async (formEl: FormInstance | undefined) => {
   if (!formEl) return;
   await formEl.validate(valid => {
@@ -91,11 +116,12 @@ const onLogin = async (formEl: FormInstance | undefined) => {
       useUserStoreHook()
         .loginByUsername({
           username: ruleForm.username,
-          password: ruleForm.password
+          password: ruleForm.password,
+          captcha_key: captchaEnabled.value ? captchaKey.value : undefined,
+          captcha_code: captchaEnabled.value ? ruleForm.verifyCode : undefined
         })
         .then(res => {
           if (res.success) {
-            // 获取后端路由
             return initRouter().then(() => {
               disabled.value = true;
               router
@@ -106,12 +132,14 @@ const onLogin = async (formEl: FormInstance | undefined) => {
                 .finally(() => (disabled.value = false));
             });
           } else {
-            message(t("login.pureLoginFail"), { type: "error" });
+            message(res.msg || t("login.pureLoginFail"), { type: "error" });
+            if (captchaEnabled.value) refreshCaptcha();
           }
         })
         .catch(err => {
-          console.log(err.response.data.msg);
-          message(err.response.data.msg, { type: "error" });
+          const msg = err?.response?.data?.msg || t("login.pureLoginFail");
+          message(msg, { type: "error" });
+          if (captchaEnabled.value) refreshCaptcha();
         })
         .finally(() => (loading.value = false));
     }
@@ -133,9 +161,6 @@ useEventListener(document, "keydown", ({ code }) => {
     immediateDebounce(ruleFormRef.value);
 });
 
-watch(imgCode, value => {
-  useUserStoreHook().SET_VERIFYCODE(value);
-});
 watch(checked, bool => {
   useUserStoreHook().SET_ISREMEMBERED(bool);
 });
@@ -143,19 +168,13 @@ watch(loginDay, value => {
   useUserStoreHook().SET_LOGINDAY(value);
 });
 
-// 获取登录方式配置
+// 获取验证码
 onMounted(async () => {
-  // QQ 回调路由：自动切换到 QQ 登录面板
   if (route.path === "/login/qq/callback") {
     useUserStoreHook().SET_CURRENTPAGE(1);
   }
-  try {
-    const res = await getLoginMethods();
-    if (res.success && res.data) {
-      loginMethods.value = res.data;
-    }
-  } catch (error) {
-    console.error("获取登录配置失败:", error);
+  if (captchaEnabled.value) {
+    await refreshCaptcha();
   }
 });
 </script>
@@ -175,7 +194,7 @@ onMounted(async () => {
       <!-- 国际化 -->
       <el-dropdown trigger="click">
         <globalization
-          class="hover:text-primary hover:bg-[transparent]! w-[20px] h-[20px] ml-1.5 cursor-pointer outline-hidden duration-300"
+          class="hover:text-primary hover:bg-transparent! size-5 ml-1.5 cursor-pointer outline-hidden duration-300"
         />
         <template #dropdown>
           <el-dropdown-menu class="translation">
@@ -189,7 +208,7 @@ onMounted(async () => {
                 class="check-zh"
                 :icon="Check"
               />
-              简体中文
+              {{ $t("system.simplifiedChinese") }}
             </el-dropdown-item>
             <el-dropdown-item
               :style="getDropdownItemStyle(locale, 'en')"
@@ -260,7 +279,7 @@ onMounted(async () => {
             </Motion>
 
             <Motion :delay="200">
-              <el-form-item prop="verifyCode">
+              <el-form-item v-if="captchaEnabled" prop="verifyCode">
                 <el-input
                   v-model="ruleForm.verifyCode"
                   clearable
@@ -268,7 +287,17 @@ onMounted(async () => {
                   :prefix-icon="useRenderIcon(Keyhole)"
                 >
                   <template v-slot:append>
-                    <ReImageVerify v-model:code="imgCode" />
+                    <img
+                      :src="captchaImage"
+                      alt="captcha"
+                      style="
+                        height: 36px;
+                        cursor: pointer;
+                        border-radius: 0 4px 4px 0;
+                      "
+                      :title="$t('system.clickRefreshCaptcha')"
+                      @click="refreshCaptcha"
+                    />
                   </template>
                 </el-input>
               </el-form-item>
@@ -276,7 +305,7 @@ onMounted(async () => {
 
             <Motion :delay="250">
               <el-form-item>
-                <div class="w-full h-[20px] flex justify-between items-center">
+                <div class="w-full h-5 flex-bc">
                   <el-checkbox v-model="checked">
                     <span class="flex">
                       <select
@@ -327,7 +356,7 @@ onMounted(async () => {
 
             <Motion v-if="availableOperates.length > 0" :delay="300">
               <el-form-item>
-                <div class="w-full h-[20px] flex justify-between items-center">
+                <div class="w-full h-5 flex-bc">
                   <el-button
                     v-for="(item, index) in availableOperates"
                     :key="index"
@@ -355,14 +384,26 @@ onMounted(async () => {
     <div
       class="w-full flex-c absolute bottom-3 text-sm text-[rgba(0,0,0,0.6)] dark:text-[rgba(220,220,242,0.8)]"
     >
-      Copyright © 2020-present
-      <a
-        class="hover:text-primary!"
-        href="https://cnb.cool/pylover/PyTool"
-        target="_blank"
-      >
-        &nbsp;{{ title }}
-      </a>
+      <span v-if="COPYRIGHT">{{ COPYRIGHT }}</span>
+      <span v-else>
+        Copyright © 2025-present
+        <a
+          class="hover:text-primary!"
+          href="https://cnb.cool/pylover/Tools/ZgAdmin"
+          target="_blank"
+        >
+          &nbsp;{{ TITLE }}
+        </a>
+      </span>
+      <span v-if="ICP" class="ml-2">
+        <a
+          class="hover:text-primary!"
+          href="https://beian.miit.gov.cn/"
+          target="_blank"
+        >
+          {{ ICP }}
+        </a>
+      </span>
     </div>
   </div>
 </template>

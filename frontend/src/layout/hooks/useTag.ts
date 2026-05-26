@@ -48,7 +48,7 @@ export function useTags() {
   const showModel = ref(
     storageLocal().getItem<StorageConfigs>(
       `${responsiveStorageNameSpace()}configure`
-    )?.showModel || "smart"
+    )?.tagsStyle || "smart"
   );
   /** 是否隐藏标签页，默认显示 */
   const showTags =
@@ -206,7 +206,7 @@ export function useTags() {
       const configure = storageLocal().getItem<StorageConfigs>(
         `${responsiveStorageNameSpace()}configure`
       );
-      configure.showModel = "card";
+      configure.tagsStyle = "card";
       storageLocal().setItem(
         `${responsiveStorageNameSpace()}configure`,
         configure

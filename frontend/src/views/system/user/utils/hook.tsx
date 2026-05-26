@@ -8,7 +8,7 @@ import { message } from "@/utils/message";
 import userAvatar from "@/assets/user.jpg";
 import { usePublicHooks } from "../../hooks";
 import { addDialog } from "@/components/ReDialog";
-import { $t, transformI18n } from "@/plugins/i18n";
+import { transformI18n } from "@/plugins/i18n";
 import type { FormItemProps, RoleFormItemProps } from "../utils/types";
 import {
   getKeyList,
@@ -70,7 +70,7 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
           preview-teleported={true}
           src={row.avatar || userAvatar}
           preview-src-list={Array.of(row.avatar || userAvatar)}
-          class="w-[24px] h-[24px] rounded-full align-middle"
+          class="size-6  rounded-full align-middle"
         />
       ),
       width: 90
@@ -95,7 +95,9 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
           type={row.sex === 0 ? "danger" : null}
           effect="plain"
         >
-          {row.sex === 0 ? transformI18n("system.female") : transformI18n("system.male")}
+          {row.sex === 0
+            ? transformI18n("system.female")
+            : transformI18n("system.male")}
         </el-tag>
       )
     },
@@ -242,9 +244,12 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
   /** 批量删除 */
   function onbatchDel() {
     const curSelected = tableRef.value.getTableRef().getSelectionRows();
-    message(`${transformI18n("system.deleteSuccess")}: ${getKeyList(curSelected, "id")}`, {
-      type: "success"
-    });
+    message(
+      `${transformI18n("system.deleteSuccess")}: ${getKeyList(curSelected, "id")}`,
+      {
+        type: "success"
+      }
+    );
     tableRef.value.getTableRef().clearSelection();
     onSearch();
   }
@@ -293,7 +298,10 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
     return newTreeList;
   }
 
-  function openDialog(title = transformI18n("system.add"), row?: FormItemProps) {
+  function openDialog(
+    title = transformI18n("system.add"),
+    row?: FormItemProps
+  ) {
     const isAdd = title === transformI18n("system.add");
     addDialog({
       title: `${title}`,
@@ -323,9 +331,12 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
         const FormRef = formRef.value.getRef();
         const curData = options.props.formInline as FormItemProps;
         function chores() {
-          message(`${title}${transformI18n("system.success")}: ${curData.username}`, {
-            type: "success"
-          });
+          message(
+            `${title}${transformI18n("system.success")}: ${curData.username}`,
+            {
+              type: "success"
+            }
+          );
           done(); // 关闭弹框
           onSearch(); // 刷新表格数据
         }
@@ -366,7 +377,7 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
   /** 分配角色 */
   async function handleRole(row) {
     // 选中的角色列表
-    const ids = (await getRoleIds({ userId: row.id })).data ?? [];
+    const ids = (await getRoleIds(row.id)).data ?? [];
     addDialog({
       title: `${transformI18n("system.assignRole")} - ${row.username}`,
       props: {

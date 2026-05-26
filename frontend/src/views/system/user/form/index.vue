@@ -4,10 +4,11 @@ import ReCol from "@/components/ReCol";
 import { formRules } from "../utils/rule";
 import { FormProps } from "../utils/types";
 import { usePublicHooks } from "../../hooks";
+import { transformI18n } from "@/plugins/i18n";
 
 const props = withDefaults(defineProps<FormProps>(), {
   formInline: () => ({
-    title: "新增",
+    title: transformI18n("system.add"),
     higherDeptOptions: [],
     parentId: 0,
     nickname: "",
@@ -24,11 +25,11 @@ const props = withDefaults(defineProps<FormProps>(), {
 const sexOptions = [
   {
     value: 1,
-    label: "男"
+    label: transformI18n("system.male")
   },
   {
     value: 0,
-    label: "女"
+    label: transformI18n("system.female")
   }
 ];
 const ruleFormRef = ref();
@@ -51,62 +52,62 @@ defineExpose({ getRef });
   >
     <el-row :gutter="30">
       <re-col :value="12" :xs="24" :sm="24">
-        <el-form-item label="用户昵称" prop="nickname">
+        <el-form-item :label="$t('system.userNickname')" prop="nickname">
           <el-input
             v-model="newFormInline.nickname"
             clearable
-            placeholder="请输入用户昵称"
+            :placeholder="$t('system.nicknamePlaceholder')"
           />
         </el-form-item>
       </re-col>
       <re-col :value="12" :xs="24" :sm="24">
-        <el-form-item label="用户名称" prop="username">
+        <el-form-item :label="$t('system.userName')" prop="username">
           <el-input
             v-model="newFormInline.username"
             clearable
-            placeholder="请输入用户名称"
+            :placeholder="$t('system.usernamePlaceholder')"
           />
         </el-form-item>
       </re-col>
 
       <re-col
-        v-if="newFormInline.title === '新增'"
+        v-if="newFormInline.title === transformI18n('system.add')"
         :value="12"
         :xs="24"
         :sm="24"
       >
-        <el-form-item label="用户密码" prop="password">
+        <el-form-item :label="$t('system.userPassword')" prop="password">
           <el-input
             v-model="newFormInline.password"
             clearable
-            placeholder="请输入用户密码"
+            :placeholder="$t('system.passwordPlaceholder')"
           />
         </el-form-item>
       </re-col>
       <re-col :value="12" :xs="24" :sm="24">
-        <el-form-item label="手机号" prop="phone">
+        <el-form-item :label="$t('system.userPhone')" prop="phone">
           <el-input
             v-model="newFormInline.phone"
             clearable
-            placeholder="请输入手机号"
+            :placeholder="$t('system.phonePlaceholder')"
           />
         </el-form-item>
       </re-col>
 
       <re-col :value="12" :xs="24" :sm="24">
-        <el-form-item label="邮箱" prop="email">
+        <el-form-item :label="$t('system.userEmail')" prop="email">
           <el-input
             v-model="newFormInline.email"
             clearable
-            placeholder="请输入邮箱"
+            :placeholder="$t('system.emailPlaceholder')"
           />
         </el-form-item>
       </re-col>
       <re-col :value="12" :xs="24" :sm="24">
-        <el-form-item label="用户性别">
+        <el-form-item :label="$t('system.userSex')">
           <el-select
             v-model="newFormInline.sex"
-            placeholder="请选择用户性别"
+            :placeholder="$t('system.sexPlaceholder')"
             class="w-full"
             clearable
           >
@@ -121,7 +122,7 @@ defineExpose({ getRef });
       </re-col>
 
       <re-col :value="12" :xs="24" :sm="24">
-        <el-form-item label="归属部门">
+        <el-form-item :label="$t('system.userDept')">
           <el-cascader
             v-model="newFormInline.parentId"
             class="w-full"
@@ -134,7 +135,7 @@ defineExpose({ getRef });
             }"
             clearable
             filterable
-            placeholder="请选择归属部门"
+            :placeholder="$t('system.deptPlaceholder')"
           >
             <template #default="{ node, data }">
               <span>{{ data.name }}</span>
@@ -144,29 +145,29 @@ defineExpose({ getRef });
         </el-form-item>
       </re-col>
       <re-col
-        v-if="newFormInline.title === '新增'"
+        v-if="newFormInline.title === transformI18n('system.add')"
         :value="12"
         :xs="24"
         :sm="24"
       >
-        <el-form-item label="用户状态">
+        <el-form-item :label="$t('system.userStatus')">
           <el-switch
             v-model="newFormInline.status"
             inline-prompt
             :active-value="1"
             :inactive-value="0"
-            active-text="启用"
-            inactive-text="停用"
+            :active-text="$t('system.enabled')"
+            :inactive-text="$t('system.disabled')"
             :style="switchStyle"
           />
         </el-form-item>
       </re-col>
 
       <re-col>
-        <el-form-item label="备注">
+        <el-form-item :label="$t('system.remark')">
           <el-input
             v-model="newFormInline.remark"
-            placeholder="请输入备注信息"
+            :placeholder="$t('system.remarkPlaceholder')"
             type="textarea"
           />
         </el-form-item>

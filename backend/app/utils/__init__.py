@@ -15,11 +15,11 @@ from app.settings import settings
 
 def generate_password_reset_token(email: str) -> str:
     delta = timedelta(hours=settings.EMAIL_RESET_TOKEN_EXPIRE_HOURS)
-    now = datetime.now(timezone.utc)
-    expires = now + delta
+    current_time = datetime.now(timezone.utc)
+    expires = current_time + delta
     exp = expires.timestamp()
     encoded_jwt = jwt.encode(
-        {"exp": exp, "nbf": now, "sub": email},
+        {"exp": exp, "nbf": current_time, "sub": email},
         settings.SECRET_KEY,
         algorithm="HS256",
     )
@@ -82,7 +82,7 @@ async def menuTree(p_menu: dict, menus: list[Menu]) -> dict:
     :return: 子菜单排序后的父菜单
     """
     for menuItem in menus:
-        if menuItem.parentId.__str__() == p_menu["id"]:
+        if str(menuItem.parentId) == p_menu["id"]:
             # roles = await menu.roles.all().values_list("code", flat=True)
             children_menu = await menuItem.to_dict()
             children_menu["children"] = []

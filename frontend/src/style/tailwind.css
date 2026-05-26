@@ -42,5 +42,5 @@
 }
 
 @utility navbar-bg-hover {
-  @apply dark:text-white dark:hover:bg-[#242424]!;
+  @apply transition-colors duration-300 dark:text-white dark:hover:bg-[#242424]!;
 }

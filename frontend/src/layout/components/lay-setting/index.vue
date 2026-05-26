@@ -54,7 +54,7 @@ if (unref(layoutTheme)) {
 }
 
 /** 默认灵动模式 */
-const markValue = ref($storage.configure?.showModel ?? "smart");
+const markValue = ref($storage.configure?.tagsStyle ?? "smart");
 
 const logoVal = ref($storage.configure?.showLogo ?? true);
 
@@ -63,7 +63,7 @@ const settings = reactive({
   weakVal: $storage.configure.weak,
   tabsVal: $storage.configure.hideTabs,
   showLogo: $storage.configure.showLogo,
-  showModel: $storage.configure.showModel,
+  tagsStyle: $storage.configure.tagsStyle,
   hideFooter: $storage.configure.hideFooter,
   multiTagsCache: $storage.configure.multiTagsCache,
   stretch: $storage.configure.stretch
@@ -125,8 +125,8 @@ const multiTagsCacheChange = () => {
 function onChange({ option }) {
   const { value } = option;
   markValue.value = value;
-  storageConfigureChange("showModel", value);
-  emitter.emit("tagViewsShowModel", value);
+  storageConfigureChange("tagsStyle", value);
+  emitter.emit("tagViewsTagsStyle", value);
 }
 
 /** 侧边栏Logo */
@@ -249,7 +249,7 @@ function setLayoutModel(layout: string) {
     sidebarStatus: $storage.layout?.sidebarStatus,
     epThemeColor: $storage.layout?.epThemeColor,
     themeColor: $storage.layout?.themeColor,
-    overallStyle: $storage.layout?.overallStyle
+    themeMode: $storage.layout?.themeMode
   };
   useAppStoreHook().setLayout(layout);
 }
@@ -416,7 +416,7 @@ onUnmounted(() => removeMatchMedia);
         <button
           v-else
           v-ripple="{ class: 'text-gray-300' }"
-          class="bg-transparent flex-c w-full h-20 rounded-md border border-[var(--pure-border-color)]"
+          class="bg-transparent flex-c w-full h-20 rounded-md border border-(--pure-border-color)"
           @click="setStretch(!settings.stretch)"
         >
           <div

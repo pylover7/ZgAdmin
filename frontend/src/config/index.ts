@@ -33,15 +33,36 @@ export const getPlatformConfig = async (app: App): Promise<undefined> => {
     method: "get",
     url: `${VITE_PUBLIC_PATH}platform-config.json`
   })
-    .then(({ data: config }) => {
+    .then(async ({ data: config }) => {
       let $config = app.config.globalProperties.$config;
       // 自动注入系统配置
       if (app && $config && typeof config === "object") {
         $config = Object.assign($config, config);
-        app.config.globalProperties.$config = $config;
-        // 设置全局配置
-        setConfig($config);
       }
+
+      // 从后端 API 获取站点内容配置，覆盖静态值
+      const { data: apiData } = await axios({
+        method: "get",
+        url: "/api/v1/base/init"
+      }).catch(() => {
+        console.warn("[Config] 无法获取站点信息，使用默认配置");
+        return { data: null };
+      });
+      if (apiData?.success && apiData.data) {
+        const siteInfo = apiData.data.site;
+        $config.Title = siteInfo.site_name ?? $config.Title;
+        $config.Locale = siteInfo.default_lang ?? $config.Locale;
+        $config.SiteDesc = siteInfo.site_desc ?? $config.SiteDesc;
+        $config.Logo = siteInfo.logo ?? $config.Logo;
+        $config.Copyright = siteInfo.copyright ?? $config.Copyright;
+        $config.Icp = siteInfo.icp ?? $config.Icp;
+        // 缓存 features 和 security，供登录页等组件使用
+        $config.Features = apiData.data.features;
+        $config.Security = apiData.data.security;
+      }
+
+      app.config.globalProperties.$config = $config;
+      setConfig($config);
       return $config;
     })
     .catch(() => {

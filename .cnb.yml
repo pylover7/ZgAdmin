@@ -1,32 +1,20 @@
-main:
-  push:
-    - stages:
-        - name: sync to github
-          imports: https://cnb.cool/pylover/key/-/blob/main/github.yml
-          image: tencentcom/git-sync
-          settings:
-            target_url: https://github.com/pylover7/PyTool.git
-            auth_type: https
-            username: ${GIT_USERNAME}
-            password: ${GIT_ACCESS_TOKEN}
-
 $:
   vscode:
     - docker:
         image: docker.cnb.cool/pylover/tools/zgadmin:env
         volumes:
-            - ./backend/.venv:rw
-            - ./backend/static:rw
-            - ./frontend/node_modules:rw
-            - ./docs/node_modules:rw
+          - ./backend/.venv:rw
+          - ./backend/static:rw
+          - ./frontend/node_modules:rw
+          - ./docs/node_modules:rw
       runner:
         cpus: 8
       services:
-        - vscode
         - docker
+        - vscode
       imports:
         - https://cnb.cool/pylover/key/-/blob/main/deepseek.yml
-        - https://cnb.cool/pylover/Tools/KeJi_Key/-/blob/main/tapd.yml
+        - https://cnb.cool/pylover/key/-/blob/main/edgeone.yml
       stages:
         - name: ls
           script: ls -la
@@ -38,11 +26,32 @@ $:
         IMAGE_TAG: ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:env
       stages:
         - name: docker build
-          script: docker build -t ${IMAGE_TAG} . -f .ide/Dockerfile
+          script: docker build -t ${IMAGE_TAG} . -f .cnb/Dockerfile
         - name: docker list
           script: docker images
         - name: docker push
           script: docker push ${IMAGE_TAG}
+
+  web_trigger_preview:
+    - docker:
+        image: docker.cnb.cool/pylover/tools/zgadmin:env
+        volumes:
+          - ./backend/.venv:rw
+          - ./backend/static:rw
+          - ./frontend/node_modules:rw
+          - ./docs/node_modules:rw
+      runner:
+        cpus: 8
+      services:
+        - docker
+        - name: vscode
+          options:
+            onlyPreview: true
+            launch: bash ./scripts/preview.sh
+            daemon: true
+      stages:
+        - name: ls
+          script: ls -la
 
   tag_push:
     - services:
@@ -56,3 +65,42 @@ $:
           image: cnbcool/codewiki:latest
           settings:
             git_doc_dir: /data/codewiki/${CNB_REPO_SLUG}
+
+    - docker:
+        image: docker.cnb.cool/pylover/tools/zgadmin:env
+        volumes:
+          - ./docs/node_modules:rw
+      imports:
+        - https://cnb.cool/pylover/key/-/blob/main/edgeone.yml
+      stages:
+        - name: deploy docs
+          script: bash scripts/deploy-docs.sh
+
+main:
+  # ===== 每周周一 9:00 依赖版本检测 =====
+  "crontab: 0 9 * * 1":
+    - name: dependency-check
+      docker:
+        image: docker.cnb.cool/pylover/tools/zgadmin:env
+        volumes:
+          - ./backend/.venv:rw
+          - ./frontend/node_modules:rw
+      imports:
+        - https://cnb.cool/pylover/key/-/blob/main/deepseek.yml
+      services:
+        - docker
+      stages:
+        - name: check dependencies
+          script: bash scripts/deps-check.sh
+
+  push:
+    - stages:
+        - name: sync to github
+          imports: https://cnb.cool/pylover/key/-/blob/main/github.yml
+          image: tencentcom/git-sync
+          settings:
+            target_url: https://github.com/pylover7/ZgAdmin.git
+            auth_type: https
+            username: ${GIT_USERNAME}
+            password: ${GIT_ACCESS_TOKEN}
+

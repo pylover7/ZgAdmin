@@ -1,10 +1,11 @@
 [project]
-name = "PyTool"
+name = "ZgAdmin"
 version = "0.0.3"
 description = "A tool made by Python"
 readme = "../README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "alembic>=1.18.4",
     "apscheduler>=3.11.0",
     "bcrypt==4.0.1",
     "email-validator>=2.2.0",
@@ -12,20 +13,24 @@ dependencies = [
     "fastapi>=0.116.1",
     "httpx>=0.28.1",
     "loguru>=0.7.3",
+    "pillow>=10.0.0",
     "psycopg>=3.2.9",
     "pydantic-settings>=2.10.1",
     "pyjwt>=2.10.1",
+    "psutil>=5.9.0",
+    "python-magic>=0.4.27",
+    "python-multipart>=0.0.18",
     "pymysql>=1.1.1",
     "pytz>=2025.2",
+    "redis>=5.0.0",
     "sentry-sdk>=2.34.1",
     "setuptools>=80.9.0",
-    "sqlmodel>=0.0.24",
+    "sqlmodel>=0.0.38",
     "uvicorn>=0.35.0",
-    "wechatpayv3>=2.0.1",
 ]
 
 [[tool.uv.index]]
-url = "https://mirrors.cloud.tencent.com/pypi/simple"
+url = "https://pypi.cnb.cool/pylover/pypi/-/packages/simple"
 default = true
 
 [dependency-groups]
@@ -36,6 +41,20 @@ dev = [
     "pytest-cov>=4.0.0",
     "pytest-asyncio>=0.23.0",
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --tb=short"
+markers = [
+    "slow: marks tests as slow",
+]
+
+[tool.coverage.run]
+source = ["app"]
+omit = ["tests/*", "app/alembic/*"]
+
+[tool.coverage.report]
+show_missing = true
 
 [tool.autopep8]
 max-line-length = 100
@@ -53,12 +72,13 @@ ignore-patterns = ["_test.py$", "_mock.py$"]             # 忽略测试模式文
 
 # 通用规则控制
 disable = """
-    C0114, C0115,
-    R0903,
+    C0114, C0115, C0116,
+    R0903, R0911, R0912, R0913, R0914, R0917,
     W1203,
     E0213,
     W0221,
-    E0611
+    E0611,
+    E1102, E1120
 """
 
 # 代码质量强化
@@ -96,5 +116,4 @@ min-public-methods = 1   # 类最少公共方法数
 
 # 类型提示增强
 [tool.pylint.typecheck]
-recommended = true
-ignore-missing-imports = false  # 强制类型导入检查
+generated-members = "sqlmodel.*,sqlalchemy.*"

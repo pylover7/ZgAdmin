@@ -7,8 +7,8 @@
 .venv/
 */migrations
 */logs
-*/config
 material-*/
+htmlcov/
 
 # frontend
 node_modules
@@ -19,6 +19,7 @@ dist-ssr
 .eslintcache
 report.html
 vite.config.*.timestamp*
+frontend/coverage
 
 yarn.lock
 npm-debug.log*

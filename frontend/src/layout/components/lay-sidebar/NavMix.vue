@@ -29,9 +29,7 @@ const {
   onPanel,
   resolvePath,
   username,
-  userAvatar,
   getDivStyle,
-  avatarsStyle,
   toAccountSettings,
   getDropdownItemStyle,
   getDropdownItemClass
@@ -105,7 +103,7 @@ watch(
       <!-- 国际化 -->
       <el-dropdown id="header-translation" trigger="click">
         <GlobalizationIcon
-          class="navbar-bg-hover w-[40px] h-[48px] p-[11px] cursor-pointer outline-hidden"
+          class="navbar-bg-hover w-10 h-12 p-2.75 cursor-pointer outline-hidden"
         />
         <template #dropdown>
           <el-dropdown-menu class="translation">
@@ -139,7 +137,6 @@ watch(
       <!-- 退出登录 -->
       <el-dropdown trigger="click">
         <span class="el-dropdown-link navbar-bg-hover select-none">
-          <img :src="userAvatar" :style="avatarsStyle" />
           <p v-if="username" class="dark:text-white">{{ username }}</p>
         </span>
         <template #dropdown>

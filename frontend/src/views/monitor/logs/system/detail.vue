@@ -1,5 +1,6 @@
 <script setup lang="tsx">
 import { ref } from "vue";
+import { transformI18n } from "@/plugins/i18n";
 import "vue-json-pretty/lib/styles.css";
 import VueJsonPretty from "vue-json-pretty";
 
@@ -12,39 +13,39 @@ const props = defineProps({
 
 const columns = [
   {
-    label: "IP 地址",
+    label: transformI18n("system.ip"),
     prop: "ip"
   },
   {
-    label: "地点",
+    label: transformI18n("system.location"),
     prop: "address"
   },
   {
-    label: "操作系统",
+    label: transformI18n("system.os"),
     prop: "system"
   },
   {
-    label: "浏览器类型",
+    label: transformI18n("system.browser"),
     prop: "browser"
   },
   {
-    label: "所属模块",
+    label: transformI18n("system.module"),
     prop: "module"
   },
   {
-    label: "请求时间",
+    label: transformI18n("system.requestTime"),
     prop: "requestTime"
   },
   {
-    label: "请求方法",
+    label: transformI18n("system.requestMethod"),
     prop: "method"
   },
   {
-    label: "请求耗时",
+    label: transformI18n("system.requestDuration"),
     prop: "takesTime"
   },
   {
-    label: "请求接口",
+    label: transformI18n("system.requestUrl"),
     prop: "url",
     copy: true
   },
@@ -57,22 +58,22 @@ const columns = [
 
 const dataList = ref([
   {
-    title: "响应头",
+    title: transformI18n("system.responseHeaders"),
     name: "responseHeaders",
     data: (props.data[0] as any).responseHeaders
   },
   {
-    title: "响应体",
+    title: transformI18n("system.responseBody"),
     name: "responseBody",
     data: (props.data[0] as any).responseBody
   },
   {
-    title: "请求头",
+    title: transformI18n("system.requestHeaders"),
     name: "requestHeaders",
     data: (props.data[0] as any).requestHeaders
   },
   {
-    title: "请求体",
+    title: transformI18n("system.requestBody"),
     name: "requestBody",
     data: (props.data[0] as any).requestBody
   }

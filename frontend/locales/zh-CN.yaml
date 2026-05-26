@@ -19,6 +19,8 @@ buttons:
   pureBackTop: 回到顶部
   pureOpenText: 开
   pureCloseText: 关
+  pureWatchMore: 查看更多
+  pureMarkAsRead: 标为已读
 search:
   pureTotal: 共
   pureHistory: 搜索历史
@@ -79,6 +81,7 @@ menus:
   pureSysSettings: 系统设置
   pureGenSettings: 通用设置
   pureLoginSettings: 登录设置
+  pureSecuritySettings: 安全设置
   pureCodeMirror: 代码编辑器
   pureMarkdown: Markdown
   pureEditor: 编辑器
@@ -191,6 +194,9 @@ menus:
   pureMindMap: 思维导图
   pureMenuOverflow: 目录超出显示 Tooltip 文字提示
   pureChildMenuOverflow: 菜单超出显示 Tooltip 文字提示
+  zgNoticeSettings: 通知管理
+  zgResourceManagement: 资源管理
+  zgFileManager: 文件管理
 status:
   pureLoad: 加载中...
   pureMessage: 消息
@@ -243,6 +249,23 @@ login:
   purePassWordSureReg: 请输入确认密码
   purePassWordDifferentReg: 两次密码不一致!
   purePassWordUpdateReg: 修改密码成功
+tableBar:
+  pureList: 列表
+  pureLarge: 宽松
+  pureDefault: 默认
+  pureSmall: 紧凑
+  pureColumnSettings: 列设置
+  pureCollapse: 折叠
+  pureExpand: 展开
+  pureRefresh: 刷新
+  pureDensity: 密度
+  pureColumnDisplay: 列展示
+  pureReset: 重置
+  pureExitFullScreen: 退出全屏
+  pureFullScreen: 全屏
+  purePinLeft: 固定在左边
+  purePinRight: 固定在右边
+  pureUnpin: 取消固定
 system:
   username: 用户名称
   email: 邮箱
@@ -353,6 +376,38 @@ system:
     loginLog: 登录日志
     operationLog: 操作日志
     systemLog: 系统日志
+    load: 负载
+    cpu: CPU
+    memory: 内存
+    disk: 磁盘
+    network: 网络流量
+    diskIO: 磁盘IO
+    load1: 1分钟
+    load5: 5分钟
+    load15: 15分钟
+    cores: 核心数
+    status: 状态
+    cpuFreq: 频率
+    physicalCores: 物理核心
+    logicalCores: 逻辑核心
+    total: 总计
+    used: 已用
+    available: 可用
+    cached: 缓存
+    buffers: 缓冲
+    free: 空闲
+    shared: 共享
+    pause: 暂停刷新
+    resume: 恢复刷新
+    fetchError: 数据获取失败，请稍后重试
+    systemStatus: 状态
+    realtimeMonitor: 监控
+    totalSent: 总发送
+    totalRecv: 总接收
+    upload: 上传
+    download: 下载
+    read: 读取
+    write: 写入
   settings:
     title: 系统设置
     general: 通用设置
@@ -367,6 +422,10 @@ system:
     siteName: 站点名称
     siteDesc: 站点描述
     logo: Logo
+    defaultLang: 默认语言
+    enableEmail: 启用邮件
+    copyright: 版权信息
+    icp: 备案号
   loginSettings:
     title: 登录设置
     qqConfig: QQ登录配置
@@ -374,3 +433,340 @@ system:
   appId: App ID
   appKey: App Key
   redirectUri: 回调地址
+  siteInfo: 站点信息
+  funcSettings: 功能设置
+  otherInfo: 其他信息
+  saveSuccess: 保存成功
+  saveFail: 保存失败
+  resetConfirm: 确定要重置所有配置吗？
+  resetSuccess: 已重置
+  tip: 提示
+  enableEmailTip: 关闭后系统将不发送任何邮件通知
+  loadFailed: 加载失败
+  passwordStrength: 强
+  passwordModified: 密码修改成功
+  passwordModifyFail: 密码修改失败
+  fieldModified: 修改成功
+  fieldModifyFail: 修改失败
+  notImplemented: 暂未实现
+  accountPassword: 账户密码
+  passwordStrengthCurrent: 当前密码强度：强
+  securityPhone: 密保手机
+  bindPhoneTip: 绑定手机后可通过手机号找回密码
+  boundPhone: 已绑定手机
+  securityQuestion: 密保问题
+  securityQuestionTip: 未设置密保问题，密保问题可有效保护账户安全
+  backupEmail: 备用邮箱
+  boundEmail: 已绑定邮箱
+  bindEmailTip: 已绑定邮箱可用于找回密码
+  changePassword: 修改密码
+  confirmNewPassword: 确认新密码
+  pleaseEnterCurrentPwd: 请输入当前密码
+  pleaseEnterNewPwd: 请输入新密码
+  pleaseReenterNewPwd: 请再次输入新密码
+  pwdLengthRange: 密码长度为8-40位
+  pwdNotMatch: 两次输入的密码不一致
+  confirmModify: 确认修改
+  pleaseEnterNewPhone: 请输入新手机号
+  pleaseEnterNewEmail: 请输入新邮箱
+  pleaseEnterPhone: 请输入手机号
+  pleaseEnterEmail: 请输入邮箱
+  emailFormatError: 请输入正确的邮箱地址
+  phoneFormatError: 请输入正确的手机号
+  modify: 修改
+  accountManagement: 账户管理
+  modifySecurityPhone: 修改密保手机
+  modifyBackupEmail: 修改备用邮箱
+  preferences: 偏好设置
+  notifyAccount: 账户密码
+  notifyAccountTip: 其他用户的消息将以站内信的形式通知
+  notifySystem: 系统消息
+  notifySystemTip: 系统消息将以站内信的形式通知
+  notifyTask: 待办任务
+  notifyTaskTip: 待办任务将以站内信的形式通知
+  settingSuccess: 设置成功
+  settingFail: 设置失败
+  yes: 是
+  no: 否
+  profile: 个人信息
+  nicknameRequired: 昵称必填
+  emailRequired: 邮箱必填
+  pleaseEnterNickname: 请输入昵称
+  contactPhone: 联系电话
+  pleaseEnterContactPhone: 请输入联系电话
+  introduction: 简介
+  pleaseEnterIntroduction: 请输入简介
+  updateProfile: 更新信息
+  updateProfileSuccess: 更新信息成功
+  updateProfileFail: 更新信息失败
+  copyrightPlaceholder: 如：Copyright © 2024 ZgAdmin
+  icpPlaceholder: 如：京ICP备XXXXXXXX号
+  siteNameMax: 站点名称不超过50个字符
+  siteDescMax: 站点描述不超过200个字符
+  pleaseSelectLang: 请选择默认语言
+  qqLoginDisabled: QQ登录已禁用
+  wechatLoginDisabled: 微信登录已禁用
+  qqRedirectTip: 此地址需要在QQ互联后台的回调域名中配置，格式如：http://localhost:7000/login/qq/callback
+  wechatRedirectTip: 此地址需要在微信开放平台后台的回调域名中配置，格式如：http://localhost:7000/login/wechat/callback
+  invalidUrl: 请输入正确的URL地址
+  configGuide: 配置说明
+  qqConfigSteps: "QQ登录配置步骤："
+  qqStep1: 访问QQ互联并登录
+  qqStep2: 创建应用，获取 App ID 和 App Key
+  qqStep3: 配置回调域名，格式需与上方填写的一致
+  qqStep4: 等待审核通过后即可使用
+  wechatConfigSteps: "微信登录配置步骤："
+  wechatStep1: 访问微信开放平台并登录
+  wechatStep2: 创建网站应用，获取 AppID 和 AppSecret
+  wechatStep3: 配置授权回调域名，格式需与上方填写的一致
+  wechatStep4: 等待审核通过后即可使用
+  security:
+    policyConfig: 安全策略配置
+    passwordPolicy: 密码策略
+    loginProtection: 登录保护
+    ipBlackWhiteList: IP 黑白名单
+    minPasswordLength: 最小密码长度
+    requireUppercase: 需要大写字母
+    requireLowercase: 需要小写字母
+    requireDigit: 需要数字
+    requireSpecial: 需要特殊字符
+    passwordHistory: 密码历史检查
+    passwordHistoryTip: 最近 N 次密码不可重用，0 表示不检查
+    maxLoginAttempts: 最大登录失败次数
+    maxLoginAttemptsTip: 连续失败 N 次后锁定账号
+    lockoutDuration: 锁定时长(分钟)
+    lockoutDurationTip: 账号锁定后的等待时间
+    captchaEnabled: 启用登录验证码
+    savePolicy: 保存策略
+    policySaveSuccess: 安全策略保存成功
+    ipPriorityNote: 白名单优先：如果存在白名单规则，则只有匹配白名单的 IP 才能访问；黑名单中的 IP 将被直接拒绝。
+    noIpRules: 暂无IP规则
+    addRule: 新增规则
+    editRule: 编辑IP规则
+    ipCidr: IP/CIDR
+    ruleType: 规则类型
+    whitelist: 白名单
+    blacklist: 黑名单
+    description: 备注
+    enabled: 启用
+    disabled: 禁用
+    createdAt: 创建时间
+    ipRuleAddSuccess: IP规则添加成功
+    ipRuleUpdateSuccess: IP规则更新成功
+    ipRuleDeleteConfirm: 确定要删除选中的IP规则吗？
+    enterIpCidr: 请输入IP地址或CIDR
+    ipCidrPlaceholder: "如: 192.168.1.0/24 或 10.0.0.1"
+    optionalRemark: 可选备注
+    deleteLogConfirm: 确定要删除该条日志吗？
+  requestTime: 请求时间
+  requestMethod: 请求方法
+  requestDuration: 请求耗时
+  requestUrl: 请求接口
+  responseHeaders: 响应头
+  responseBody: 响应体
+  requestHeaders: 请求头
+  requestBody: 请求体
+  ip: IP 地址
+  location: 地点
+  os: 操作系统
+  browser: 浏览器类型
+  module: 所属模块
+  menu:
+    menuLabel: 菜单
+    externalLink: 外链
+    btnLabel: 按钮
+    showLabel: 显示
+    showTip: 会在菜单中显示
+    hideLabel: 隐藏
+    hideTip: 不会在菜单中显示
+    fixed: 固定
+    fixedTip: 当前菜单名称固定显示在标签页且不可关闭
+    unfixed: 不固定
+    unfixedTip: 当前菜单名称不固定显示在标签页且可关闭
+    cache: 缓存
+    cacheTip: 会保存该页面的整体状态，刷新后会清空状态
+    noCache: 不缓存
+    noCacheTip: 不会保存该页面的整体状态
+    allow: 允许
+    allowTip: 当前菜单名称或自定义信息允许添加到标签页
+    forbid: 禁止
+    forbidTip: 当前菜单名称或自定义信息禁止添加到标签页
+    showParent: 显示
+    showParentTip: 会显示父级菜单
+    hideParent: 隐藏
+    hideParentTip: 不会显示父级菜单
+    loadingOn: 开启
+    loadingOnTip: 有首次加载动画
+    loadingOff: 关闭
+    loadingOffTip: 无首次加载动画
+    parentMenu: 上级菜单
+    selectParentMenu: 请选择上级菜单
+    enterMenuName: 请输入菜单名称
+    enterRouteName: 请输入路由名称
+    enterRoutePath: 请输入路由路径
+    enterComponent: 请输入组件路径
+    menuSort: 菜单排序
+    redirect: 路由重定向
+    enterRedirect: 请输入默认跳转地址
+    menuIcon: 菜单图标
+    extraIcon: 右侧图标
+    extraIconPlaceholder: 菜单名称右侧的额外图标
+    enterTransition: 进场动画
+    selectEnterTransition: 请选择页面进场加载动画
+    leaveTransition: 离场动画
+    selectLeaveTransition: 请选择页面离场加载动画
+    activeMenu: 菜单激活
+    enterActiveMenu: 请输入需要激活的菜单
+    authLabel: 权限标识
+    enterAuth: 请输入权限标识
+    frameUrl: 链接地址
+    enterFrameUrl: 请输入 iframe 链接地址
+    frameLoading: 加载动画
+    showLinkLabel: 菜单
+    showParentLabel: 父级菜单
+    keepAliveLabel: 缓存页面
+    hiddenTagLabel: 标签页
+    fixedTagLabel: 固定标签页
+    titleRequired: 菜单名称为必填项
+    routeNameRequired: 路由名称为必填项
+    routePathRequired: 路由路径为必填项
+    authRequired: 权限标识为必填项
+    menuAuth: 菜单权限
+    apiAuth: API权限
+  nicknamePlaceholder: 请输入用户昵称
+  usernamePlaceholder: 请输入用户名称
+  passwordPlaceholder: 请输入用户密码
+  phonePlaceholder: 请输入手机号
+  emailPlaceholder: 请输入邮箱
+  sexPlaceholder: 请选择用户性别
+  deptPlaceholder: 请选择归属部门
+  remarkPlaceholder: 请输入备注信息
+  userNickname: 用户昵称
+  userName: 用户名称
+  userPassword: 用户密码
+  userPhone: 手机号
+  userEmail: 邮箱
+  userSex: 用户性别
+  userDept: 归属部门
+  userStatus: 用户状态
+  roleNameRequired: 角色名称为必填项
+  roleCodeRequired: 角色标识为必填项
+  enterRoleName: 请输入角色名称
+  enterRoleCode: 请输入角色标识
+  roleList: 角色列表
+  deptSearchPlaceholder: 请输入部门名称
+  collapseAll: 折叠全部
+  expandAll: 展开全部
+  usernameRequired: 用户名称为必填项
+  passwordRequired: 用户密码为必填项
+  phoneInputRequired: 请输入手机号
+  emailInputRequired: 请输入邮箱
+  deptNameRequired: 部门名称为必填项
+  back: 返回
+  qqConnect: QQ互联
+  wechatOpenPlatform: 微信开放平台
+  qqAccountLogin: QQ账号登录
+  qqSecureLogin: 使用QQ安全登录，无需记住密码
+  qqAuthUrlFail: 获取QQ授权链接失败，请稍后重试
+  qqMissingParams: 缺少必要的授权参数
+  qqStateVerifyFail: 授权状态验证失败，请重新登录
+  qqLoginFail: QQ登录失败，请稍后重试
+  qqAuthUrlUnavailable: 无法获取QQ授权链接，请稍后重试
+  loggingIn: 正在登录中...
+  clickRefreshCaptcha: 点击刷新验证码
+  simplifiedChinese: 简体中文
+  langZhCN: 简体中文
+  langEn: English
+  deletedSelectedLogs: 已删除选中日志数据
+  sysManagement: 系统管理
+  sysSystem: 系统
+  sysDatabase: 数据库
+  moduleLabel: 所属模块
+  logLevelLabel: 日志级别
+  operationLabel: 操作
+  datePicker:
+    today: 今天
+    yesterday: 昨天
+    dayBeforeYesterday: 前天
+    thisWeek: 本周
+    lastWeek: 上周
+    thisMonth: 本月
+    lastMonth: 上个月
+    thisYear: 本年
+  about:
+    currentVersion: 当前版本
+    pythonVersion: Python 版本
+    uvVersion: uv 版本
+    codeRepository: 代码仓库
+    reportIssue: 报告问题
+    lastBuildTime: 最后编译时间
+    recommendedNodeVersion: 推荐 node 版本
+    recommendedBunVersion: 推荐 bun 版本
+    fullVersionAddress: 完整版代码地址
+    fullVersionLink: 完整版代码链接
+    thinVersionAddress: 精简版代码地址
+    thinVersionLink: 精简版代码链接
+    docAddress: 文档地址
+    docLink: 文档链接
+    previewAddress: 预览地址
+    previewLink: 预览链接
+  notice:
+    title: 通知标题
+    type: 通知类型
+    level: 通知级别
+    content: 通知内容
+    status: 通知状态
+    sysNotice: 系统通知
+    bizNotice: 业务通知
+    announce: 公告
+    sys: 系统
+    biz: 业务
+    info: 普通
+    warn: 警告
+    important: 重要
+    draft: 草稿
+    published: 已发布
+    publishNotice: 发布通知
+    enterTitle: 请输入通知标题
+    selectType: 请选择通知类型
+    selectLevel: 请选择通知级别
+    enterContent: 请输入通知内容
+    selectStatus: 请选择状态
+    titleRequired: 通知标题为必填项
+    typeRequired: 请选择通知类型
+    levelRequired: 请选择通知级别
+    atLeastOne: 请至少选择一条数据
+    batchDeleteSuccess: 批量删除成功
+    deleteSuccess: 删除成功
+    deleteNoticeConfirm: 确认删除该通知？
+    noticeLabel: 通知
+  file:
+    name: 文件名
+    namePlaceholder: 请输入文件名
+    fileType: 文件类型
+    fileTypePlaceholder: 请选择文件类型
+    size: 大小
+    uploader: 上传者
+    typeImage: 图片
+    typeDocument: 文档
+    typeVideo: 视频
+    typeAudio: 音频
+    typeOther: 其他
+    upload: 上传文件
+    dragTip: 将文件拖到此处，或
+    clickUpload: 点击上传
+    preview: 预览
+    download: 下载
+    rename: 重命名
+    delete: 删除
+    batchDelete: 批量删除
+    newName: 请输入新文件名
+    nameRequired: 文件名不能为空
+    renameSuccess: 重命名成功
+    deleteSuccess: 删除成功
+    confirmDelete: 确认删除该文件？
+    atLeastOne: 请至少选择一个文件
+    batchDeleteSuccess: 批量删除成功
+    uploadSuccess: 上传成功
+    uploadFail: 上传失败
+    uploadPartial: 部分上传完成

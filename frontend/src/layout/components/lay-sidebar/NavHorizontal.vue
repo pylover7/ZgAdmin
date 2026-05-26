@@ -32,9 +32,7 @@ const {
   onPanel,
   getLogo,
   username,
-  userAvatar,
   backTopMenu,
-  avatarsStyle,
   toAccountSettings,
   getDropdownItemStyle,
   getDropdownItemClass
@@ -84,7 +82,7 @@ onMounted(() => {
       <!-- 国际化 -->
       <el-dropdown id="header-translation" trigger="click">
         <GlobalizationIcon
-          class="navbar-bg-hover w-[40px] h-[48px] p-[11px] cursor-pointer outline-hidden"
+          class="navbar-bg-hover w-10 h-12 p-2.75 cursor-pointer outline-hidden"
         />
         <template #dropdown>
           <el-dropdown-menu class="translation">
@@ -118,7 +116,6 @@ onMounted(() => {
       <!-- 退出登录 -->
       <el-dropdown trigger="click">
         <span class="el-dropdown-link navbar-bg-hover">
-          <img :src="userAvatar" :style="avatarsStyle" />
           <p v-if="username" class="dark:text-white">{{ username }}</p>
         </span>
         <template #dropdown>

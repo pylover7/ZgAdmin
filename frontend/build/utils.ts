@@ -14,10 +14,23 @@ import {
 /** 启动`node`进程时所在工作目录的绝对路径 */
 const root: string = process.cwd();
 
-/** CNB 中后端 URL 环境变量 */
-const BACKEND_URL =
-  process.env.CNB_VSCODE_PROXY_URI?.replace(/\{\{port\}\}/g, "7001") ||
-  "http://localhost:7001";
+/** 项目根目录的绝对路径 */
+const projectRoot: string = resolve(root, "..");
+
+import { readFileSync } from "node:fs";
+
+// 构建时读取项目根目录的 VERSION
+const PROJECT_VERSION = readFileSync(
+  resolve(projectRoot, "VERSION"),
+  "utf-8"
+).trim();
+
+/**
+ * Vite 服务端代理目标地址
+ * 注意：Vite proxy 是服务端行为，前后端在同一机器上运行，应直接用 localhost，
+ * 而非 CNB_VSCODE_PROXY_URI（那是给浏览器端访问用的外部代理 URL）
+ */
+const BACKEND_URL = "http://localhost:7001";
 
 /**
  * @description 根据可选的路径片段生成一个新的绝对路径
@@ -49,7 +62,8 @@ const alias: Record<string, string> = {
 /** 平台的名称、版本、运行所需的`node`和`pnpm`版本、依赖、最后构建时间的类型提示 */
 const __APP_INFO__ = {
   pkg: { name, version, engines, dependencies, devDependencies },
-  lastBuildTime: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss")
+  lastBuildTime: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
+  projectVersion: PROJECT_VERSION
 };
 
 /** 处理环境变量 */
@@ -114,6 +128,8 @@ const getPackageSize = options => {
 
 export {
   root,
+  projectRoot,
+  PROJECT_VERSION,
   pathResolve,
   alias,
   __APP_INFO__,

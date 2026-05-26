@@ -7,20 +7,13 @@ import {
   routerArrays,
   storageLocal
 } from "../utils";
-import {
-  type UserResult,
-  type RefreshTokenResult,
-  getLogin,
-  refreshTokenApi,
-  qqLogin
-} from "@/api/user";
+import type { UserResult, RefreshTokenResult } from "@/types/user";
+import { getLogin, refreshTokenApi, qqLogin, logoutApi } from "@/api/user";
 import { useMultiTagsStoreHook } from "./multiTags";
 import { type DataInfo, setToken, removeToken, userKey } from "@/utils/auth";
 
 export const useUserStore = defineStore("pure-user", {
   state: (): userType => ({
-    // 头像
-    avatar: storageLocal().getItem<DataInfo<number>>(userKey)?.avatar ?? "",
     // 用户名
     username: storageLocal().getItem<DataInfo<number>>(userKey)?.username ?? "",
     // 昵称
@@ -40,10 +33,6 @@ export const useUserStore = defineStore("pure-user", {
     loginDay: 7
   }),
   actions: {
-    /** 存储头像 */
-    SET_AVATAR(avatar: string) {
-      this.avatar = avatar;
-    },
     /** 存储用户名 */
     SET_USERNAME(username: string) {
       this.username = username;
@@ -73,7 +62,7 @@ export const useUserStore = defineStore("pure-user", {
       this.isRemembered = bool;
     },
     /** 设置登录页的免登录存储几天 */
-    SET_LOGINDAY(value: number) {
+    SET_LOGINDAY(value: number | string) {
       this.loginDay = Number(value);
     },
     /** 登入 */
@@ -103,15 +92,22 @@ export const useUserStore = defineStore("pure-user", {
           });
       });
     },
-    /** 前端登出（不调用接口） */
-    logOut() {
-      this.username = "";
-      this.roles = [];
-      this.permissions = [];
-      removeToken();
-      useMultiTagsStoreHook().handleTags("equal", [...routerArrays]);
-      resetRouter();
-      router.push("/login");
+    /** 登出（调用后端接口将Token加入黑名单） */
+    async logOut() {
+      try {
+        await logoutApi();
+      } catch {
+        // 即使后端调用失败，仍然清除本地状态
+      }
+      await logoutApi().finally(() => {
+        this.username = "";
+        this.roles = [];
+        this.permissions = [];
+        removeToken();
+        useMultiTagsStoreHook().handleTags("equal", [...routerArrays]);
+        resetRouter();
+        router.push("/login");
+      });
     },
     /** 刷新`token` */
     async handRefreshToken(data) {

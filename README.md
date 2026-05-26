@@ -1,6 +1,12 @@
-# PyTool
+# ZgAdmin
 
-全栈管理平台 — Python/FastAPI 后端 + Vue 3/TypeScript 前端，Docker 一键部署。
+管理平台模板 — Python/FastAPI 后端 + Vue 3/TypeScript 前端，Docker 一键部署。
+
+- 🔐 **完善的权限体系** — 用户/角色/菜单/部门多级权限，支持 JWT 鉴权
+- 🔑 **多种登录方式** — 账号密码、QQ 登录、微信登录
+- 📊 **实时系统监控** — 在线用户、登录日志、操作日志全方位追踪
+- 🌍 **国际化支持** — 中文 / English 无缝切换
+- 🐳 **一键部署** — Docker 多阶段构建，SQLite 零配置即用
 
 ## 技术栈
 
@@ -56,12 +62,36 @@ cd frontend && bun run typecheck     # TS + Vue 类型检查
 cd frontend && bun run lint          # ESLint + Prettier + Stylelint
 ```
 
+### 数据迁移
+
+```bash
+cd backend
+
+# 生成迁移脚本（根据模型变更自动检测）
+uv run alembic revision --autogenerate -m "add xxx column"
+
+# 执行迁移到最新版本
+uv run alembic upgrade head
+
+# 回退一个版本
+uv run alembic downgrade -1
+
+# 查看当前迁移状态
+uv run alembic current
+
+# 查看迁移历史
+uv run alembic history
+
+# 生成 SQL 而不执行（离线模式）
+uv run alembic upgrade head --sql
+```
+
 ## Docker 部署
 
 ### 拉取镜像
 
 ```bash
-docker pull docker.cnb.cool/pylover/pytool
+docker pull docker.cnb.cool/pylover/zgadmin
 ```
 
 ### Docker Compose（推荐）
@@ -83,10 +113,10 @@ docker compose logs -f       # 查看日志
 
 ```bash
 docker run -d \
-  --name pytool-app \
+  --name zgadmin-app \
   -p 80:80 \
   -p 7001:7001 \
-  docker.cnb.cool/pylover/pytool
+  docker.cnb.cool/pylover/zgadmin
 ```
 
 ## 配置

@@ -9,7 +9,8 @@ from sqlmodel import select
 
 from app.models.login import JWTPayload
 from app.settings import settings
-from app.settings.config import base_config
+from app.core.database import DatabaseSession
+from app.models.config import OAuthConfig
 from app.models import User
 from app.models.login import QQAccessToken, QQUserInfo
 from app.settings.log import logger
@@ -46,10 +47,12 @@ def decode_access_token(token: str) -> JWTPayload:
 
 async def get_qq_access_token(code: str) -> QQAccessToken:
     """使用授权码获取access_token"""
-    # 优先读取运行时配置（管理后台设置），否则回退到 settings 默认值
-    app_id = base_config.get_config("login", "qq_app_id") or settings.QQ_APP_ID
-    app_key = base_config.get_config("login", "qq_app_key") or settings.QQ_APP_KEY
-    redirect_uri = base_config.get_config("login", "qq_redirect_uri") or settings.QQ_REDIRECT_URI
+    with DatabaseSession() as session:
+        oauth_config = session.exec(select(OAuthConfig)).first()
+
+    app_id = (oauth_config.qq_app_id if oauth_config and oauth_config.qq_app_id else None) or settings.QQ_APP_ID
+    app_key = (oauth_config.qq_app_key if oauth_config and oauth_config.qq_app_key else None) or settings.QQ_APP_KEY
+    redirect_uri = (oauth_config.qq_redirect_uri if oauth_config and oauth_config.qq_redirect_uri else None) or settings.QQ_REDIRECT_URI
 
     # URL编码确保参数安全
     encoded_redirect_uri = urllib.parse.quote(redirect_uri, safe='')
@@ -90,12 +93,15 @@ async def get_qq_access_token(code: str) -> QQAccessToken:
             )
         except httpx.RequestError as e:
             logger.error(f"QQ API请求失败: {str(e)}")
-            raise HTTPException(status_code=500, detail="QQ服务不可用")
+            raise HTTPException(status_code=500, detail="QQ服务不可用") from e
 
 
 async def get_qq_userinfo(access_token: str, openid: str) -> QQUserInfo:
     """获取QQ用户信息"""
-    app_id = base_config.get_config("login", "qq_app_id") or settings.QQ_APP_ID
+    with DatabaseSession() as session:
+        oauth_config = session.exec(select(OAuthConfig)).first()
+
+    app_id = (oauth_config.qq_app_id if oauth_config and oauth_config.qq_app_id else None) or settings.QQ_APP_ID
 
     userinfo_url = (
         f"https://graph.qq.com/user/get_user_info?"
@@ -132,7 +138,7 @@ async def get_qq_userinfo(access_token: str, openid: str) -> QQUserInfo:
             )
         except httpx.RequestError as e:
             logger.error(f"QQ用户信息API请求失败: {str(e)}")
-            raise HTTPException(status_code=500, detail="QQ服务不可用")
+            raise HTTPException(status_code=500, detail="QQ服务不可用") from e
 
 
 async def find_or_create_qq_user(session, qq_userinfo: QQUserInfo) -> User:
@@ -149,8 +155,6 @@ async def find_or_create_qq_user(session, qq_userinfo: QQUserInfo) -> User:
                 user.nickname = qq_userinfo.nickname
             if qq_userinfo.avatar:
                 user.qq_avatar = qq_userinfo.avatar
-                if not user.avatar:
-                    user.avatar = qq_userinfo.avatar
             session.add(user)
             session.commit()
             session.refresh(user)
@@ -166,7 +170,6 @@ async def find_or_create_qq_user(session, qq_userinfo: QQUserInfo) -> User:
             qq_openid=qq_userinfo.openid,
             qq_nickname=qq_userinfo.nickname,
             qq_avatar=qq_userinfo.avatar,
-            avatar=qq_userinfo.avatar,
             status=1,
             is_superuser=False
         )
@@ -181,7 +184,7 @@ async def find_or_create_qq_user(session, qq_userinfo: QQUserInfo) -> User:
     except Exception as e:
         logger.error(f"创建或更新QQ用户失败: {str(e)}")
         session.rollback()
-        raise HTTPException(status_code=500, detail="用户信息保存失败")
+        raise HTTPException(status_code=500, detail="用户信息保存失败") from e
 
 
 def create_oauth_state(purpose: str = "qq_login") -> str:

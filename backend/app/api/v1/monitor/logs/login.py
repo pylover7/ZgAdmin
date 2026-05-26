@@ -12,8 +12,9 @@ loginRouter = APIRouter()
 
 
 @loginRouter.post("/delete")
-async def delete_login_logs(session: SessionDep, data: list[UUID]):
+async def delete_login_logs(session: SessionDep, current_user: DependUser, data: list[UUID]):
     await loginLoginController.delete(session, data)
+    await logger.operationInfo(user=current_user.username, msg=f"删除登录日志: {[str(d) for d in data]}")
     return Success(msg="登录日志删除成功！")
 
 

@@ -24,6 +24,7 @@ export default {
   ],
   rules: {
     "prettier/prettier": true,
+    "no-empty-source": null,
     "selector-class-pattern": null,
     "no-descending-specificity": null,
     "scss/dollar-variable-pattern": null,
@@ -83,5 +84,14 @@ export default {
       { severity: "warning" }
     ]
   },
-  ignoreFiles: ["**/*.js", "**/*.ts", "**/*.jsx", "**/*.tsx", "report.html"]
+  ignoreFiles: [
+    "**/*.js",
+    "**/*.ts",
+    "**/*.jsx",
+    "**/*.tsx",
+    "report.html",
+    "**/iconfont/**",
+    "playwright-report/**",
+    "coverage/**"
+  ]
 };

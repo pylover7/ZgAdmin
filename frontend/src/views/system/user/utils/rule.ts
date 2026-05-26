@@ -1,19 +1,38 @@
 import { reactive } from "vue";
 import type { FormRules } from "element-plus";
 import { isPhone, isEmail } from "@pureadmin/utils";
+import { transformI18n } from "@/plugins/i18n";
 
 /** 自定义表单规则校验 */
 export const formRules = reactive(<FormRules>{
-  nickname: [{ required: true, message: "用户昵称为必填项", trigger: "blur" }],
-  username: [{ required: true, message: "用户名称为必填项", trigger: "blur" }],
-  password: [{ required: true, message: "用户密码为必填项", trigger: "blur" }],
+  nickname: [
+    {
+      required: true,
+      message: transformI18n("system.nicknameRequired"),
+      trigger: "blur"
+    }
+  ],
+  username: [
+    {
+      required: true,
+      message: transformI18n("system.usernameRequired"),
+      trigger: "blur"
+    }
+  ],
+  password: [
+    {
+      required: true,
+      message: transformI18n("system.passwordRequired"),
+      trigger: "blur"
+    }
+  ],
   phone: [
     {
       validator: (rule, value, callback) => {
         if (value === "") {
           callback();
         } else if (!isPhone(value)) {
-          callback(new Error("请输入正确的手机号码格式"));
+          callback(new Error(transformI18n("system.phoneFormatError")));
         } else {
           callback();
         }
@@ -21,16 +40,24 @@ export const formRules = reactive(<FormRules>{
       trigger: "blur"
       // trigger: "click" // 如果想在点击确定按钮时触发这个校验，trigger 设置成 click 即可
     },
-    { required: false, message: "请输入手机号", trigger: "blur" }
+    {
+      required: false,
+      message: transformI18n("system.phoneInputRequired"),
+      trigger: "blur"
+    }
   ],
   email: [
-    { required: true, message: "请输入邮箱", trigger: "blur" },
+    {
+      required: true,
+      message: transformI18n("system.emailInputRequired"),
+      trigger: "blur"
+    },
     {
       validator: (rule, value, callback) => {
         if (value === "") {
           callback();
         } else if (!isEmail(value)) {
-          callback(new Error("请输入正确的邮箱格式"));
+          callback(new Error(transformI18n("system.emailFormatError")));
         } else {
           callback();
         }

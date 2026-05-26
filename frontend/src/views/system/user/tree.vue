@@ -1,6 +1,14 @@
 <script setup lang="ts">
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
-import { ref, computed, watch, getCurrentInstance } from "vue";
+import {
+  ref,
+  computed,
+  watch,
+  inject,
+  getCurrentInstance,
+  type ComputedRef
+} from "vue";
+import type { AdaptiveConfig } from "@/layout/hooks/useTableAdaptive";
 
 import Dept from "~icons/ri/git-branch-line";
 // import Reset from "~icons/ri/restart-line";
@@ -29,6 +37,14 @@ const isExpand = ref(true);
 const searchValue = ref("");
 const highlightMap = ref({});
 const { proxy } = getCurrentInstance();
+const injectConfig = inject<ComputedRef<AdaptiveConfig>>("adaptiveConfig");
+// 动态计算树容器最小高度，考虑 footer
+// 原始硬编码 141px = 顶部空间(33px) + NON_FOOTER_BOTTOM_SPACE(108px)
+// offsetBottom = footerHeight + 108，所以 141 - 108 = 33 为顶部固定空间
+const treeStyle = computed(() => {
+  const offsetBottom = injectConfig?.value?.offsetBottom ?? 108;
+  return { minHeight: `calc(100vh - 33px - ${offsetBottom}px)` };
+});
 const defaultProps = {
   children: "children",
   label: "name"
@@ -96,15 +112,15 @@ defineExpose({ onTreeReset });
 <template>
   <div
     v-loading="treeLoading"
-    class="h-full bg-bg_color overflow-hidden relative"
-    :style="{ minHeight: `calc(100vh - 141px)` }"
+    class="h-full bg-bg_color overflow-hidden relative flex flex-col"
+    :style="treeStyle"
   >
-    <div class="flex items-center h-[34px]">
+    <div class="flex items-center h-8.5">
       <el-input
         v-model="searchValue"
         class="ml-2"
         size="small"
-        placeholder="请输入部门名称"
+        :placeholder="$t('system.deptSearchPlaceholder')"
         clearable
       >
         <template #suffix>
@@ -117,7 +133,7 @@ defineExpose({ onTreeReset });
         </template>
       </el-input>
       <el-dropdown :hide-on-click="false">
-        <More2Fill class="w-[28px] cursor-pointer outline-hidden" />
+        <More2Fill class="w-7 cursor-pointer outline-hidden" />
         <template #dropdown>
           <el-dropdown-menu>
             <el-dropdown-item>
@@ -128,7 +144,9 @@ defineExpose({ onTreeReset });
                 :icon="useRenderIcon(isExpand ? ExpandIcon : UnExpandIcon)"
                 @click="toggleRowExpansionAll(isExpand ? false : true)"
               >
-                {{ isExpand ? "折叠全部" : "展开全部" }}
+                {{
+                  isExpand ? $t("system.collapseAll") : $t("system.expandAll")
+                }}
               </el-button>
             </el-dropdown-item>
             <!-- <el-dropdown-item>
@@ -147,7 +165,7 @@ defineExpose({ onTreeReset });
       </el-dropdown>
     </div>
     <el-divider />
-    <el-scrollbar height="calc(90vh - 88px)">
+    <el-scrollbar class="flex-1">
       <el-tree
         ref="treeRef"
         :data="treeData"
@@ -190,7 +208,7 @@ defineExpose({ onTreeReset });
                     : Dept
               "
             />
-            <span class="w-[120px]! truncate!" :title="node.label">
+            <span class="w-30! truncate!" :title="node.label">
               {{ node.label }}
             </span>
           </div>

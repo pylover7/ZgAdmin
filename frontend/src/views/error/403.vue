@@ -10,7 +10,7 @@ const router = useRouter();
 </script>
 
 <template>
-  <div class="flex justify-center items-center h-[640px]">
+  <div class="flex-c h-160">
     <noAccess />
     <div class="ml-12">
       <p

@@ -1,8 +1,9 @@
 import type { OptionsType } from "@/components/ReSegmented";
+import { transformI18n } from "@/plugins/i18n";
 
 const menuTypeOptions: Array<OptionsType> = [
   {
-    label: "菜单",
+    label: transformI18n("system.menu.menuLabel"),
     value: 0
   },
   {
@@ -10,89 +11,89 @@ const menuTypeOptions: Array<OptionsType> = [
     value: 1
   },
   {
-    label: "外链",
+    label: transformI18n("system.menu.externalLink"),
     value: 2
   },
   {
-    label: "按钮",
+    label: transformI18n("system.menu.btnLabel"),
     value: 3
   }
 ];
 
 const showLinkOptions: Array<OptionsType> = [
   {
-    label: "显示",
-    tip: "会在菜单中显示",
+    label: transformI18n("system.menu.showLabel"),
+    tip: transformI18n("system.menu.showTip"),
     value: true
   },
   {
-    label: "隐藏",
-    tip: "不会在菜单中显示",
+    label: transformI18n("system.menu.hideLabel"),
+    tip: transformI18n("system.menu.hideTip"),
     value: false
   }
 ];
 
 const fixedTagOptions: Array<OptionsType> = [
   {
-    label: "固定",
-    tip: "当前菜单名称固定显示在标签页且不可关闭",
+    label: transformI18n("system.menu.fixed"),
+    tip: transformI18n("system.menu.fixedTip"),
     value: true
   },
   {
-    label: "不固定",
-    tip: "当前菜单名称不固定显示在标签页且可关闭",
+    label: transformI18n("system.menu.unfixed"),
+    tip: transformI18n("system.menu.unfixedTip"),
     value: false
   }
 ];
 
 const keepAliveOptions: Array<OptionsType> = [
   {
-    label: "缓存",
-    tip: "会保存该页面的整体状态，刷新后会清空状态",
+    label: transformI18n("system.menu.cache"),
+    tip: transformI18n("system.menu.cacheTip"),
     value: true
   },
   {
-    label: "不缓存",
-    tip: "不会保存该页面的整体状态",
+    label: transformI18n("system.menu.noCache"),
+    tip: transformI18n("system.menu.noCacheTip"),
     value: false
   }
 ];
 
 const hiddenTagOptions: Array<OptionsType> = [
   {
-    label: "允许",
-    tip: "当前菜单名称或自定义信息允许添加到标签页",
+    label: transformI18n("system.menu.allow"),
+    tip: transformI18n("system.menu.allowTip"),
     value: false
   },
   {
-    label: "禁止",
-    tip: "当前菜单名称或自定义信息禁止添加到标签页",
+    label: transformI18n("system.menu.forbid"),
+    tip: transformI18n("system.menu.forbidTip"),
     value: true
   }
 ];
 
 const showParentOptions: Array<OptionsType> = [
   {
-    label: "显示",
-    tip: "会显示父级菜单",
+    label: transformI18n("system.menu.showParent"),
+    tip: transformI18n("system.menu.showParentTip"),
     value: true
   },
   {
-    label: "隐藏",
-    tip: "不会显示父级菜单",
+    label: transformI18n("system.menu.hideParent"),
+    tip: transformI18n("system.menu.hideParentTip"),
     value: false
   }
 ];
 
 const frameLoadingOptions: Array<OptionsType> = [
   {
-    label: "开启",
-    tip: "有首次加载动画",
+    label: transformI18n("system.menu.loadingOn"),
+    tip: transformI18n("system.menu.loadingOnTip"),
     value: true
   },
   {
-    label: "关闭",
-    tip: "无首次加载动画",
+    label: transformI18n("system.menu.loadingOff"),
+    tip: transformI18n("system.menu.loadingOffTip"),
     value: false
   }
 ];

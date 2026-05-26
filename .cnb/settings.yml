@@ -1,5 +1,5 @@
 workspace:
   launch:
     button:
-      name: 工具箱
-      description: 开启！！！
+      name: 开始开发~
+      description: 开启云原生开发~

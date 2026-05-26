@@ -4,30 +4,39 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.utils import formataddr
 
-from app.settings.config import base_config
+from sqlmodel import select
+
+from app.core.database import DatabaseSession
+from app.models.config import EmailConfig
 from app.settings import settings
 from app.settings.log import logger
 
 
-def send_email(receiver: str, subject: str, body: str):
+async def send_email(receiver: str, subject: str, body: str):
+    """异步发送邮件"""
     if not settings.FEATURE_EMAIL:
         logger.sysLogger.warning("邮件功能已关闭（FEATURE_EMAIL=False）")
         return False
-    host = base_config.get_config("email", "host")
-    port = base_config.get_config("email", "port")
-    username = base_config.get_config("email", "username")
-    password = base_config.get_config("email", "password")
-    sender = base_config.get_config("email", "sender")
+
+    with DatabaseSession() as session:
+        config = session.exec(select(EmailConfig)).first()
+
+    if not config or not config.host:
+        logger.sysLogger.error("邮件配置未设置")
+        return False
+
     message = MIMEMultipart()
-    message["From"] = formataddr(pair=(sender, username))
+    message["From"] = formataddr(pair=(config.sender, config.username))
     message["To"] = receiver
     message["Subject"] = Header(subject, "utf-8").encode()
     message.attach(MIMEText(body, "plain", "utf-8"))
+
     try:
-        with smtplib.SMTP(host, int(port)) as smtp_server:
-            smtp_server.starttls()
-            smtp_server.login(username, password)
-            smtp_server.sendmail(username, receiver, message.as_string())
+        with smtplib.SMTP(config.host, config.port) as smtp_server:
+            if config.use_tls:
+                smtp_server.starttls()
+            smtp_server.login(config.username, config.password)
+            smtp_server.sendmail(config.username, receiver, message.as_string())
         logger.sysLogger.info(f"发送邮件给{receiver}成功")
         return True
     except Exception as e:

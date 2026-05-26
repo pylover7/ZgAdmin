@@ -1,28 +1,30 @@
 services:
-  pytool:
-    image: docker.cnb.cool/pylover/pytool
-    container_name: pytool-app
+  zgadmin:
+    image: docker.cnb.cool/pylover/tools/zgadmin
+    container_name: zgadmin-app
     ports:
       - "7000:80"
     restart: unless-stopped
     environment:
       - ENVIRONMENT=production
+      # CORS 允许的域名（生产环境必须配置，不可为 *）
+      - BACKEND_CORS_ORIGINS=https://your-domain.com,https://admin.your-domain.com
       # 数据库：默认 SQLite（零配置启动），取消注释切换 PostgreSQL
       - DB_SCHEME=sqlite
       # - DB_SCHEME=postgresql
       # - DB_SERVER=postgres
       # - DB_PORT=5432
-      # - DB_PATH=pytool
-      # - DB_USER=pytool
+      # - DB_PATH=zgadmin
+      # - DB_USER=zgadmin
       # - DB_PASSWORD=changethis
     volumes:
-      - pytool_data:/backend/static
+      - zgadmin_data:/backend/static
     depends_on:
       postgres:
         condition: service_healthy
         required: false
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/api/v1/base/health"]
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost/api/v1/base/health')"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -30,16 +32,16 @@ services:
 
   postgres:
     image: postgres:16-alpine
-    container_name: pytool-db
+    container_name: zgadmin-db
     restart: unless-stopped
     environment:
-      - POSTGRES_USER=pytool
+      - POSTGRES_USER=zgadmin
       - POSTGRES_PASSWORD=changethis
-      - POSTGRES_DB=pytool
+      - POSTGRES_DB=zgadmin
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U pytool"]
+      test: ["CMD-SHELL", "pg_isready -U zgadmin"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -47,6 +49,23 @@ services:
     profiles:
       - postgres
 
+  redis:
+    image: redis:7-alpine
+    container_name: zgadmin-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    # Redis 默认不启动，取消下行注释以启用
+    profiles:
+      - postgres
+
 volumes:
-  pytool_data:
+  zgadmin_data:
   pgdata:
+  redisdata:

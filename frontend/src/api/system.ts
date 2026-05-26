@@ -1,12 +1,13 @@
 import { http } from "@/utils/http";
 import { apiV1 } from "./utils";
-import type { Result, ResultTable } from "@/types";
+import type { Result, ResultTable, RoleAuthResult } from "@/types";
 
 const systemUrl = (url: string) => apiV1(`/system${url}`);
 const deptUrl = (url: string) => systemUrl(`/dept${url}`);
 const munuUrl = (url: string) => systemUrl(`/menu${url}`);
 const userUrl = (url: string) => systemUrl(`/user${url}`);
 const roleUrl = (url: string) => systemUrl(`/role${url}`);
+const apiUrl = (url: string) => systemUrl(`/api${url}`);
 
 const monitorUrl = (url: string) => apiV1(`/monitor${url}`);
 const logsUrl = (url: string) => monitorUrl(`/logs${url}`);
@@ -51,6 +52,13 @@ export const getUserList = (
   });
 };
 
+/** 系统管理-用户管理-根据userId，获取对应角色id列表（userId：用户id） */
+export const getRoleIds = (id: string) => {
+  return http.request<Result>("post", userUrl("/getRolesIds"), {
+    data: { id }
+  });
+};
+
 /** 新增角色 */
 export const addRole = (data?: object) => {
   return http.request<Result>("post", roleUrl("/add"), { data });
@@ -76,11 +84,6 @@ export const getAllRoleList = () => {
   return http.request<Result>("get", roleUrl("/all"));
 };
 
-/** 系统管理-用户管理-根据userId，获取对应角色id列表（userId：用户id） */
-export const getRoleIds = (data?: object) => {
-  return http.request<Result>("post", "/list-role-ids", { data });
-};
-
 /** 获取系统管理-角色管理列表 */
 export const getRoleList = (
   name: string,
@@ -98,14 +101,21 @@ export const getRoleList = (
   });
 };
 
-/** 获取角色管理-权限-菜单权限-根据角色 id 查对应菜单 */
-export const getRoleMenuIds = (data?: object) => {
-  return http.request<Result>("post", roleUrl("/getRoleAuth"), { data });
+/** 获取角色管理-权限-根据角色 id 查对应菜单和API */
+export const getRoleAuth = (data?: object) => {
+  return http.request<RoleAuthResult>("post", roleUrl("/getRoleAuth"), {
+    data
+  });
 };
 
 /** 更新角色菜单权限 */
 export const updateRoleAuth = (data?: object) => {
   return http.request<Result>("post", roleUrl("/updateRoleAuth"), { data });
+};
+
+/** 获取所有 API 列表（自动同步，只读） */
+export const getApiList = () => {
+  return http.request<Result>("get", apiUrl("/list"));
 };
 
 /** 新增菜单 */
@@ -146,11 +156,6 @@ export const updateDept = (data?: object) => {
 /** 获取系统管理-部门管理列表 */
 export const getDeptList = () => {
   return http.request<Result>("get", deptUrl("/list"));
-};
-
-/** 获取系统监控-在线用户列表 */
-export const getOnlineLogsList = (data?: object) => {
-  return http.request<ResultTable>("post", "/online-logs", { data });
 };
 
 /** 删除登录日志 */
@@ -229,10 +234,9 @@ export const getSystemLogsList = (
 
 /** 删除全部系统日志 */
 export const clearSystemLogs = () => {
-  return http.request<Result>("post", systemLogsUrl("/clear"));
+  return http.request<Result>("get", systemLogsUrl("/clear"));
 };
 
-/** 获取系统监控-系统日志-根据 id 查日志详情 */
-export const getSystemLogsDetail = (data?: object) => {
-  return http.request<Result>("post", "/system-logs-detail", { data });
+export const getSystemVersion = () => {
+  return http.request<Result>("get", systemUrl("/version"));
 };

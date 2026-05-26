@@ -10,8 +10,7 @@ import type {
   PureHttpRequestConfig
 } from "./types.d";
 import { stringify } from "qs";
-import NProgress from "../progress";
-import { getToken, formatToken, removeToken } from "@/utils/auth";
+import { getToken, formatToken } from "@/utils/auth";
 import { useUserStoreHook } from "@/store/modules/user";
 import { router, resetRouter } from "@/router";
 import { message } from "@/utils/message";
@@ -36,9 +35,6 @@ class PureHttp {
     this.httpInterceptorsRequest();
     this.httpInterceptorsResponse();
   }
-
-  /** 重复请求次数 */
-  private static requestCount = 5;
 
   /** `token`过期后，暂存待执行的请求 */
   private static requests = [];
@@ -66,8 +62,6 @@ class PureHttp {
   private httpInterceptorsRequest(): void {
     PureHttp.axiosInstance.interceptors.request.use(
       async (config: PureHttpRequestConfig): Promise<any> => {
-        // 开启进度条动画
-        NProgress.start();
         // 优先判断post/get等方法是否传入回调，否则执行初始化设置等回调
         if (typeof config.beforeRequestCallback === "function") {
           config.beforeRequestCallback(config);
@@ -80,14 +74,12 @@ class PureHttp {
         /** 请求白名单，放置一些不需要`token`的接口（通过设置请求白名单，防止`token`过期后再请求造成的死循环问题） */
         const whiteList = [
           "/refreshToken",
-          "/login",
-          "/settings/login/methods"
+          "/accessToken",
+          "/base/init",
+          "/base/captcha"
         ];
-        // 使用精确路径匹配，避免误判（如 /settings/login 会被 /login 误匹配）
-        const isWhitelistUrl = whiteList.some(url => {
-          // 检查完整路径是否匹配白名单
-          return config.url === url;
-        });
+        // 使用路径后缀匹配，避免误判（如 /settings/login 会被 /login 误匹配）
+        const isWhitelistUrl = whiteList.some(url => config.url.endsWith(url));
         return isWhitelistUrl
           ? config
           : new Promise(resolve => {
@@ -106,6 +98,13 @@ class PureHttp {
                         config.headers["Authorization"] = formatToken(token);
                         PureHttp.requests.forEach(cb => cb(token));
                         PureHttp.requests = [];
+                      })
+                      .catch(() => {
+                        PureHttp.requests = [];
+                        useUserStoreHook().logOut();
+                        message("登录已过期，请重新登录！", {
+                          type: "warning"
+                        });
                       })
                       .finally(() => {
                         PureHttp.isRefreshing = false;
@@ -135,8 +134,6 @@ class PureHttp {
     instance.interceptors.response.use(
       (response: PureHttpResponse) => {
         const $config = response.config;
-        // 关闭进度条动画
-        NProgress.done();
         // 优先判断post/get等方法是否传入回调，否则执行初始化设置等回调
         if (typeof $config.beforeResponseCallback === "function") {
           $config.beforeResponseCallback(response);
@@ -148,38 +145,19 @@ class PureHttp {
         }
         return response.data;
       },
-      async (error: PureHttpError) => {
+      (error: PureHttpError) => {
         const $error = error;
         $error.isCancelRequest = Axios.isCancel($error);
-        // 关闭进度条动画
-        NProgress.done();
-        // 所有的响应异常 区分来源为取消请求/非取消请求
-        if (error.response == null || error.response.status == 500) {
-          const config = error.config;
-          // 判断是否重复发起请求
-          if (Boolean(PureHttp.requestCount)) {
-            PureHttp.requestCount--;
-            console.log(`第${5 - PureHttp.requestCount}次重试`);
-            // 延时发起请求
-            await new Promise(resolve => {
-              setTimeout(resolve, 1000);
+        if (error.response) {
+          if (error.response.status === 403) {
+            resetRouter();
+            router.push("/error/403").then(() => {
+              message("无权访问！", { type: "warning" });
             });
-            // 重新发起请求
-            return instance(config);
-          } else {
-            message("服务器异常，请刷新~", { type: "error" });
-          }
-        } else if (error.response.status == 403) {
-          resetRouter();
-          router.push("/403").then(() => {
-            message("无权访问！", { type: "warning" });
-          });
-        } else if (error.response.status == 401) {
-          removeToken();
-          resetRouter();
-          router.push("/login").then(() => {
+          } else if (error.response.status === 401) {
+            useUserStoreHook().logOut();
             message("请重新登录！", { type: "warning" });
-          });
+          }
         }
         return Promise.reject($error);
       }

@@ -6,3 +6,7 @@ from .department import *
 from .api import *
 from .login import *
 from .logs import *
+from .notice import *
+from .security import *
+from .config import *
+from .file import *

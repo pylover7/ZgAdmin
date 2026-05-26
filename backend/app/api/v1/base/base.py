@@ -1,34 +1,87 @@
-# import json
+import hashlib
 import urllib.parse
 from datetime import timedelta, datetime
-# from uuid import uuid4
+from pathlib import Path
+from typing import cast
+from uuid import UUID
 
-from fastapi import APIRouter, Request, HTTPException
-# from fastapi.websockets import WebSocketState
-from sqlalchemy.orm import selectinload
-from sqlmodel import select, col
-from jwt.exceptions import ExpiredSignatureError
-# from wechatpayv3 import WeChatPayType
+from fastapi import APIRouter, Request, HTTPException, Query, Depends, Header
+from fastapi.responses import FileResponse
+from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
+import jwt
+from sqlalchemy.orm import selectinload, InstrumentedAttribute
+from sqlalchemy import func
+from sqlmodel import select, col, Session
 
 from app.controllers.department import deptController
 from app.controllers.user import userController
 from app.settings.log import logger
 from app.models.login import CredentialsSchema, JWTPayload, JWTOut, refreshTokenSchema, \
     JWTReOut, QQLoginSchema
-from app.core.dependency import DependUser, DependRateLimit, SessionDep
-from app.models import Api, Menu, Role, User, UpdatePassword
-from app.models.base import Fail, Success, FailAuth
+from app.models.logs import LoginLog
+from app.models.security import SecurityPolicy
+from app.core.dependency import DependUser, DependRateLimit, SessionDep, get_db
+from app.core.redis import get_redis
+from app.models import Api, Menu, Role, User, UpdatePassword, UpdateProfile, UpdatePreferences
+from app.models.file import File
+from app.models.base import Fail, Success, FailAuth, SuccessExtra
+from app.controllers.config import siteConfigController, oauthConfigController, securityPolicyController
 from app.settings import settings
-from app.settings.config import base_config
 from app.utils import menuTree
+from app.utils.captcha import generate_captcha, verify_captcha
 from app.utils.jwtt import create_access_token, decode_access_token, \
     get_qq_access_token, get_qq_userinfo, find_or_create_qq_user, \
     create_oauth_state, verify_oauth_state
 from app.utils.password import get_password_hash, verify_password
-# from app.utils.pay import notify_url
-# from app.utils.pay.wechat import wxpay
+from app.utils.password_policy import validate_password_strength, check_password_history, update_password_history
+from app.utils.signed_url import verify_signed_url
 
 router = APIRouter()
+
+
+@router.get("/captcha", summary="获取登录验证码")
+async def get_captcha():
+    """获取服务端图形验证码（公开接口，无需认证）"""
+    redis = get_redis()
+    captcha_key, captcha_image = await generate_captcha(redis)
+    return Success(data={
+        "captcha_key": captcha_key,
+        "captcha_image": captcha_image,
+    })
+
+
+@router.get("/init", summary="获取前端初始化配置（公开）")
+async def get_init_config(session: SessionDep):
+    """一次性返回前端初始化所需的所有公开数据：站点信息、功能开关、安全配置"""
+    # 站点信息
+    site_config = siteConfigController.get(session)
+    site = (await site_config.to_dict()) if site_config else {
+        "site_name": "ZgAdmin",
+        "site_desc": "一个开源的在线工具箱",
+        "logo": "",
+        "default_lang": "zh-CN",
+        "copyright": "",
+        "icp": "",
+    }
+    # 功能开关
+    oauth_config = oauthConfigController.get(session)
+    features = {
+        "qq_login": settings.FEATURE_QQ_LOGIN and (
+            bool(oauth_config.qq_app_id) if oauth_config else bool(settings.QQ_APP_ID)),
+        "wechat_login": settings.FEATURE_WECHAT_LOGIN,
+        "email": settings.FEATURE_EMAIL,
+        "monitor_log": settings.FEATURE_MONITOR_LOG,
+    }
+    # 安全配置
+    policy = securityPolicyController.get(session)
+    security = {
+        "captcha_enabled": policy.captcha_enabled if policy else True,
+    }
+    return Success(data={
+        "site": site,
+        "features": features,
+        "security": security,
+    })
 
 
 @router.get("/health", summary="健康检查")
@@ -36,20 +89,21 @@ async def health_check():
     return {"status": "ok"}
 
 
-@router.get("/features", summary="功能开关")
-async def get_features():
-    return Success(data={
-        "qq_login": settings.FEATURE_QQ_LOGIN and bool(
-            base_config.get_config("login", "qq_app_id") or settings.QQ_APP_ID),
-        "wechat_login": settings.FEATURE_WECHAT_LOGIN,
-        "email": settings.FEATURE_EMAIL,
-        "monitor_log": settings.FEATURE_MONITOR_LOG,
-    })
-
-
 @router.post("/accessToken", summary="获取token", dependencies=[DependRateLimit])
 async def login_access_token(
         session: SessionDep, request: Request, credentials: CredentialsSchema):
+    # 验证码校验
+    policy = session.exec(select(SecurityPolicy)).first()
+    captcha_enabled = policy.captcha_enabled if policy else True
+
+    if captcha_enabled:
+        if not credentials.captcha_key or not credentials.captcha_code:
+            return Fail(msg="请输入验证码")
+        redis = get_redis()
+        captcha_valid = await verify_captcha(redis, credentials.captcha_key, credentials.captcha_code)
+        if not captcha_valid:
+            return Fail(msg="验证码错误或已过期")
+
     user: User | None = await userController.authenticate(
         session=session,
         credentials=credentials,
@@ -57,11 +111,11 @@ async def login_access_token(
     )
     if not user:
         return FailAuth(msg="用户名或密码错误！")
-    await userController.update_last_login(session=session, id=user.id)
+    await userController.update_last_login(session=session, pk=user.id)
     roles = [item.code for item in user.roles]
     try:
         depart = deptController.get_all_name(session, user)
-    except Exception as e:
+    except Exception:
         logger.debug("获取部门名称失败")
         depart = ""
     access_token_expires = timedelta(
@@ -73,7 +127,7 @@ async def login_access_token(
 
     data = JWTOut(
         username=user.username,
-        avatar=user.avatar or "",
+        nickname=user.nickname or "",
         depart=depart,
         roles=roles,
         accessToken=create_access_token(
@@ -95,6 +149,31 @@ async def login_access_token(
         expires=expire.strftime("%Y-%m-%d %H:%M:%S")  # expire.timestamp()
     )
     return Success(data=data.model_dump())
+
+
+@router.post("/logout", summary="登出（将Token加入黑名单）")
+async def logout(current_user: DependUser,
+                 authorization: str = Header(..., description="token验证")):
+    """将当前 Token 加入 Redis 黑名单，TTL = Token 剩余过期时间"""
+    token = authorization.split(" ")[1]
+    try:
+        decode_data = jwt.decode(
+            token, settings.SECRET_KEY, algorithms=[settings.JWT_ALGORITHM]
+        )
+    except ExpiredSignatureError as exc:
+        raise HTTPException(status_code=401, detail="登录已过期") from exc
+    except InvalidTokenError as exc:
+        raise HTTPException(status_code=401, detail="无效的Token") from exc
+    exp = decode_data.get("exp", 0)
+    now = datetime.now().timestamp()
+    remaining_ttl = int(exp - now)
+    if remaining_ttl > 0:
+        redis = get_redis()
+        token_hash = hashlib.sha256(token.encode()).hexdigest()[:16]
+        key = f"token:blacklist:{token_hash}"
+        await redis.set(key, "1", ex=remaining_ttl)
+    await logger.operationInfo(user=current_user.username, msg="用户登出")
+    return Success(msg="登出成功")
 
 
 @router.post("/refreshToken", summary="刷新token", dependencies=[DependRateLimit])
@@ -135,7 +214,7 @@ async def refresh_token(refreshToken: refreshTokenSchema):
 
 @router.get("/userinfo", summary="查看用户信息")
 async def get_userinfo(session: SessionDep, current_user: DependUser):
-    user_obj = await userController.get(session=session, id=current_user.id)
+    user_obj = await userController.get(session=session, pk=current_user.id)
     if not user_obj:
         return FailAuth(msg="用户不存在或已被删除！")
     data = await user_obj.to_dict(exclude_fields=["password"])
@@ -144,11 +223,8 @@ async def get_userinfo(session: SessionDep, current_user: DependUser):
 
 @router.get("/userMenu", summary="查看用户菜单")
 async def get_user_menu(session: SessionDep, current_user: DependUser):
-    statement = select(User).where(
-        col(User.id) == current_user.id
-    ).options(
-        selectinload(User.roles).selectinload(Role.menus)
-    )
+    statement = select(User).where(col(User.id) == current_user.id).options(selectinload(
+        cast(InstrumentedAttribute, User.roles)).selectinload(cast(InstrumentedAttribute, Role.menus)))
     user_obj = session.exec(statement).first()
     if not user_obj:
         return FailAuth(msg="用户不存在或已被删除！")
@@ -180,11 +256,8 @@ async def get_user_menu(session: SessionDep, current_user: DependUser):
 
 @router.get("/userApi", summary="查看用户API")
 async def get_user_api(session: SessionDep, current_user: DependUser):
-    statement = select(User).where(
-        col(User.id) == current_user.id
-    ).options(
-        selectinload(User.roles).selectinload(Role.apis)
-    )
+    statement = select(User).where(col(User.id) == current_user.id).options(selectinload(
+        cast(InstrumentedAttribute, User.roles)).selectinload(cast(InstrumentedAttribute, Role.apis)))
     user_obj = session.exec(statement).first()
     if not user_obj:
         return FailAuth(msg="用户不存在或已被删除！")
@@ -206,33 +279,139 @@ async def update_user_password(
         session: SessionDep,
         req_in: UpdatePassword,
         current_user: DependUser):
-    user = await userController.get(session=session, id=current_user.id)
+    user = await userController.get(session=session, pk=current_user.id)
     if not user:
         return FailAuth(msg="用户不存在或已被删除！")
     verified = verify_password(req_in.current_password, user.password)
     if not verified:
         return Fail(msg="旧密码验证错误！")
+
+    # 密码复杂度校验
+    policy = session.exec(select(SecurityPolicy)).first()
+    if policy:
+        valid, msg = validate_password_strength(req_in.new_password, policy)
+        if not valid:
+            return Fail(msg=msg)
+
+        # 历史密码校验
+        history_count = policy.password_history_count if policy else 3
+        if check_password_history(req_in.new_password, user.password_history, history_count):
+            return Fail(msg=f"新密码不能与最近 {history_count} 次使用的密码相同")
+
+    # 更新密码 & 历史记录
+    old_hash = user.password
     user.password = get_password_hash(req_in.new_password)
+    if policy and policy.password_history_count > 0:
+        user.password_history = update_password_history(
+            old_hash, user.password_history, policy.password_history_count
+        )
     session.add(user)
     session.commit()
     return Success(msg="修改成功")
 
 
+@router.post("/updateProfile", summary="更新用户资料")
+async def update_user_profile(
+        session: SessionDep,
+        req_in: UpdateProfile,
+        current_user: DependUser):
+    user = await userController.get(session=session, pk=current_user.id)
+    if not user:
+        return FailAuth(msg="用户不存在或已被删除！")
+    update_data = req_in.model_dump(exclude_unset=True)
+    if not update_data:
+        return Fail(msg="没有需要更新的字段")
+    for key, value in update_data.items():
+        setattr(user, key, value)
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+    data = await user.to_dict(exclude_fields=["password"])
+    return Success(data=data, msg="更新成功")
+
+
+@router.get("/preferences", summary="获取用户偏好设置")
+async def get_user_preferences(
+        session: SessionDep,
+        current_user: DependUser):
+    user = await userController.get(session=session, pk=current_user.id)
+    if not user:
+        return FailAuth(msg="用户不存在或已被删除！")
+    prefs = user.preferences or {}
+    default_prefs = {
+        "notify_account": True,
+        "notify_system": True,
+        "notify_task": True,
+    }
+    default_prefs.update(prefs)
+    return Success(data=default_prefs)
+
+
+@router.post("/updatePreferences", summary="更新用户偏好设置")
+async def update_user_preferences(
+        session: SessionDep,
+        req_in: UpdatePreferences,
+        current_user: DependUser):
+    user = await userController.get(session=session, pk=current_user.id)
+    if not user:
+        return FailAuth(msg="用户不存在或已被删除！")
+    current_prefs = user.preferences or {}
+    update_data = req_in.model_dump(exclude_unset=True)
+    current_prefs.update(update_data)
+    user.preferences = current_prefs
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+    prefs = user.preferences or {}
+    default_prefs = {
+        "notify_account": True,
+        "notify_system": True,
+        "notify_task": True,
+    }
+    default_prefs.update(prefs)
+    return Success(data=default_prefs, msg="更新成功")
+
+
+@router.get("/loginLogs", summary="获取登录日志")
+async def get_login_logs(
+        session: SessionDep,
+        current_user: DependUser,
+        pageSize: int = Query(default=10, ge=1, le=100),
+        currentPage: int = Query(default=1, ge=1)):
+    user = await userController.get(session=session, pk=current_user.id)
+    if not user:
+        return FailAuth(msg="用户不存在或已被删除！")
+    offset = (currentPage - 1) * pageSize
+    count_stmt = select(func.count()).select_from(LoginLog).where(
+        LoginLog.username == user.username
+    )
+    total = session.exec(count_stmt).one()
+    stmt = select(LoginLog).where(
+        LoginLog.username == user.username
+    ).order_by(col(LoginLog.time).desc()).offset(offset).limit(pageSize)
+    logs = session.exec(stmt).all()
+    list_data = []
+    for log in logs:
+        item = await log.to_dict()
+        item["summary"] = item.pop("behavior", "")
+        item["operatingTime"] = item.pop("time", "")
+        list_data.append(item)
+    return SuccessExtra(data=list_data, total=total, currentPage=currentPage, pageSize=pageSize)
+
+
 @router.get("/qq/auth-url", summary="获取QQ授权链接")
-async def get_qq_auth_url():
+async def get_qq_auth_url(session: SessionDep):
     """获取QQ登录授权URL"""
-    # 优先读取运行时配置（管理后台设置），否则回退到 settings 默认值
-    app_id = base_config.get_config("login", "qq_app_id") or settings.QQ_APP_ID
-    redirect_uri = base_config.get_config("login", "qq_redirect_uri") or settings.QQ_REDIRECT_URI
+    oauth_config = oauthConfigController.get(session)
+    app_id = (oauth_config.qq_app_id if oauth_config and oauth_config.qq_app_id else None) or settings.QQ_APP_ID
+    redirect_uri = (oauth_config.qq_redirect_uri if oauth_config and oauth_config.qq_redirect_uri else None) or settings.QQ_REDIRECT_URI
     qq_enabled = settings.FEATURE_QQ_LOGIN and (
-        base_config.get_config("login", "qq_enabled", fallback="false").lower() == "true")
+        oauth_config.qq_enabled if oauth_config else False)
 
     if not qq_enabled:
-        from app.models.base import Fail
         return Fail(msg="QQ登录未启用")
 
     if not app_id:
-        from app.models.base import Fail
         return Fail(msg="QQ登录未配置")
 
     state = create_oauth_state()
@@ -254,19 +433,19 @@ async def get_qq_auth_url():
 
 
 @router.post("/qq/login", summary="QQ登录", dependencies=[DependRateLimit])
-async def qq_login(session: SessionDep, qq_login: QQLoginSchema):
+async def qq_login(session: SessionDep, qq_login_data: QQLoginSchema):
     """处理QQ登录回调"""
     try:
         # 验证输入参数
-        if not qq_login.code or not qq_login.state:
+        if not qq_login_data.code or not qq_login_data.state:
             return FailAuth(msg="授权参数不完整")
 
         # 验证state令牌（防CSRF）
-        if not verify_oauth_state(qq_login.state):
+        if not verify_oauth_state(qq_login_data.state):
             return FailAuth(msg="授权验证失败，请重新登录")
 
         # 1. 使用授权码获取access_token
-        token_data = await get_qq_access_token(qq_login.code)
+        token_data = await get_qq_access_token(qq_login_data.code)
 
         # 2. 获取用户信息
         user_info = await get_qq_userinfo(token_data.access_token, token_data.openid)
@@ -289,7 +468,7 @@ async def qq_login(session: SessionDep, qq_login: QQLoginSchema):
 
         data = JWTOut(
             username=user.username,
-            avatar=user.avatar or user.qq_avatar or "",
+            nickname=user.nickname or "",
             depart=depart,
             roles=roles,
             accessToken=create_access_token(
@@ -312,7 +491,7 @@ async def qq_login(session: SessionDep, qq_login: QQLoginSchema):
         )
 
         # 更新最后登录时间
-        await userController.update_last_login(session=session, id=user.id)
+        await userController.update_last_login(session=session, pk=user.id)
 
         return Success(data=data.model_dump())
 
@@ -324,71 +503,25 @@ async def qq_login(session: SessionDep, qq_login: QQLoginSchema):
         return FailAuth(msg="QQ登录失败，请稍后重试")
 
 
-# @router.post("/notify/{name}", summary="支付回调")
-# async def notify(name: str, request: Request, session: SessionDep):
-#     match name:
-#         case "wechat":
-#             result = wxpay.callback(headers=request.headers, body=await request.body())
-#             if result and result.get('event_type') == 'TRANSACTION.SUCCESS':
-#                 resource = result.get('resource')
-#                 out_trade_no = resource.get('out_trade_no')
-#                 # appid = resource.get('appid')
-#                 # mchid = resource.get('mchid')
-#                 # transaction_id = resource.get('transaction_id')
-#                 # trade_type = resource.get('trade_type')
-#                 # trade_state = resource.get('trade_state')
-#                 # trade_state_desc = resource.get('trade_state_desc')
-#                 # bank_type = resource.get('bank_type')
-#                 # attach = resource.get('attach')
-#                 # success_time = resource.get('success_time')
-#                 # payer = resource.get('payer')
-#                 # amount = resource.get('amount').get('total')
-#                 await orderController.complete(session, out_trade_no)
-
-#                 return Success(msg="支付成功")
-#             else:
-#                 return Fail(msg="支付失败")
-
-
-# @router.websocket("/wechat", name="微信支付")
-# async def wechat_pay(websocket: WebSocket, session: SessionDep):
-#     await websocket.accept()
-#     order_code = uuid4().__str__().replace("-", "")[:10] + "-" + now(3)
-#     try:
-#         while True:
-#             data = await websocket.receive_json()
-#             # 检查是否有新的消息
-#             if data.get("type") == "heartbeat":
-#                 logger.debug("心跳中...")
-#                 continue
-#             else:
-#                 # 处理普通信息
-#                 data["code"] = order_code
-#                 obj_in = OrderCreate.model_validate(data)
-#                 order_obj = await orderController.get(session, data["id"])
-#                 if order_obj is None:
-#                     order_obj = await orderController.create(session, obj_in)
-#                     code_url, message = wxpay.pay(
-#                         description=order_obj.goods.name,
-#                         out_trade_no=order_code,
-#                         amount={"total": order_obj.amount},
-#                         pay_type=WeChatPayType.NATIVE,
-#                         notify_url=notify_url("wechat"),
-#                     )
-#                     code_url = json.loads(message)["code_url"]
-#                     result = await order_obj.to_dict()
-#                     coupon = {"code": ""}
-#                     result["coupon"] = coupon
-#                 else:
-#                     session.refresh(order_obj)
-#                     result = await order_obj.to_dict()
-#                     code_url = data["code_url"]
-#                 result["code_url"] = code_url
-#                 await websocket.send_json(result)
-
-#     except Exception as e:
-#         logger.debug(e)
-#         if websocket.client_state == WebSocketState.DISCONNECTED:
-#             logger.debug("客户端已断开连接")
-#         else:
-#             await websocket.close()
+@router.get("/file/download/{file_id}", summary="下载文件（签名URL）")
+async def download_file(
+    file_id: UUID,
+    expires: int = Query(..., description="过期时间戳"),
+    sign: str = Query(..., description="签名"),
+    session: Session | None = Depends(get_db),
+):
+    if not verify_signed_url(file_id, expires, sign):
+        return Fail(msg="签名无效或已过期")
+    if not session:
+        return Fail(msg="数据库连接失败")
+    file_obj = session.get(File, file_id)
+    if not file_obj:
+        return Fail(msg="文件不存在")
+    abs_path = Path(settings.STATIC_PATH) / file_obj.path
+    if not abs_path.exists():
+        return Fail(msg="文件已丢失")
+    return FileResponse(
+        path=str(abs_path),
+        media_type=file_obj.mime_type,
+        filename=file_obj.name,
+    )

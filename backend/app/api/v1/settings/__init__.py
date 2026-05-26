@@ -1,5 +1,7 @@
 from fastapi import APIRouter
 
+from .email import emailProtectedRouter
+
 settingsRouter = APIRouter()
 
-__all__ = ["settingsRouter", "loginPublicRouter", "loginProtectedRouter"]
+__all__ = ["settingsRouter"]
