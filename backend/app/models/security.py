@@ -1,4 +1,5 @@
 """安全策略 & IP 规则模型"""
+from typing import ClassVar
 from uuid import UUID
 
 from sqlmodel import Field, SQLModel
@@ -49,6 +50,8 @@ class SecurityPolicyBase(SQLModel):
 
 class SecurityPolicy(SecurityPolicyBase, BaseModel, TimestampMixin, table=True):
     """安全策略配置 — 全局只有一条记录（id 固定为 seed 生成的值）"""
+
+    SENSITIVE_FIELDS: ClassVar[list[str]] = []
 
 
 class SecurityPolicyUpdate(SQLModel):

@@ -5,27 +5,26 @@ from sqlalchemy import and_
 from sqlmodel import col
 
 from app.controllers.role import roleController
-from app.core.dependency import SessionDep
+from app.core.dependency import DependUser, SessionDep
 from app.models import RoleCreate, Success, RoleFilter, Role, SuccessExtra, \
     RoleUpdate, UpdateRoleStatus, BaseModel, UpdateRoleAuth
 from app.settings.log import logger
-from app.models.logs import LogModule
 
 roleRouter = APIRouter()
 
 
 @roleRouter.post("/add", summary="添加角色")
-async def add_role(session: SessionDep, data: RoleCreate):
+async def add_role(session: SessionDep, current_user: DependUser, data: RoleCreate):
     role_obj = await roleController.create(session, data)
     result = await role_obj.to_dict()
-    await logger.systemInfo(LogModule.SYSTEM_MANAGEMENT, f"添加角色: {data.name}")
+    await logger.operationInfo(user=current_user.username, msg=f"添加角色: {data.name}")
     return Success(msg="角色添加成功！", data=result)
 
 
 @roleRouter.post("/delete", summary="删除角色")
-async def delete_role(session: SessionDep, data: list[UUID]):
+async def delete_role(session: SessionDep, current_user: DependUser, data: list[UUID]):
     await roleController.delete(session, data)
-    await logger.systemInfo(LogModule.SYSTEM_MANAGEMENT, f"删除角色: {data}")
+    await logger.operationInfo(user=current_user.username, msg=f"删除角色: {data}")
     return Success(msg="角色删除成功")
 
 
@@ -67,21 +66,21 @@ async def role_all(session: SessionDep):
 
 
 @roleRouter.post("/update", summary="修改角色信息")
-async def update_role(session: SessionDep, data: RoleUpdate):
+async def update_role(session: SessionDep, current_user: DependUser, data: RoleUpdate):
     await roleController.update(session, data.id, data)
-    await logger.systemInfo(LogModule.SYSTEM_MANAGEMENT, f"修改角色信息: {data.name}")
+    await logger.operationInfo(user=current_user.username, msg=f"修改角色信息: {data.name}")
     return Success(msg="角色信息修改成功！")
 
 
 @roleRouter.post("/updateStatus", summary="修改角色状态")
-async def update_role_status(session: SessionDep, data: UpdateRoleStatus):
+async def update_role_status(session: SessionDep, current_user: DependUser, data: UpdateRoleStatus):
     role_obj = await roleController.get(session, data.id)
     if not role_obj:
         raise HTTPException(status_code=404, detail="角色不存在！")
     role_obj.status = data.status
     session.add(role_obj)
     session.commit()
-    await logger.systemInfo(LogModule.SYSTEM_MANAGEMENT, f"修改角色状态: {data.id} -> {data.status}")
+    await logger.operationInfo(user=current_user.username, msg=f"修改角色状态: {data.id} -> {data.status}")
     return Success(msg="角色状态修改成功！")
 
 
@@ -98,12 +97,12 @@ async def get_role_auth(session: SessionDep, data: BaseModel):
 
 
 @roleRouter.post("/updateRoleAuth", summary="修改角色对应菜单列表和api列表")
-async def update_role_auth(session: SessionDep, data: UpdateRoleAuth):
+async def update_role_auth(session: SessionDep, current_user: DependUser, data: UpdateRoleAuth):
     try:
         await roleController.updateMenus(session, data.id, data.menuIds)
         await roleController.updateApis(session, data.id, data.apiIds)
-        await logger.systemInfo(LogModule.SYSTEM_MANAGEMENT, f"修改角色权限: {data.id}")
+        await logger.operationInfo(user=current_user.username, msg=f"修改角色权限: {data.id}")
         return Success(msg="角色权限修改成功！")
     except Exception as e:
-        await logger.systemError(LogModule.SYSTEM_MANAGEMENT, f"角色权限修改失败: {e}")
+        await logger.operationError(user=current_user.username, msg=f"角色权限修改失败: {e}")
         raise HTTPException(status_code=400, detail=str(e)) from e

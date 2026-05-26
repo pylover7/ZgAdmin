@@ -127,6 +127,6 @@ POST /api/v1/monitor/logs/login/list
 
 可通过环境变量关闭日志记录：
 
-```env
+```bash
 FEATURE_MONITOR_LOG=True  # 设为 False 关闭日志
 ```

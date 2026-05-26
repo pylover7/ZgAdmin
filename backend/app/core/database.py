@@ -1,12 +1,16 @@
 from sqlmodel import Session, SQLModel, select
 from fastapi import FastAPI
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from alembic.config import Config
+from alembic import command
+from pathlib import Path
 
 from app.controllers.user import userController
 from app.core.schedule import update_expired_orders
 from app.models import User, UserCreate, Api
 from app.models.link import RoleApiLink
 from app.models.security import SecurityPolicy
+from app.models.config import SiteConfig, OAuthConfig, EmailConfig
 from app.settings.log import logger
 from app.settings import settings
 from app.utils.staticFileUtils import check_dir_exists
@@ -94,6 +98,27 @@ async def init_data(app: FastAPI) -> None:
             session.add(security_policy)
             session.commit()
 
+        # 确保站点配置存在
+        site_config = session.exec(select(SiteConfig)).first()
+        if not site_config:
+            logger.info("创建默认站点配置...")
+            session.add(SiteConfig())
+            session.commit()
+
+        # 确保 OAuth 配置存在
+        oauth_config = session.exec(select(OAuthConfig)).first()
+        if not oauth_config:
+            logger.info("创建默认OAuth配置...")
+            session.add(OAuthConfig())
+            session.commit()
+
+        # 确保邮件配置存在
+        email_config = session.exec(select(EmailConfig)).first()
+        if not email_config:
+            logger.info("创建默认邮件配置...")
+            session.add(EmailConfig())
+            session.commit()
+
         # 同步 API 路由到数据库
         logger.info("同步API路由...")
         _sync_api_routes(app, session)
@@ -102,3 +127,8 @@ async def init_data(app: FastAPI) -> None:
         logger.info("启动定时任务...")
         scheduler.add_job(update_expired_orders, "interval", seconds=120)
         scheduler.start()
+
+    # 同步 alembic 版本标记，确保 create_all 建表后 alembic 不会重复跑迁移
+    alembic_cfg = Config(str(Path(__file__).resolve().parent.parent.parent / "alembic.ini"))
+    command.stamp(alembic_cfg, "head")
+    logger.info("Alembic 版本已标记为 head")

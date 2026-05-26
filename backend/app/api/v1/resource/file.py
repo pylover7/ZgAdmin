@@ -70,6 +70,10 @@ async def upload_batch(
             data = await result.to_dict()
             data["uploader_name"] = current_user.nickname or current_user.username
             success_list.append(data)
+    await logger.operationInfo(
+        user=current_user.username,
+        msg=f"批量上传文件: {len(success_list)}个成功, {len(fail_list)}个失败"
+    )
     return Success(
         msg=f"上传完成: {len(success_list)}个成功, {len(fail_list)}个失败",
         data={"success": success_list, "fail": fail_list},
@@ -120,8 +124,12 @@ async def update_file(session: SessionDep, data: FileUpdate):
 
 
 @fileRouter.post("/delete", summary="删除文件")
-async def delete_file(session: SessionDep, data: list[UUID]):
+async def delete_file(session: SessionDep, current_user: DependUser, data: list[UUID]):
     success, failed = await fileController.delete_files(session, data)
+    await logger.operationInfo(
+        user=current_user.username,
+        msg=f"删除文件: {success}个成功, {failed}个失败"
+    )
     return Success(msg=f"删除完成: {success}个成功, {failed}个失败")
 
 

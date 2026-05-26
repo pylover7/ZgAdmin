@@ -1,6 +1,84 @@
+$:
+  vscode:
+    - docker:
+        image: docker.cnb.cool/pylover/tools/zgadmin:env
+        volumes:
+          - ./backend/.venv:rw
+          - ./backend/static:rw
+          - ./frontend/node_modules:rw
+          - ./docs/node_modules:rw
+      runner:
+        cpus: 8
+      services:
+        - docker
+        - vscode
+      imports:
+        - https://cnb.cool/pylover/key/-/blob/main/deepseek.yml
+        - https://cnb.cool/pylover/key/-/blob/main/edgeone.yml
+      stages:
+        - name: ls
+          script: ls -la
+
+  web_trigger_one:
+    - services:
+        - docker
+      env:
+        IMAGE_TAG: ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:env
+      stages:
+        - name: docker build
+          script: docker build -t ${IMAGE_TAG} . -f .cnb/Dockerfile
+        - name: docker list
+          script: docker images
+        - name: docker push
+          script: docker push ${IMAGE_TAG}
+
+  web_trigger_preview:
+    - docker:
+        image: docker.cnb.cool/pylover/tools/zgadmin:env
+        volumes:
+          - ./backend/.venv:rw
+          - ./backend/static:rw
+          - ./frontend/node_modules:rw
+          - ./docs/node_modules:rw
+      runner:
+        cpus: 8
+      services:
+        - docker
+        - name: vscode
+          options:
+            onlyPreview: true
+            launch: bash ./scripts/preview.sh
+            daemon: true
+      stages:
+        - name: ls
+          script: ls -la
+
+  tag_push:
+    - services:
+        - docker
+      docker:
+        volumes:
+          - /data/codewiki/${CNB_REPO_SLUG}:data
+      stages:
+        - name: generate codewiki
+          timeout: 10h
+          image: cnbcool/codewiki:latest
+          settings:
+            git_doc_dir: /data/codewiki/${CNB_REPO_SLUG}
+
+    - docker:
+        image: docker.cnb.cool/pylover/tools/zgadmin:env
+        volumes:
+          - ./docs/node_modules:rw
+      imports:
+        - https://cnb.cool/pylover/key/-/blob/main/edgeone.yml
+      stages:
+        - name: deploy docs
+          script: bash scripts/deploy-docs.sh
+
 main:
-  # ===== 每日 9:00 依赖版本检测 =====
-  "crontab: 0 9 * * *":
+  # ===== 每周周一 9:00 依赖版本检测 =====
+  "crontab: 0 9 * * 1":
     - name: dependency-check
       docker:
         image: docker.cnb.cool/pylover/tools/zgadmin:env
@@ -26,73 +104,3 @@ main:
             username: ${GIT_USERNAME}
             password: ${GIT_ACCESS_TOKEN}
 
-$:
-  vscode:
-    - docker:
-        image: docker.cnb.cool/pylover/tools/zgadmin:env
-        volumes:
-          - ./backend/.venv:rw
-          - ./backend/static:rw
-          - ./frontend/node_modules:rw
-          - ./docs/node_modules:rw
-      runner:
-        cpus: 8
-      services:
-        - docker
-        - vscode
-      imports:
-        - https://cnb.cool/pylover/key/-/blob/main/deepseek.yml
-        - https://cnb.cool/pylover/Tools/KeJi_Key/-/blob/main/tapd.yml
-      stages:
-        - name: ls
-          script: ls -la
-
-  web_trigger_one:
-    - services:
-        - docker
-      env:
-        IMAGE_TAG: ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:env
-      stages:
-        - name: docker build
-          script: docker build -t ${IMAGE_TAG} . -f .cnb/Dockerfile
-        - name: docker list
-          script: docker images
-        - name: docker push
-          script: docker push ${IMAGE_TAG}
-
-  web_trigger_vscode:
-    - docker:
-        image: docker.cnb.cool/pylover/tools/zgadmin:env
-        volumes:
-          - ./backend/.venv:rw
-          - ./backend/static:rw
-          - ./frontend/node_modules:rw
-          - ./docs/node_modules:rw
-      runner:
-        cpus: 8
-      services:
-        - docker
-        - name: vscode
-          options:
-            onlyPreview: true
-            launch: bash ./scripts/preview.sh
-            daemon: true
-      imports:
-        - https://cnb.cool/pylover/key/-/blob/main/deepseek.yml
-        - https://cnb.cool/pylover/Tools/KeJi_Key/-/blob/main/tapd.yml
-      stages:
-        - name: ls
-          script: ls -la
-
-  tag_push:
-    - services:
-        - docker
-      docker:
-        volumes:
-          - /data/codewiki/${CNB_REPO_SLUG}:data
-      stages:
-        - name: generate codewiki
-          timeout: 10h
-          image: cnbcool/codewiki:latest
-          settings:
-            git_doc_dir: /data/codewiki/${CNB_REPO_SLUG}

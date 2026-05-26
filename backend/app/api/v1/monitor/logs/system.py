@@ -2,10 +2,11 @@ from uuid import UUID
 from fastapi import APIRouter, Query
 from sqlmodel import col, and_
 
-from app.core.dependency import SessionDep
+from app.core.dependency import DependUser, SessionDep
 from app.models.logs import SystemLog, SystemLogFilter
 from app.controllers.logs import systemLogController
 from app.models.base import Success, SuccessExtra
+from app.settings.log import logger
 
 systemRouter = APIRouter()
 
@@ -13,17 +14,21 @@ systemRouter = APIRouter()
 @systemRouter.post("/delete")
 async def delete_system_logs(
     session: SessionDep,
+    current_user: DependUser,
     ids: list[UUID],
 ):
     await systemLogController.delete(session, ids)
+    await logger.operationInfo(user=current_user.username, msg=f"删除系统日志: {[str(i) for i in ids]}")
     return Success(msg="系统日志删除成功！")
 
 
 @systemRouter.get("/clear")
 async def clear_system_logs(
     session: SessionDep,
+    current_user: DependUser,
 ):
     await systemLogController.delete_all(session)
+    await logger.operationWarning(user=current_user.username, msg="清空系统日志")
     return Success(msg="系统日志清空成功！")
 
 

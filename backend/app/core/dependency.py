@@ -1,4 +1,5 @@
 from uuid import UUID
+import hashlib
 import time
 from collections.abc import Generator
 from typing import Annotated
@@ -24,12 +25,25 @@ def get_db() -> Generator[Session, None, None]:
 SessionDep = Annotated[Session, Depends(get_db)]
 
 
+async def _is_token_blacklisted(token: str) -> bool:
+    """检查 Token 是否在黑名单中"""
+    redis = get_redis()
+    token_hash = hashlib.sha256(token.encode()).hexdigest()[:16]
+    key = f"token:blacklist:{token_hash}"
+    return await redis.exists(key)
+
+
 class AuthControl:
     @classmethod
     async def is_authed(cls, session: SessionDep,
                         authorization: str = Header(..., description="token验证")):
         try:
             token = authorization.split(" ")[1]
+
+            # 检查 Token 黑名单
+            if await _is_token_blacklisted(token):
+                raise HTTPException(status_code=401, detail="Token已失效")
+
             decode_data = jwt.decode(
                 token,
                 settings.SECRET_KEY,

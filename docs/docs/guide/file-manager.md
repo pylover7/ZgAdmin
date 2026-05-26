@@ -123,7 +123,7 @@ POST /api/v1/resource/file/update
 
 编辑 `.env`：
 
-```env
+```bash
 MAX_UPLOAD_SIZE=10485760  # 10MB，单位字节
 ```
 

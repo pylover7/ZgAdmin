@@ -10,8 +10,8 @@ from alembic import context
 # 将项目根目录加入 Python 路径
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from app.settings import settings  # noqa: E402
 from app.models import *  # noqa: E402, F403 - 确保所有模型被注册到 SQLModel.metadata
+from app.settings import settings  # noqa: E402 — 必须在 models.* 之后，避免被 settings 子模块覆盖
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
