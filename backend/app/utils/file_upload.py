@@ -17,6 +17,52 @@ ALLOWED_EXTENSIONS: dict[str, set[str]] = {
 
 ALL_ALLOWED = set().union(*ALLOWED_EXTENSIONS.values())
 
+# MIME 类型 → 允许的扩展名映射（用于一致性校验）
+MIME_EXT_MAP: dict[str, set[str]] = {
+    # 图片
+    "image/jpeg": {"jpg", "jpeg"},
+    "image/png": {"png"},
+    "image/gif": {"gif"},
+    "image/webp": {"webp"},
+    "image/bmp": {"bmp"},
+    "image/svg+xml": {"svg"},
+    # 文档
+    "application/pdf": {"pdf"},
+    "application/msword": {"doc"},
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": {"docx"},
+    "application/vnd.ms-excel": {"xls"},
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": {"xlsx"},
+    "application/vnd.ms-powerpoint": {"ppt"},
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation": {"pptx"},
+    "text/plain": {"txt", "md"},
+    "text/csv": {"csv"},
+    "text/markdown": {"md"},
+    # 视频
+    "video/mp4": {"mp4"},
+    "video/x-msvideo": {"avi"},
+    "video/quicktime": {"mov"},
+    "video/x-matroska": {"mkv"},
+    "video/x-ms-wmv": {"wmv"},
+    "video/x-flv": {"flv"},
+    # 音频
+    "audio/mpeg": {"mp3"},
+    "audio/wav": {"wav"},
+    "audio/ogg": {"ogg"},
+    "audio/flac": {"flac"},
+    "audio/aac": {"aac"},
+}
+
+
+def validate_mime_extension(mime_type: str, extension: str) -> tuple[bool, str | None]:
+    """校验 MIME 类型与文件扩展名是否一致"""
+    allowed_exts = MIME_EXT_MAP.get(mime_type)
+    if allowed_exts is None:
+        # 未知 MIME 类型（如 application/octet-stream）→ 宽松放行
+        return True, None
+    if extension not in allowed_exts:
+        return False, f"文件扩展名 .{extension} 与实际内容类型 {mime_type} 不匹配"
+    return True, None
+
 
 def validate_extension(filename: str) -> tuple[str | None, str | None]:
     """校验文件扩展名是否允许，返回 (extension, error_msg)"""

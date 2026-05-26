@@ -1,18 +1,17 @@
-# import json
+import hashlib
 import urllib.parse
 from datetime import timedelta, datetime
-# from uuid import uuid4
-
 from pathlib import Path
+from typing import cast
 from uuid import UUID
 
-from fastapi import APIRouter, Request, HTTPException, Query, Depends
+from fastapi import APIRouter, Request, HTTPException, Query, Depends, Header
 from fastapi.responses import FileResponse
+from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
+import jwt
 from sqlalchemy.orm import selectinload, InstrumentedAttribute
 from sqlalchemy import func
 from sqlmodel import select, col, Session
-from jwt.exceptions import ExpiredSignatureError
-from typing import cast
 
 from app.controllers.department import deptController
 from app.controllers.user import userController
@@ -148,6 +147,31 @@ async def login_access_token(
         expires=expire.strftime("%Y-%m-%d %H:%M:%S")  # expire.timestamp()
     )
     return Success(data=data.model_dump())
+
+
+@router.post("/logout", summary="登出（将Token加入黑名单）")
+async def logout(current_user: DependUser,
+                 authorization: str = Header(..., description="token验证")):
+    """将当前 Token 加入 Redis 黑名单，TTL = Token 剩余过期时间"""
+    token = authorization.split(" ")[1]
+    try:
+        decode_data = jwt.decode(
+            token, settings.SECRET_KEY, algorithms=[settings.JWT_ALGORITHM]
+        )
+    except ExpiredSignatureError as exc:
+        raise HTTPException(status_code=401, detail="登录已过期") from exc
+    except InvalidTokenError as exc:
+        raise HTTPException(status_code=401, detail="无效的Token") from exc
+    exp = decode_data.get("exp", 0)
+    now = datetime.now().timestamp()
+    remaining_ttl = int(exp - now)
+    if remaining_ttl > 0:
+        redis = get_redis()
+        token_hash = hashlib.sha256(token.encode()).hexdigest()[:16]
+        key = f"token:blacklist:{token_hash}"
+        await redis.set(key, "1", ex=remaining_ttl)
+    await logger.operationInfo(user=current_user.username, msg="用户登出")
+    return Success(msg="登出成功")
 
 
 @router.post("/refreshToken", summary="刷新token", dependencies=[DependRateLimit])

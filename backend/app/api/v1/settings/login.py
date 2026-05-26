@@ -1,7 +1,9 @@
 from fastapi import APIRouter
 
+from app.core.dependency import DependUser
 from app.models import Success, Fail
 from app.settings.config import base_config
+from app.settings.log import logger
 
 # 认证接口：管理员获取/修改配置
 loginProtectedRouter = APIRouter()
@@ -60,7 +62,7 @@ async def get_login_config():
 
 
 @loginProtectedRouter.post("", summary="更新登录配置")
-async def update_login_config(data: dict):
+async def update_login_config(current_user: DependUser, data: dict):
     """更新QQ和微信登录配置"""
     try:
         if "qq" in data:
@@ -95,6 +97,7 @@ async def update_login_config(data: dict):
                 str(wechat_config.get("enabled", False)).lower(),
             )
 
+        await logger.operationInfo(user=current_user.username, msg="更新登录配置")
         return Success(msg="保存成功！")
     except Exception as e:
         return Fail(msg=f"保存失败： {str(e)}")

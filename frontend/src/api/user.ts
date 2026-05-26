@@ -71,3 +71,8 @@ export const getQQAuthUrl = () => {
 export const qqLogin = (data: { code: string; state: string }) => {
   return http.request<UserResult>("post", baseUrl("/qq/login"), { data });
 };
+
+/** 登出（将Token加入黑名单） */
+export const logoutApi = () => {
+  return http.request("post", baseUrl("/logout"));
+};

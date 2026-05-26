@@ -37,7 +37,7 @@ class Settings(BaseSettings):
     # 60 minutes * 24 hours * 8 days = 8 days
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 2
-    REFRESH_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 2
+    REFRESH_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 3
     FRONTEND_HOST: str = "http://localhost:7000"
     HOST: str = "0.0.0.0"
     PORT: int = 7001
@@ -171,6 +171,14 @@ class Settings(BaseSettings):
     def _enforce_non_default_secrets(self) -> Self:
         if not self.SECRET_KEY:
             self.SECRET_KEY = self._resolve_secret_key()
+        # 生产环境检查 CORS 不为 *
+        if self.ENVIRONMENT == "production":
+            cors_origins = self.BACKEND_CORS_ORIGINS
+            if cors_origins in (["*"], "*"):
+                raise ValueError(
+                    '生产环境 BACKEND_CORS_ORIGINS 不可为 ["*"]，'
+                    "请在 .env 或 config/base.ini [security] cors_origins 中配置具体域名"
+                )
         return self
 
     APP_LOG_CONFIG: dict = {

@@ -3,15 +3,16 @@ import ipaddress
 from uuid import UUID
 
 from fastapi import APIRouter
-from sqlmodel import select
+from sqlmodel import select, col
 
-from app.core.dependency import SessionDep
+from app.core.dependency import DependUser, SessionDep
 from app.models.security import (
     SecurityPolicy, SecurityPolicyUpdate,
     IPRule, IPRuleCreate, IPRuleUpdate,
 )
 from app.models.base import Success, Fail
 from app.core.redis import get_redis
+from app.settings.log import logger
 
 
 # ─── 认证接口 ──────────────────────────────────────────────────────────
@@ -32,7 +33,10 @@ async def get_security_policy(session: SessionDep):
 
 
 @securityProtectedRouter.post("/policy", summary="更新安全策略")
-async def update_security_policy(session: SessionDep, data: SecurityPolicyUpdate):
+async def update_security_policy(
+        session: SessionDep,
+        current_user: DependUser,
+        data: SecurityPolicyUpdate):
     policy = session.exec(select(SecurityPolicy)).first()
     if not policy:
         return Fail(msg="安全策略未初始化")
@@ -45,6 +49,7 @@ async def update_security_policy(session: SessionDep, data: SecurityPolicyUpdate
     session.commit()
     session.refresh(policy)
 
+    await logger.operationInfo(user=current_user.username, msg="更新安全策略")
     result = await policy.to_dict()
     return Success(data=result, msg="安全策略更新成功")
 
@@ -55,13 +60,13 @@ async def update_security_policy(session: SessionDep, data: SecurityPolicyUpdate
 
 @securityProtectedRouter.get("/ip-rules", summary="获取IP规则列表")
 async def get_ip_rules(session: SessionDep):
-    rules = session.exec(select(IPRule).order_by(IPRule.created_at.desc())).all()
+    rules = session.exec(select(IPRule).order_by(col(IPRule.created_at).desc())).all()
     result = [await rule.to_dict() for rule in rules]
     return Success(data=result)
 
 
 @securityProtectedRouter.post("/ip-rules/add", summary="新增IP规则")
-async def add_ip_rule(session: SessionDep, data: IPRuleCreate):
+async def add_ip_rule(session: SessionDep, current_user: DependUser, data: IPRuleCreate):
     # 校验 rule_type
     if data.rule_type not in ("whitelist", "blacklist"):
         return Fail(msg="rule_type 必须为 whitelist 或 blacklist")
@@ -94,12 +99,13 @@ async def add_ip_rule(session: SessionDep, data: IPRuleCreate):
     redis = get_redis()
     await redis.delete("ip_rules:cache")
 
+    await logger.operationInfo(user=current_user.username, msg=f"新增IP规则: {data.ip_cidr} ({data.rule_type})")
     result = await rule.to_dict()
     return Success(data=result, msg="IP 规则添加成功")
 
 
 @securityProtectedRouter.post("/ip-rules/update", summary="修改IP规则")
-async def update_ip_rule(session: SessionDep, data: IPRuleUpdate):
+async def update_ip_rule(session: SessionDep, current_user: DependUser, data: IPRuleUpdate):
     rule = session.get(IPRule, data.id)
     if not rule:
         return Fail(msg="IP 规则不存在")
@@ -132,12 +138,13 @@ async def update_ip_rule(session: SessionDep, data: IPRuleUpdate):
     redis = get_redis()
     await redis.delete("ip_rules:cache")
 
+    await logger.operationInfo(user=current_user.username, msg=f"修改IP规则: {data.id}")
     result = await rule.to_dict()
     return Success(data=result, msg="IP 规则更新成功")
 
 
 @securityProtectedRouter.post("/ip-rules/delete", summary="删除IP规则")
-async def delete_ip_rule(session: SessionDep, data: list[UUID]):
+async def delete_ip_rule(session: SessionDep, current_user: DependUser, data: list[UUID]):
     for rule_id in data:
         rule = session.get(IPRule, rule_id)
         if rule:
@@ -148,4 +155,5 @@ async def delete_ip_rule(session: SessionDep, data: list[UUID]):
     redis = get_redis()
     await redis.delete("ip_rules:cache")
 
+    await logger.operationInfo(user=current_user.username, msg=f"删除IP规则: {[str(d) for d in data]}")
     return Success(msg="IP 规则删除成功")

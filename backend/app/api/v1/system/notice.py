@@ -50,16 +50,18 @@ async def get_notice_list(
 
 
 @noticeRouter.post("/update", summary="编辑通知")
-async def update_notice(session: SessionDep, data: NoticeUpdate):
+async def update_notice(session: SessionDep, current_user: DependUser, data: NoticeUpdate):
     obj = await noticeController.update(session, data.id, data)
     if not obj:
         return Fail(msg="通知不存在")
+    await logger.operationInfo(user=current_user.username, msg=f"编辑通知: {obj.title}")
     return Success(msg="通知更新成功！", data=await obj.to_dict())
 
 
 @noticeRouter.post("/delete", summary="删除通知")
-async def delete_notice(session: SessionDep, data: list[UUID]):
+async def delete_notice(session: SessionDep, current_user: DependUser, data: list[UUID]):
     await noticeController.delete(session, data)
+    await logger.operationInfo(user=current_user.username, msg=f"删除通知: {[str(d) for d in data]}")
     return Success(msg="通知删除成功！")
 
 

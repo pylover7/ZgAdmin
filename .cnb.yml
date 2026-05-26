@@ -1,31 +1,3 @@
-main:
-  # ===== 每周周一 9:00 依赖版本检测 =====
-  "crontab: 0 9 * * 1":
-    - name: dependency-check
-      docker:
-        image: docker.cnb.cool/pylover/tools/zgadmin:env
-        volumes:
-          - ./backend/.venv:rw
-          - ./frontend/node_modules:rw
-      imports:
-        - https://cnb.cool/pylover/key/-/blob/main/deepseek.yml
-      services:
-        - docker
-      stages:
-        - name: check dependencies
-          script: bash scripts/deps-check.sh
-
-  push:
-    - stages:
-        - name: sync to github
-          imports: https://cnb.cool/pylover/key/-/blob/main/github.yml
-          image: tencentcom/git-sync
-          settings:
-            target_url: https://github.com/pylover7/ZgAdmin.git
-            auth_type: https
-            username: ${GIT_USERNAME}
-            password: ${GIT_ACCESS_TOKEN}
-
 $:
   vscode:
     - docker:
@@ -103,3 +75,32 @@ $:
       stages:
         - name: deploy docs
           script: bash scripts/deploy-docs.sh
+
+main:
+  # ===== 每周周一 9:00 依赖版本检测 =====
+  "crontab: 0 9 * * 1":
+    - name: dependency-check
+      docker:
+        image: docker.cnb.cool/pylover/tools/zgadmin:env
+        volumes:
+          - ./backend/.venv:rw
+          - ./frontend/node_modules:rw
+      imports:
+        - https://cnb.cool/pylover/key/-/blob/main/deepseek.yml
+      services:
+        - docker
+      stages:
+        - name: check dependencies
+          script: bash scripts/deps-check.sh
+
+  push:
+    - stages:
+        - name: sync to github
+          imports: https://cnb.cool/pylover/key/-/blob/main/github.yml
+          image: tencentcom/git-sync
+          settings:
+            target_url: https://github.com/pylover7/ZgAdmin.git
+            auth_type: https
+            username: ${GIT_USERNAME}
+            password: ${GIT_ACCESS_TOKEN}
+

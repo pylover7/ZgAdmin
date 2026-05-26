@@ -8,6 +8,7 @@ from app.models.file import File, FileCreate, FileUpdate
 from app.utils.file_upload import (
     validate_extension,
     detect_mime,
+    validate_mime_extension,
     classify_file,
     generate_storage_path,
     ensure_storage_dir,
@@ -47,10 +48,17 @@ class FileController(CRUDBase[File, FileCreate, FileUpdate]):
         # 4. 检测真实 MIME 类型
         mime_type = detect_mime(abs_path)
 
-        # 5. 分类
+        # 5. 校验 MIME 与扩展名一致性
+        mime_valid, mime_err = validate_mime_extension(mime_type, ext)
+        if not mime_valid:
+            # MIME 与扩展名不匹配 → 删除已写入的文件并拒绝
+            os.remove(abs_path)
+            return None, mime_err
+
+        # 6. 分类
         file_type = classify_file(mime_type, ext)
 
-        # 6. 创建数据库记录
+        # 7. 创建数据库记录
         file_obj = File(
             name=filename,
             path=storage_path,

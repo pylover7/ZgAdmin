@@ -1,7 +1,9 @@
 from fastapi import APIRouter
 
+from app.core.dependency import DependUser
 from app.models import Success, Fail
 from app.settings.config import base_config
+from app.settings.log import logger
 
 # 认证接口：管理员获取/修改配置
 generalProtectedRouter = APIRouter()
@@ -35,7 +37,7 @@ async def get_general_config():
 
 
 @generalProtectedRouter.post("", summary="更新通用设置")
-async def update_general_config(data: dict):
+async def update_general_config(current_user: DependUser, data: dict):
     """更新通用设置"""
     try:
         if "site_name" in data:
@@ -53,6 +55,7 @@ async def update_general_config(data: dict):
         if "icp" in data:
             base_config.set_config("general", "icp", str(data["icp"]))
 
+        await logger.operationInfo(user=current_user.username, msg="更新通用设置")
         return Success(msg="保存成功！")
     except Exception as e:
         return Fail(msg=f"保存失败：{str(e)}")

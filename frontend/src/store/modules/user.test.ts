@@ -1,16 +1,19 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { setActivePinia, createPinia } from "pinia";
 
-const { mockGetLogin, mockQQLogin, mockRefreshToken } = vi.hoisted(() => ({
-  mockGetLogin: vi.fn(),
-  mockQQLogin: vi.fn(),
-  mockRefreshToken: vi.fn()
-}));
+const { mockGetLogin, mockQQLogin, mockRefreshToken, mockLogoutApi } =
+  vi.hoisted(() => ({
+    mockGetLogin: vi.fn(),
+    mockQQLogin: vi.fn(),
+    mockRefreshToken: vi.fn(),
+    mockLogoutApi: vi.fn()
+  }));
 
 vi.mock("@/api/user", () => ({
   getLogin: mockGetLogin,
   qqLogin: mockQQLogin,
-  refreshTokenApi: mockRefreshToken
+  refreshTokenApi: mockRefreshToken,
+  logoutApi: mockLogoutApi
 }));
 
 vi.mock("@/utils/auth", () => ({
@@ -181,13 +184,14 @@ describe("store/modules/user", () => {
   });
 
   describe("logOut", () => {
-    it("clears user state and navigates to login", () => {
+    it("clears user state and navigates to login", async () => {
+      mockLogoutApi.mockResolvedValue({});
       const store = useUserStore();
       store.SET_USERNAME("admin");
       store.SET_ROLES(["admin"]);
       store.SET_PERMS(["*:*:*"]);
 
-      store.logOut();
+      await store.logOut();
 
       expect(store.username).toBe("");
       expect(store.roles).toEqual([]);
