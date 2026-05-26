@@ -7,6 +7,16 @@ export default defineConfig({
   head: [
     ['link', { rel: 'icon', href: '/favicon.ico' }],
     ['meta', { name: 'theme-color', content: '#386BF3' }],
+    ['style', {}, `
+      .VPHero .image-bg {
+        background-image: radial-gradient(circle at center, rgba(56,107,243,0.35) 0%, rgba(56,107,243,0.15) 40%, transparent 70%);
+        filter: blur(60px);
+        transform: scale(1.2);
+      }
+      .VPHero .VPImage {
+        filter: drop-shadow(0 0 30px rgba(56,107,243,0.25));
+      }
+    `],
   ],
   themeConfig: {
     logo: '/logo.svg',
@@ -62,6 +72,10 @@ export default defineConfig({
         dateStyle: 'short',
         timeStyle: 'medium'
       }
+    },
+    footer: {
+      message: '基于 MIT 许可发布',
+      copyright: 'Copyright © 2026-present 拾叶zzz'
     }
   }
 })
