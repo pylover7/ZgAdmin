@@ -47,12 +47,12 @@ uv run alembic downgrade -1
 ### 后端（9 条）
 
 1. **API 路由风格**：RESTful 风格，使用 POST 传查询条件 + GET 参数分页
-2. **响应格式**：统一使用 `Success`/`Fail`/`SuccessExtra` 包装响应
-3. **认证依赖**：所有需认证的接口使用 `DependPermission` 或 `DependUser`
-4. **Controller 模式**：业务逻辑放在 `controllers/`，不在路由函数中直接写
+2. **响应格式**：统一使用 `Success`/`Fail`/`SuccessExtra`/`FailAuth` 包装响应
+3. **认证依赖**：按场景选择 `DependPermission` / `DependAuth` / `DependUser` / `DependRateLimit`
+4. **Controller 模式**：业务逻辑放在 `controllers/`，不在路由函数中直接写；支持 `CRUDBase`（多行 CRUD）和 `ConfigController`（单行配置表）两种模式
 5. **模型定义**：SQLModel 同时作为 ORM 模型和 Pydantic Schema，使用 `*Create`/`*Update` 变体做输入校验
 6. **UUID 主键**：所有模型使用 UUID4 作为主键
-7. **配置双轨**：环境变量（只读）+ INI 文件（运行时可改）
+7. **配置管理**：环境变量（`.env` + `pydantic-settings`）+ 数据库配置表（`SiteConfig`/`OAuthConfig`/`EmailConfig`/`SecurityPolicy`，运行时可改）
 8. **日志**：使用 Loguru，登录/操作/系统日志写入数据库
 9. **慎用 try/except**：非必要不使用 try 语句，优先通过完整的条件判断、类型检查、默认值处理等方式保证代码健壮性，而非依赖异常捕获来控制流程
 
