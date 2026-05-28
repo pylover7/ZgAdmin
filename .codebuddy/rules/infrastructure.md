@@ -98,8 +98,8 @@ docker compose up -d
 | `DB_SCHEME` | `sqlite` | 数据库类型 |
 | `DB_SERVER` | `localhost` | 数据库主机 |
 | `DB_PORT` | `5432` | 数据库端口 |
-| `DB_USER` | - | 数据库用户 |
-| `DB_PASSWORD` | - | 数据库密码 |
+| `DB_USER` | — | 数据库用户 |
+| `DB_PASSWORD` | — | 数据库密码 |
 | `DB_PATH` | `zgadmin.sqlite` | 数据库名/文件路径 |
 | `REDIS_URL` | 空 | Redis URL（空=dev 用内存） |
 | `FRONTEND_HOST` | `http://localhost:7000` | 前端地址 |
@@ -111,4 +111,17 @@ docker compose up -d
 | `FEATURE_MONITOR_LOG` | `True` | 监控日志功能开关 |
 | `QQ_APP_ID` | 空 | QQ 登录 AppID |
 | `QQ_APP_KEY` | 空 | QQ 登录 AppKey |
+| `QQ_REDIRECT_URI` | `http://localhost:7000/login/qq/callback` | QQ 登录回调地址 |
+| `RELOAD` | `False` | 后端热重载开关 |
+| `DEBUG` | `False` | 调试模式 |
+| `MAX_UPLOAD_SIZE` | `104857600` | 最大上传文件大小（字节，默认 100MB） |
+| `SENTRY_DSN` | 空 | Sentry DSN（错误追踪） |
+| `SMTP_HOST` | 空 | SMTP 服务器地址 |
+| `SMTP_PORT` | `587` | SMTP 端口 |
+| `SMTP_USER` | 空 | SMTP 用户名 |
+| `SMTP_PASSWORD` | 空 | SMTP 密码 |
+| `SMTP_TLS` | `True` | SMTP 使用 TLS |
+| `SMTP_SSL` | `False` | SMTP 使用 SSL |
+| `EMAILS_FROM_EMAIL` | 空 | 发件人地址 |
+| `EMAILS_FROM_NAME` | 项目名 | 发件人名称 |
 | `VITE_PORT` | `7000` | 前端开发端口 |

@@ -19,8 +19,7 @@
 ├── backend/              # FastAPI 后端（端口 7001）
 │   ├── app/              # 应用主代码
 │   ├── alembic/          # 数据库迁移脚本
-│   ├── config/           # INI 配置文件（运行时读写）
-│   ├── static/           # 静态文件（头像、商品等）
+│   ├── static/           # 静态文件（头像、上传等）
 │   ├── tests/            # 后端测试
 │   ├── main.py           # 入口：uvicorn 启动
 │   └── pyproject.toml    # 后端依赖与工具配置
@@ -56,6 +55,8 @@
 | 通用设置 | `/api/v1/settings/general` | `views/settings/general/` | 站点名称/Logo/描述/语言等 |
 | 登录设置 | `/api/v1/settings/login` | `views/settings/login/` | QQ/微信登录 AppID 配置 |
 | 安全设置 | `/api/v1/settings/security` | `views/settings/security/` | 验证码、密码策略、IP 黑白名单 |
+| 邮件设置 | `/api/v1/settings/email` | — | SMTP 配置管理 |
+| 文件管理 | `/api/v1/resource/file` | `views/resource/file/` | 上传/下载/预览/重命名/删除/统计 |
 | 账户设置 | `/api/v1/base/userinfo` 等 | `views/account-settings/` | 个人信息/安全日志/偏好 |
 | 通知铃铛 | 同通知管理 | `layout/components/lay-notice/` | 实时未读数、标记已读 |
 
@@ -64,7 +65,7 @@
 ### 添加新的后端 API 模块
 
 1. 在 `app/models/` 创建数据模型
-2. 在 `app/controllers/` 创建 Controller（继承 `CRUDBase`）
+2. 在 `app/controllers/` 创建 Controller（继承 `CRUDBase` 或 `ConfigController`）
 3. 在 `app/api/v1/` 创建路由文件
 4. 在 `app/api/v1/__init__.py` 注册路由到 `v1_router`
 5. 运行 `alembic revision --autogenerate` + `alembic upgrade head`
