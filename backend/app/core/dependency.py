@@ -1,22 +1,21 @@
 import functools
-import hashlib
 import operator
 import time
 from collections.abc import Generator
 from typing import Annotated
-from uuid import UUID
 
 import jwt
 from fastapi import Depends, Header, HTTPException, Request
 from sqlmodel import Session
 
-from app.controllers.user import userController
 from app.core.ctx import CTX_USER_ID
 from app.core.database import engine
 from app.core.redis import get_redis
 from app.models import Role, User
+from app.models.login import refreshTokenSchema
 from app.settings import settings
 from app.settings.log import logger
+from app.utils.jwtt import validate_token_and_get_user
 
 
 def get_db() -> Generator[Session]:
@@ -27,42 +26,25 @@ def get_db() -> Generator[Session]:
 SessionDep = Annotated[Session, Depends(get_db)]
 
 
-async def _is_token_blacklisted(token: str) -> bool:
-    """检查 Token 是否在黑名单中"""
-    redis = get_redis()
-    token_hash = hashlib.sha256(token.encode()).hexdigest()[:16]
-    key = f"token:blacklist:{token_hash}"
-    return await redis.exists(key)
-
-
 class AuthControl:
     @classmethod
     async def is_authed(cls, session: SessionDep, authorization: str = Header(..., description="token验证")):
+        token = authorization.split(" ")[1]
+        # 设置上下文用户ID（供日志等场景使用）
         try:
-            token = authorization.split(" ")[1]
-
-            # 检查 Token 黑名单
-            if await _is_token_blacklisted(token):
-                raise HTTPException(status_code=401, detail="Token已失效")
-
-            decode_data = jwt.decode(token, settings.SECRET_KEY, algorithms=settings.JWT_ALGORITHM)
-            user_id: str = decode_data.get("user_id")
+            decode_data = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
+            user_id: str = decode_data.get("user_id", "")
             CTX_USER_ID.set(user_id)
-            user = await userController.get(session, UUID(user_id))
-            if not user:
-                raise HTTPException(status_code=401, detail="验证失败！！！")
-            if user.is_superuser:  # 超级管理员不验证状态
-                return user
-            if not user.status:
-                raise HTTPException(status_code=400, detail="用户已被禁用")
-            for item in user.roles:
-                if not item.status:
-                    raise HTTPException(status_code=400, detail="用户已被禁用")
-            return user
-        except jwt.DecodeError as exc:
-            raise HTTPException(status_code=401, detail="无效的Token") from exc
         except jwt.ExpiredSignatureError as exc:
             raise HTTPException(status_code=401, detail="登录已过期") from exc
+        except jwt.InvalidTokenError as exc:
+            raise HTTPException(status_code=401, detail="无效的Token") from exc
+        return await validate_token_and_get_user(token, session)
+
+
+async def validate_refresh_token(session: SessionDep, body: refreshTokenSchema) -> User:
+    """依赖：验证 refreshToken 并返回有效用户"""
+    return await validate_token_and_get_user(body.refreshToken, session)
 
 
 class PermissionControl:
@@ -85,8 +67,8 @@ class PermissionControl:
 
 DependAuth = Depends(AuthControl.is_authed)
 DependPermission = Depends(PermissionControl.has_permission)
-# 类型注解辅助：直接注入当前用户对象（替代不可靠的 ContextVar）
 DependUser = Annotated[User, DependAuth]
+DependRefreshUser = Annotated[User, Depends(validate_refresh_token)]
 
 
 class RateLimiter:

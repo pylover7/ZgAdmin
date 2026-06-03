@@ -73,6 +73,8 @@ export const qqLogin = (data: { code: string; state: string }) => {
 };
 
 /** 登出（将Token加入黑名单） */
-export const logoutApi = () => {
-  return http.request("post", baseUrl("/logout"));
+export const logoutApi = (refreshToken?: string) => {
+  return http.request("post", baseUrl("/logout"), {
+    data: refreshToken ? { refreshToken } : undefined
+  });
 };

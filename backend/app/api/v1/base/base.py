@@ -1,14 +1,10 @@
-import hashlib
 import urllib.parse
-from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import cast
 from uuid import UUID
 
-import jwt
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request
 from fastapi.responses import FileResponse
-from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
 from sqlalchemy import func
 from sqlalchemy.orm import InstrumentedAttribute, selectinload
 from sqlmodel import Session, col, select
@@ -16,12 +12,17 @@ from sqlmodel import Session, col, select
 from app.controllers.config import oauthConfigController, securityPolicyController, siteConfigController
 from app.controllers.department import deptController
 from app.controllers.user import userController
-from app.core.dependency import DependRateLimit, DependUser, SessionDep, get_db
+from app.core.dependency import DependRateLimit, DependRefreshUser, DependUser, SessionDep, get_db
 from app.core.redis import get_redis
 from app.models import Api, Menu, Role, UpdatePassword, UpdatePreferences, UpdateProfile, User
 from app.models.base import Fail, FailAuth, Success, SuccessExtra
 from app.models.file import File
-from app.models.login import CredentialsSchema, JWTOut, JWTPayload, JWTReOut, QQLoginSchema, refreshTokenSchema
+from app.models.login import (
+    CredentialsSchema,
+    JWTOut,
+    LogoutSchema,
+    QQLoginSchema,
+)
 from app.models.logs import LoginLog
 from app.models.security import SecurityPolicy
 from app.settings import settings
@@ -29,9 +30,9 @@ from app.settings.log import logger
 from app.utils import menuTree
 from app.utils.captcha import generate_captcha, verify_captcha
 from app.utils.jwtt import (
-    create_access_token,
+    blacklist_token,
     create_oauth_state,
-    decode_access_token,
+    create_token_pair,
     find_or_create_qq_user,
     get_qq_access_token,
     get_qq_userinfo,
@@ -126,90 +127,36 @@ async def login_access_token(session: SessionDep, request: Request, credentials:
     except Exception:
         logger.debug("获取部门名称失败")
         depart = ""
-    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    refresh_token_expires = timedelta(minutes=settings.REFRESH_TOKEN_EXPIRE_MINUTES)
-    expire = datetime.now(UTC) + access_token_expires
-    expire_refresh = datetime.now(UTC) + refresh_token_expires
 
+    token_pair = await create_token_pair(str(user.id), user.username, user.is_superuser)
     data = JWTOut(
         username=user.username,
         nickname=user.nickname or "",
         depart=depart,
         roles=roles,
-        accessToken=create_access_token(
-            data=JWTPayload(
-                user_id=(str(user.id)),
-                username=user.username,
-                is_superuser=user.is_superuser,
-                exp=expire,
-            )
-        ),
-        refreshToken=create_access_token(
-            data=JWTPayload(
-                user_id=str(user.id),
-                username=user.username,
-                is_superuser=user.is_superuser,
-                exp=expire_refresh,
-            )
-        ),
-        expires=int(expire.timestamp() * 1000),
+        **token_pair.model_dump(),
     )
     return Success(data=data.model_dump())
 
 
 @router.post("/logout", summary="登出（将Token加入黑名单）")
-async def logout(current_user: DependUser, authorization: str = Header(..., description="token验证")):
+async def logout(
+    current_user: DependUser,
+    authorization: str = Header(..., description="token验证"),
+    body: LogoutSchema | None = None,
+):
     """将当前 Token 加入 Redis 黑名单，TTL = Token 剩余过期时间"""
     token = authorization.split(" ")[1]
-    try:
-        decode_data = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
-    except ExpiredSignatureError as exc:
-        raise HTTPException(status_code=401, detail="登录已过期") from exc
-    except InvalidTokenError as exc:
-        raise HTTPException(status_code=401, detail="无效的Token") from exc
-    exp = decode_data.get("exp", 0)
-    now = datetime.now(UTC).timestamp()
-    remaining_ttl = int(exp - now)
-    if remaining_ttl > 0:
-        redis = get_redis()
-        token_hash = hashlib.sha256(token.encode()).hexdigest()[:16]
-        key = f"token:blacklist:{token_hash}"
-        await redis.set(key, "1", ex=remaining_ttl)
+    await blacklist_token(token)
+    if body and body.refreshToken:
+        await blacklist_token(body.refreshToken)
     await logger.operationInfo(user=current_user.username, msg="用户登出")
     return Success(msg="登出成功")
 
 
-@router.post("/refreshToken", summary="刷新token")
-async def refresh_token(refreshToken: refreshTokenSchema):
-    try:
-        payload = decode_access_token(refreshToken.refreshToken)
-    except ExpiredSignatureError:
-        return FailAuth(msg="refreshToken已过期")
-    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    refresh_token_expires = timedelta(minutes=settings.REFRESH_TOKEN_EXPIRE_MINUTES)
-    expire = datetime.now(UTC) + access_token_expires
-    expire_refresh = datetime.now(UTC) + refresh_token_expires
-
-    data = JWTReOut(
-        accessToken=create_access_token(
-            data=JWTPayload(
-                user_id=payload.user_id,
-                username=payload.username,
-                is_superuser=payload.is_superuser,
-                exp=expire,
-            )
-        ),
-        refreshToken=create_access_token(
-            data=JWTPayload(
-                user_id=payload.user_id,
-                username=payload.username,
-                is_superuser=payload.is_superuser,
-                exp=expire_refresh,
-            )
-        ),
-        expires=int(expire.timestamp() * 1000),
-    )
-
+@router.post("/refreshToken", summary="刷新token", dependencies=[DependRateLimit])
+async def refresh_token(user: DependRefreshUser):
+    data = await create_token_pair(str(user.id), user.username, user.is_superuser)
     return Success(data=data.model_dump())
 
 
@@ -460,33 +407,13 @@ async def qq_login(session: SessionDep, qq_login_data: QQLoginSchema):
             logger.debug(f"获取部门名称失败: {e!s}")
             depart = ""
 
-        access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-        refresh_token_expires = timedelta(minutes=settings.REFRESH_TOKEN_EXPIRE_MINUTES)
-        expire = datetime.now(UTC) + access_token_expires
-        expire_refresh = datetime.now(UTC) + refresh_token_expires
-
+        token_pair = await create_token_pair(str(user.id), user.username, user.is_superuser)
         data = JWTOut(
             username=user.username,
             nickname=user.nickname or "",
             depart=depart,
             roles=roles,
-            accessToken=create_access_token(
-                data=JWTPayload(
-                    user_id=str(user.id),
-                    username=user.username,
-                    is_superuser=user.is_superuser,
-                    exp=expire,
-                )
-            ),
-            refreshToken=create_access_token(
-                data=JWTPayload(
-                    user_id=str(user.id),
-                    username=user.username,
-                    is_superuser=user.is_superuser,
-                    exp=expire_refresh,
-                )
-            ),
-            expires=int(expire.timestamp() * 1000),
+            **token_pair.model_dump(),
         )
 
         # 更新最后登录时间

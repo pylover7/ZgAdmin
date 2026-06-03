@@ -1,16 +1,20 @@
+import hashlib
 import secrets
 import urllib.parse
 from datetime import UTC, datetime, timedelta
+from uuid import UUID
 
 import httpx
 import jwt
 from fastapi import HTTPException
+from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
 from sqlmodel import select
 
 from app.core.database import DatabaseSession
+from app.core.redis import get_redis
 from app.models import User
 from app.models.config import OAuthConfig
-from app.models.login import JWTPayload, QQAccessToken, QQUserInfo
+from app.models.login import JWTPayload, JWTReOut, QQAccessToken, QQUserInfo
 from app.settings import settings
 from app.settings.log import logger
 from app.utils.password import get_password_hash
@@ -19,26 +23,102 @@ _HTTP_OK = 200
 
 
 def create_access_token(*, data: JWTPayload) -> str:
-    """
-    创建访问令牌
-
-    :param data: 数据
-    :return: 令牌
-    """
+    """创建访问令牌"""
     payload = data.model_dump().copy()
     encoded_jwt = jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
     return encoded_jwt
 
 
 def decode_access_token(token: str) -> JWTPayload:
-    """
-    解码访问令牌
-
-    :param token: 令牌
-    :return: 数据
-    """
+    """解码访问令牌"""
     payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
     return JWTPayload(**payload)
+
+
+async def create_token_pair(user_id: str, username: str, is_superuser: bool) -> JWTReOut:
+    """生成 accessToken + refreshToken 对（统一入口）"""
+    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    refresh_token_expires = timedelta(minutes=settings.REFRESH_TOKEN_EXPIRE_MINUTES)
+    expire = datetime.now(UTC) + access_token_expires
+    expire_refresh = datetime.now(UTC) + refresh_token_expires
+
+    return JWTReOut(
+        accessToken=create_access_token(
+            data=JWTPayload(user_id=user_id, username=username, is_superuser=is_superuser, exp=expire)
+        ),
+        refreshToken=create_access_token(
+            data=JWTPayload(user_id=user_id, username=username, is_superuser=is_superuser, exp=expire_refresh)
+        ),
+        expires=int(expire.timestamp() * 1000),
+    )
+
+
+def validate_user_status(user: User) -> str | None:
+    """校验用户状态，返回 None 表示通过，否则返回错误信息"""
+    if user.is_superuser:
+        return None
+    if not user.status:
+        return "用户已被禁用"
+    for role in user.roles:
+        if not role.status:
+            return "用户已被禁用"
+    return None
+
+
+async def validate_token_and_get_user(token: str, session) -> User:
+    """
+    通用 token 验证 + 用户获取（accessToken / refreshToken 共用）
+
+    流程：黑名单检查 → JWT解码 → 用户查找 → 状态校验
+    失败时 raise HTTPException，由全局异常处理器统一格式化
+    """
+    from app.controllers.user import userController
+
+    # 1. 黑名单检查
+    redis = get_redis()
+    token_hash = hashlib.sha256(token.encode()).hexdigest()[:16]
+    if await redis.exists(f"token:blacklist:{token_hash}"):
+        raise HTTPException(status_code=401, detail="Token已失效")
+
+    # 2. JWT 解码
+    try:
+        decode_data = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
+    except ExpiredSignatureError as exc:
+        raise HTTPException(status_code=401, detail="登录已过期") from exc
+    except InvalidTokenError as exc:
+        raise HTTPException(status_code=401, detail="无效的Token") from exc
+
+    user_id = decode_data.get("user_id")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Token格式错误")
+
+    # 3. 用户查找
+    user = await userController.get(session, UUID(user_id))
+    if not user:
+        raise HTTPException(status_code=401, detail="用户不存在")
+
+    # 4. 状态校验
+    if err := validate_user_status(user):
+        raise HTTPException(status_code=400, detail=err)
+
+    return user
+
+
+async def blacklist_token(token: str) -> None:
+    """将 Token 加入 Redis 黑名单，TTL = Token 剩余过期时间。已过期/无效 token 静默跳过"""
+    try:
+        decode_data = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
+    except ExpiredSignatureError:
+        return
+    except InvalidTokenError:
+        return
+
+    exp = decode_data.get("exp", 0)
+    remaining = int(exp - datetime.now(UTC).timestamp())
+    if remaining > 0:
+        redis = get_redis()
+        token_hash = hashlib.sha256(token.encode()).hexdigest()[:16]
+        await redis.set(f"token:blacklist:{token_hash}", "1", ex=remaining)
 
 
 async def get_qq_access_token(code: str) -> QQAccessToken:

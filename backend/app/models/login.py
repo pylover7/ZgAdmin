@@ -70,3 +70,7 @@ class QQAccessToken(SQLModel):
     openid: str = Field(..., description="用户OpenID", schema_extra={"examples": ["A1B2C3D4E5F6G7H8"]})
     scope: str = Field(..., description="授权范围", schema_extra={"examples": ["get_user_info"]})
     unionid: str | None = Field(default=None, description="用户UnionID", schema_extra={"examples": ["UNION_ID_STRING"]})
+
+
+class LogoutSchema(SQLModel):
+    refreshToken: str | None = Field(default=None, description="刷新令牌")
