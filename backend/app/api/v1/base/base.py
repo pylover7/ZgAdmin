@@ -152,7 +152,7 @@ async def login_access_token(session: SessionDep, request: Request, credentials:
                 exp=expire_refresh,
             )
         ),
-        expires=expire.strftime("%Y-%m-%d %H:%M:%S"),  # expire.timestamp()
+        expires=int(expire.timestamp() * 1000),
     )
     return Success(data=data.model_dump())
 
@@ -179,7 +179,7 @@ async def logout(current_user: DependUser, authorization: str = Header(..., desc
     return Success(msg="登出成功")
 
 
-@router.post("/refreshToken", summary="刷新token", dependencies=[DependRateLimit])
+@router.post("/refreshToken", summary="刷新token")
 async def refresh_token(refreshToken: refreshTokenSchema):
     try:
         payload = decode_access_token(refreshToken.refreshToken)
@@ -207,7 +207,7 @@ async def refresh_token(refreshToken: refreshTokenSchema):
                 exp=expire_refresh,
             )
         ),
-        expires=expire.strftime("%Y-%m-%d %H:%M:%S"),  # expire.timestamp()
+        expires=int(expire.timestamp() * 1000),
     )
 
     return Success(data=data.model_dump())
@@ -486,7 +486,7 @@ async def qq_login(session: SessionDep, qq_login_data: QQLoginSchema):
                     exp=expire_refresh,
                 )
             ),
-            expires=expire.strftime("%Y-%m-%d %H:%M:%S"),
+            expires=int(expire.timestamp() * 1000),
         )
 
         # 更新最后登录时间

@@ -150,7 +150,7 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def _enforce_non_default_secrets(self) -> Self:
-        if not self.SECRET_KEY:
+        if not self.SECRET_KEY or self.SECRET_KEY == "changethis":
             self.SECRET_KEY = self._resolve_secret_key()
         # 生产环境检查 CORS 不为 *
         if self.ENVIRONMENT == "production":
