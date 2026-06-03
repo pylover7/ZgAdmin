@@ -3,32 +3,36 @@ from collections import namedtuple
 
 import psutil
 
+_BYTE_UNIT = 1024
+_MHZ_PER_GHZ = 1000
+_LOAD_NORMAL = 0.7
+
 
 def _fmt_bytes(b: float) -> str:
     for unit in ("B", "KB", "MB", "GB", "TB"):
-        if b < 1024:
+        if b < _BYTE_UNIT:
             return f"{b:.1f}{unit}"
-        b /= 1024
+        b /= _BYTE_UNIT
     return f"{b:.1f}PB"
 
 
 def _fmt_rate(b: float) -> str:
     for unit in ("B/s", "KB/s", "MB/s", "GB/s"):
-        if b < 1024:
+        if b < _BYTE_UNIT:
             return f"{b:.1f}{unit}"
-        b /= 1024
+        b /= _BYTE_UNIT
     return f"{b:.1f}TB/s"
 
 
 def _fmt_freq(mhz: float) -> str:
-    if mhz >= 1000:
-        return f"{mhz / 1000:.2f}GHz"
+    if mhz >= _MHZ_PER_GHZ:
+        return f"{mhz / _MHZ_PER_GHZ:.2f}GHz"
     return f"{mhz:.0f}MHz"
 
 
 def _load_status(load1: float, cores: int) -> str:
     ratio = load1 / cores if cores else 0
-    if ratio < 0.7:
+    if ratio < _LOAD_NORMAL:
         return "正常"
     if ratio < 1.0:
         return "偏高"

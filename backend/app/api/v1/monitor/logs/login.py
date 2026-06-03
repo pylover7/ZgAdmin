@@ -38,7 +38,7 @@ async def get_login_logs(
         where.append(LoginLog.username == data.username)
     if data.level:
         where.append(LoginLog.level == data.level)
-    if data.loginTime and len(data.loginTime) == 2:
+    if data.loginTime and len(data.loginTime) == 2:  # noqa: PLR2004
         where.append(LoginLog.time >= data.loginTime[0])
         where.append(LoginLog.time <= data.loginTime[1])
     where = and_(*where) if len(where) > 0 else None

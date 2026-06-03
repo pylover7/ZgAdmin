@@ -107,12 +107,17 @@ def ensure_storage_dir(storage_path: str) -> str:
     return abs_path
 
 
+_KB = 1024
+_MB = 1024**2
+_GB = 1024**3
+
+
 def format_file_size(size_bytes: int) -> str:
     """格式化文件大小"""
-    if size_bytes < 1024:
+    if size_bytes < _KB:
         return f"{size_bytes} B"
-    if size_bytes < 1024 * 1024:
-        return f"{size_bytes / 1024:.1f} KB"
-    if size_bytes < 1024 * 1024 * 1024:
-        return f"{size_bytes / (1024 * 1024):.1f} MB"
-    return f"{size_bytes / (1024 * 1024 * 1024):.1f} GB"
+    if size_bytes < _MB:
+        return f"{size_bytes / _KB:.1f} KB"
+    if size_bytes < _GB:
+        return f"{size_bytes / _MB:.1f} MB"
+    return f"{size_bytes / _GB:.1f} GB"

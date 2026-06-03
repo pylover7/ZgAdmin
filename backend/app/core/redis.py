@@ -16,6 +16,8 @@ from typing import Any, Protocol, runtime_checkable
 from app.settings import settings
 from app.settings.log import logger
 
+_SET_CMD_MIN_LEN = 3
+
 
 @runtime_checkable
 class RedisClient(Protocol):
@@ -149,7 +151,7 @@ class MemoryRedis:
             elif op == "get":
                 results.append(await self.get(cmd[1]))
             elif op == "set":
-                await self.set(cmd[1], cmd[2], cmd[3] if len(cmd) > 3 else None)
+                await self.set(cmd[1], cmd[2], cmd[3] if len(cmd) > _SET_CMD_MIN_LEN else None)
                 results.append(None)
             elif op == "delete":
                 results.append(await self.delete(cmd[1]))
@@ -222,7 +224,7 @@ class RealRedis:
             elif op == "get":
                 pipe.get(cmd[1])
             elif op == "set":
-                pipe.set(cmd[1], cmd[2], ex=cmd[3] if len(cmd) > 3 else None)
+                pipe.set(cmd[1], cmd[2], ex=cmd[3] if len(cmd) > _SET_CMD_MIN_LEN else None)
             elif op == "delete":
                 pipe.delete(cmd[1])
             elif op == "exists":

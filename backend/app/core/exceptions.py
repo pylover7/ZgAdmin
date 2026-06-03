@@ -12,6 +12,8 @@ from sqlalchemy.exc import IntegrityError
 from app.models.logs import LogModule
 from app.settings.log import logger
 
+_SERVER_ERROR_THRESHOLD = 500
+
 
 class SettingNotFound(Exception):
     pass
@@ -26,7 +28,7 @@ async def IntegrityHandle(_: Request, exc: Exception) -> JSONResponse:
 
 async def HttpExcHandle(_: Request, exc: Exception) -> JSONResponse:
     assert isinstance(exc, FastAPIHTTPException)  # noqa: S101
-    if exc.status_code >= 500:
+    if exc.status_code >= _SERVER_ERROR_THRESHOLD:
         await logger.systemError(LogModule.SYSTEM, f"HTTP {exc.status_code}: {exc.detail}")
     content = {"code": exc.status_code, "msg": exc.detail, "data": None}
     return JSONResponse(content=content, status_code=exc.status_code)

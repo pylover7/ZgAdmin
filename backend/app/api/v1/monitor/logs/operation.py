@@ -44,7 +44,7 @@ async def get_operation_logs(
     where = []
     if len(data.level) > 0:
         where.append(col(OperationLog.level).in_(data.level))
-    if data.operationTime and len(data.operationTime) == 2:
+    if data.operationTime and len(data.operationTime) == 2:  # noqa: PLR2004
         where.append(OperationLog.time >= data.operationTime[0])
         where.append(OperationLog.time <= data.operationTime[1])
     where = and_(*where) if len(where) > 0 else None

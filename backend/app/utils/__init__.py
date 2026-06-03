@@ -36,7 +36,7 @@ def verify_password_reset_token(token: str) -> str | None:
 def base_decode(data: str) -> bytes:
     if len(data) % 3 == 1:
         data += "=="
-    elif len(data) % 3 == 2:
+    elif len(data) % 3 == 2:  # noqa: PLR2004
         data += "="
     return base64.b64decode(data)
 

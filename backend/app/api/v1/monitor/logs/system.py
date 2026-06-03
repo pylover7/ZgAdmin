@@ -43,7 +43,7 @@ async def get_system_logs(
     where = []
     if data.module:
         where.append(SystemLog.module == data.module)
-    if data.operationTime and len(data.operationTime) == 2:
+    if data.operationTime and len(data.operationTime) == 2:  # noqa: PLR2004
         where.append(SystemLog.time >= data.operationTime[0])
         where.append(SystemLog.time <= data.operationTime[1])
     where = and_(*where) if len(where) > 0 else None

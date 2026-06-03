@@ -4,6 +4,8 @@ import string
 
 import bcrypt
 
+_BCRYPT_HASH_LENGTH = 60
+
 
 def md5_encrypt(input_string) -> str:
     """MD5加密函数"""
@@ -23,7 +25,11 @@ def verify_password(plain_password: str | None, hashed_password: str | None) -> 
     try:
         if plain_password is None or hashed_password is None:
             return False
-        if not isinstance(hashed_password, str) or not hashed_password.startswith("$2b$") or len(hashed_password) != 60:
+        if (
+            not isinstance(hashed_password, str)
+            or not hashed_password.startswith("$2b$")
+            or len(hashed_password) != _BCRYPT_HASH_LENGTH
+        ):
             return False
         return bcrypt.checkpw(plain_password.encode("utf-8"), hashed_password.encode("utf-8"))
     except (ValueError, TypeError, AttributeError):

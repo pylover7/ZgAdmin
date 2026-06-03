@@ -15,6 +15,8 @@ from app.settings import settings
 from app.settings.log import logger
 from app.utils.password import get_password_hash
 
+_HTTP_OK = 200
+
 
 def create_access_token(*, data: JWTPayload) -> str:
     """
@@ -65,7 +67,7 @@ async def get_qq_access_token(code: str) -> QQAccessToken:
     async with httpx.AsyncClient(timeout=10.0) as client:
         try:
             response = await client.get(token_url)
-            if response.status_code != 200:
+            if response.status_code != _HTTP_OK:
                 raise HTTPException(status_code=400, detail="获取QQ access_token失败")
 
             # 解析返回的查询参数
@@ -109,7 +111,7 @@ async def get_qq_userinfo(access_token: str, openid: str) -> QQUserInfo:
     async with httpx.AsyncClient(timeout=10.0) as client:
         try:
             response = await client.get(userinfo_url)
-            if response.status_code != 200:
+            if response.status_code != _HTTP_OK:
                 raise HTTPException(status_code=400, detail="获取QQ用户信息失败")
 
             user_data = response.json()
