@@ -1,17 +1,17 @@
 import sys
-from pathlib import Path
 from logging.config import fileConfig
-
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
+from pathlib import Path
 
 from alembic import context
+from sqlalchemy import engine_from_config, pool
 
 # 将项目根目录加入 Python 路径
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from app.models import *  # noqa: E402, F403 - 确保所有模型被注册到 SQLModel.metadata
-from app.settings import settings  # noqa: E402 — 必须在 models.* 之后，避免被 settings 子模块覆盖
+from sqlmodel import SQLModel
+
+from app.models import *  # noqa: F403 - 确保所有模型被注册到 SQLModel.metadata
+from app.settings import settings
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

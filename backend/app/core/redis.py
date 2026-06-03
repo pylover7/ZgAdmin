@@ -236,9 +236,7 @@ class RealRedis:
         await self._pool.disconnect()
 
 
-# ─── 全局单例 ──────────────────────────────────────────────────────────
-
-_redis_instance: RedisClient | None = None
+# ─── Redis 单例管理器 ────────────────────────────────────────────────────
 
 
 def _create_redis() -> RedisClient:
@@ -258,36 +256,53 @@ def _create_redis() -> RedisClient:
     return MemoryRedis()
 
 
+class _RedisManager:
+    """Redis 连接管理器 — 封装单例状态，替代 global 语句"""
+
+    def __init__(self) -> None:
+        self._instance: RedisClient | None = None
+
+    def get(self) -> RedisClient:
+        if self._instance is None:
+            self._instance = _create_redis()
+        return self._instance
+
+    async def init(self) -> None:
+        self._instance = _create_redis()
+
+        # 测试连接
+        if isinstance(self._instance, RealRedis):
+            try:
+                await self._instance.set("redis:ping", "pong", ex=10)
+                pong = await self._instance.get("redis:ping")
+                if pong != "pong":
+                    raise ConnectionError("Redis ping 失败")
+                logger.info("Redis 连接测试成功")
+            except Exception as e:
+                logger.error(f"Redis 连接失败: {e}")
+                raise
+
+    async def close(self) -> None:
+        if self._instance is not None:
+            await self._instance.close()
+            self._instance = None
+            logger.info("Redis 连接已关闭")
+
+
+# 模块级单例 — 全局唯一，替代 global 语句
+redis_manager = _RedisManager()
+
+
 def get_redis() -> RedisClient:
     """获取 Redis 全局单例"""
-    global _redis_instance
-    if _redis_instance is None:
-        _redis_instance = _create_redis()
-    return _redis_instance
+    return redis_manager.get()
 
 
 async def init_redis() -> None:
     """应用启动时调用 — 初始化 Redis 连接"""
-    global _redis_instance
-    _redis_instance = _create_redis()
-
-    # 测试连接
-    if isinstance(_redis_instance, RealRedis):
-        try:
-            await _redis_instance.set("redis:ping", "pong", ex=10)
-            pong = await _redis_instance.get("redis:ping")
-            if pong != "pong":
-                raise ConnectionError("Redis ping 失败")
-            logger.info("Redis 连接测试成功")
-        except Exception as e:
-            logger.error(f"Redis 连接失败: {e}")
-            raise
+    await redis_manager.init()
 
 
 async def close_redis() -> None:
     """应用关闭时调用 — 关闭 Redis 连接"""
-    global _redis_instance
-    if _redis_instance is not None:
-        await _redis_instance.close()
-        _redis_instance = None
-        logger.info("Redis 连接已关闭")
+    await redis_manager.close()

@@ -1,16 +1,5 @@
 """API 集成测试 — system 路由（核心 CRUD 100%）"""
-import pytest
 from uuid import uuid4
-
-from sqlmodel import select
-
-from app.models import User, Role, Department, Notice, NoticeRead
-from app.models.user import UserCreate, UpdateStatus, UpdateUserRoles, UserResetPwd
-from app.models.role import RoleCreate, UpdateRoleStatus, UpdateRoleAuth
-from app.models.notice import NoticeCreate, NoticeUpdate
-from app.models.department import DepartCreate
-from app.utils.password import get_password_hash
-
 
 # ═══════════════════════════════════════════════════════════════════════
 # 用户管理

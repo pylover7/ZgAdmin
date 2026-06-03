@@ -1,11 +1,11 @@
 """controllers/user.py 单元测试 — 登录失败/账号锁定/更新/解锁"""
-import pytest
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
+from unittest.mock import AsyncMock, Mock, patch
 from uuid import uuid4
 
+import pytest
 from fastapi import HTTPException, Request
-from sqlmodel import Session, SQLModel, create_engine, select
-from unittest.mock import Mock, AsyncMock, patch
+from sqlmodel import Session, SQLModel, create_engine
 
 from app.controllers.user import userController
 from app.models import User, UserCreate, UserUpdate
@@ -79,7 +79,7 @@ class TestUserCreate:
         user_session.add(policy)
         user_session.commit()
 
-        user_in = UserCreate(
+        _user_in = UserCreate(
             username="weakuser", nickname="W", email="weak@test.com",
             password="longbutnouppercase",  # 满足 min_length=8 但不满足 require_uppercase
             phone="13800000002", remark="test",
@@ -153,11 +153,11 @@ class TestUserAuthenticate:
         """用户不存在 → 400"""
         req = _mock_request()
         cred = CredentialsSchema(username="ghost", password="whatever")
-        with patch("app.controllers.user.getIpAddress", new_callable=AsyncMock, return_value=""):
-            with patch("app.controllers.user.getReqSysBro", new_callable=AsyncMock, return_value=Mock(system="Win", browser="Chrome")):
-                with pytest.raises(HTTPException) as exc_info:
-                    await userController.authenticate(user_session, cred, req)
-                assert exc_info.value.status_code == 400
+        with patch("app.controllers.user.getIpAddress", new_callable=AsyncMock, return_value=""), \
+             patch("app.controllers.user.getReqSysBro", new_callable=AsyncMock, return_value=Mock(system="Win", browser="Chrome")):
+            with pytest.raises(HTTPException) as exc_info:
+                await userController.authenticate(user_session, cred, req)
+            assert exc_info.value.status_code == 400
 
     @pytest.mark.asyncio
     async def test_authenticate_locked_account(self, user_session):
@@ -166,7 +166,7 @@ class TestUserAuthenticate:
             username="lockeduser", nickname="L", email="locked@test.com",
             password=get_password_hash("Locked12345"), phone="13800000020",
             remark="test", status=1, is_superuser=False,
-            locked_until=datetime.now() + timedelta(minutes=30),
+            locked_until=datetime.now(UTC) + timedelta(minutes=30),
             failed_login_count=0,
         )
         user_session.add(user)
@@ -174,11 +174,11 @@ class TestUserAuthenticate:
 
         req = _mock_request()
         cred = CredentialsSchema(username="lockeduser", password="Locked12345")
-        with patch("app.controllers.user.getIpAddress", new_callable=AsyncMock, return_value=""):
-            with patch("app.controllers.user.getReqSysBro", new_callable=AsyncMock, return_value=Mock(system="Win", browser="Chrome")):
-                with pytest.raises(HTTPException) as exc_info:
-                    await userController.authenticate(user_session, cred, req)
-                assert "锁定" in exc_info.value.detail
+        with patch("app.controllers.user.getIpAddress", new_callable=AsyncMock, return_value=""), \
+             patch("app.controllers.user.getReqSysBro", new_callable=AsyncMock, return_value=Mock(system="Win", browser="Chrome")):
+            with pytest.raises(HTTPException) as exc_info:
+                await userController.authenticate(user_session, cred, req)
+            assert "锁定" in exc_info.value.detail
 
     @pytest.mark.asyncio
     async def test_authenticate_expired_lock_resets(self, user_session):
@@ -187,7 +187,7 @@ class TestUserAuthenticate:
             username="expiredlock", nickname="EL", email="el@test.com",
             password=get_password_hash("ExpiredLock123"), phone="13800000021",
             remark="test", status=1, is_superuser=False,
-            locked_until=datetime.now() - timedelta(minutes=1),  # 已过期
+            locked_until=datetime.now(UTC) - timedelta(minutes=1),  # 已过期
             failed_login_count=3,
         )
         user_session.add(user)
@@ -195,13 +195,13 @@ class TestUserAuthenticate:
 
         req = _mock_request()
         cred = CredentialsSchema(username="expiredlock", password="ExpiredLock123")
-        with patch("app.controllers.user.getIpAddress", new_callable=AsyncMock, return_value=""):
-            with patch("app.controllers.user.getReqSysBro", new_callable=AsyncMock, return_value=Mock(system="Win", browser="Chrome")):
-                with patch("app.controllers.user.logger") as mock_logger:
-                    mock_logger.loginSuccess = AsyncMock()
-                    result = await userController.authenticate(user_session, cred, req)
-                    assert result.username == "expiredlock"
-                    assert result.failed_login_count == 0
+        with patch("app.controllers.user.getIpAddress", new_callable=AsyncMock, return_value=""), \
+             patch("app.controllers.user.getReqSysBro", new_callable=AsyncMock, return_value=Mock(system="Win", browser="Chrome")), \
+             patch("app.controllers.user.logger") as mock_logger:
+            mock_logger.loginSuccess = AsyncMock()
+            result = await userController.authenticate(user_session, cred, req)
+            assert result.username == "expiredlock"
+            assert result.failed_login_count == 0
 
     @pytest.mark.asyncio
     async def test_authenticate_wrong_password_increments_count(self, user_session):
@@ -219,12 +219,12 @@ class TestUserAuthenticate:
 
         req = _mock_request()
         cred = CredentialsSchema(username="failuser", password="Wrong12345")
-        with patch("app.controllers.user.getIpAddress", new_callable=AsyncMock, return_value=""):
-            with patch("app.controllers.user.getReqSysBro", new_callable=AsyncMock, return_value=Mock(system="Win", browser="Chrome")):
-                with patch("app.controllers.user.logger") as mock_logger:
-                    mock_logger.loginFail = AsyncMock()
-                    with pytest.raises(HTTPException):
-                        await userController.authenticate(user_session, cred, req)
+        with patch("app.controllers.user.getIpAddress", new_callable=AsyncMock, return_value=""), \
+             patch("app.controllers.user.getReqSysBro", new_callable=AsyncMock, return_value=Mock(system="Win", browser="Chrome")), \
+             patch("app.controllers.user.logger") as mock_logger:
+            mock_logger.loginFail = AsyncMock()
+            with pytest.raises(HTTPException):
+                await userController.authenticate(user_session, cred, req)
 
         user_session.refresh(user)
         assert user.failed_login_count == 1
@@ -245,13 +245,13 @@ class TestUserAuthenticate:
 
         req = _mock_request()
         cred = CredentialsSchema(username="maxfail", password="Wrong12345")
-        with patch("app.controllers.user.getIpAddress", new_callable=AsyncMock, return_value=""):
-            with patch("app.controllers.user.getReqSysBro", new_callable=AsyncMock, return_value=Mock(system="Win", browser="Chrome")):
-                with patch("app.controllers.user.logger") as mock_logger:
-                    mock_logger.loginFail = AsyncMock()
-                    with pytest.raises(HTTPException) as exc_info:
-                        await userController.authenticate(user_session, cred, req)
-                    assert "锁定" in exc_info.value.detail
+        with patch("app.controllers.user.getIpAddress", new_callable=AsyncMock, return_value=""), \
+             patch("app.controllers.user.getReqSysBro", new_callable=AsyncMock, return_value=Mock(system="Win", browser="Chrome")), \
+             patch("app.controllers.user.logger") as mock_logger:
+            mock_logger.loginFail = AsyncMock()
+            with pytest.raises(HTTPException) as exc_info:
+                await userController.authenticate(user_session, cred, req)
+            assert "锁定" in exc_info.value.detail
 
     @pytest.mark.asyncio
     async def test_authenticate_superuser_wrong_password(self, user_session):
@@ -266,16 +266,16 @@ class TestUserAuthenticate:
 
         req = _mock_request()
         cred = CredentialsSchema(username="supadmin", password="Wrong12345")
-        with patch("app.controllers.user.getIpAddress", new_callable=AsyncMock, return_value=""):
-            with patch("app.controllers.user.getReqSysBro", new_callable=AsyncMock, return_value=Mock(system="Win", browser="Chrome")):
-                with patch("app.controllers.user.logger") as mock_logger:
-                    mock_logger.loginFail = AsyncMock()
-                    with pytest.raises(HTTPException) as exc_info:
-                        await userController.authenticate(user_session, cred, req)
-                    assert exc_info.value.status_code == 400
-                    # 超级管理员不应被计数
-                    user_session.refresh(user)
-                    assert user.failed_login_count == 0
+        with patch("app.controllers.user.getIpAddress", new_callable=AsyncMock, return_value=""), \
+             patch("app.controllers.user.getReqSysBro", new_callable=AsyncMock, return_value=Mock(system="Win", browser="Chrome")), \
+             patch("app.controllers.user.logger") as mock_logger:
+            mock_logger.loginFail = AsyncMock()
+            with pytest.raises(HTTPException) as exc_info:
+                await userController.authenticate(user_session, cred, req)
+            assert exc_info.value.status_code == 400
+            # 超级管理员不应被计数
+            user_session.refresh(user)
+            assert user.failed_login_count == 0
 
     @pytest.mark.asyncio
     async def test_authenticate_disabled_user(self, user_session):
@@ -290,13 +290,13 @@ class TestUserAuthenticate:
 
         req = _mock_request()
         cred = CredentialsSchema(username="disabledauth", password="Disabled12345")
-        with patch("app.controllers.user.getIpAddress", new_callable=AsyncMock, return_value=""):
-            with patch("app.controllers.user.getReqSysBro", new_callable=AsyncMock, return_value=Mock(system="Win", browser="Chrome")):
-                with patch("app.controllers.user.logger") as mock_logger:
-                    mock_logger.loginSuccess = AsyncMock()
-                    with pytest.raises(HTTPException) as exc_info:
-                        await userController.authenticate(user_session, cred, req)
-                    assert "禁用" in exc_info.value.detail
+        with patch("app.controllers.user.getIpAddress", new_callable=AsyncMock, return_value=""), \
+             patch("app.controllers.user.getReqSysBro", new_callable=AsyncMock, return_value=Mock(system="Win", browser="Chrome")), \
+             patch("app.controllers.user.logger") as mock_logger:
+            mock_logger.loginSuccess = AsyncMock()
+            with pytest.raises(HTTPException) as exc_info:
+                await userController.authenticate(user_session, cred, req)
+            assert "禁用" in exc_info.value.detail
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -327,7 +327,7 @@ class TestUserMisc:
         user = User(
             username="unlockme", nickname="UL", email="ul@test.com",
             password=get_password_hash("Unlock12345"), phone="13800000031", remark="test",
-            failed_login_count=5, locked_until=datetime.now() + timedelta(minutes=30),
+            failed_login_count=5, locked_until=datetime.now(UTC) + timedelta(minutes=30),
         )
         user_session.add(user)
         user_session.commit()

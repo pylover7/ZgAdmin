@@ -1,13 +1,13 @@
 """core/crud.py CRUDBase 单元测试 — 使用真实 SQLite"""
-import pytest
 from uuid import uuid4
 
-from sqlmodel import Session, SQLModel, create_engine, select
+import pytest
+from sqlmodel import Session, SQLModel, create_engine
 
 from app.core.crud import CRUDBase
-from app.models import User, Role, Department, Notice
-from app.models.user import UserCreate
+from app.models import Role, User
 from app.models.role import RoleCreate
+from app.models.user import UserCreate
 from app.utils.password import get_password_hash
 
 
@@ -180,7 +180,6 @@ class TestCRUDBaseListFilter:
     async def test_list_with_where(self, crud_session, user_crud):
         user_in = self._make_user_create("1")
         await user_crud.create(crud_session, obj_in=user_in)
-        from sqlmodel import col
         total, results = await user_crud.list(
             crud_session,
             where=User.username == "filteruser1",

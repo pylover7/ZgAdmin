@@ -1,15 +1,13 @@
 """controllers/notice.py + controllers/role.py 单元测试"""
-import pytest
 from uuid import uuid4
 
-from sqlmodel import Session, SQLModel, create_engine, select
+import pytest
+from sqlmodel import Session, SQLModel, create_engine
 
 from app.controllers.notice import noticeController
 from app.controllers.role import roleController
-from app.models import User, Role, Menu, Api, Notice, NoticeRead
+from app.models import Api, Menu, Notice, Role, User
 from app.models.enums import MethodType
-from app.models.notice import NoticeCreate, NoticeUpdate
-from app.models.role import RoleCreate
 from app.utils.password import get_password_hash
 
 

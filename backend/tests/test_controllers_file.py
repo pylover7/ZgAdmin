@@ -1,9 +1,8 @@
 """controllers/file.py 单元测试 — 文件上传/删除/统计"""
 import os
-import pytest
-import tempfile
 from uuid import uuid4
 
+import pytest
 from sqlmodel import Session, SQLModel, create_engine
 
 from app.controllers.file import fileController

@@ -1,7 +1,5 @@
 """API 集成测试 — settings 路由（安全策略 + 登录配置 + 通用配置 + 邮件配置）"""
-import pytest
 
-from app.models.security import SecurityPolicy, IPRule
 
 
 # ═══════════════════════════════════════════════════════════════════════

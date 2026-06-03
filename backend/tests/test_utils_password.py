@@ -1,10 +1,9 @@
 """utils/password.py 单元测试 — 纯函数，无需 DB"""
-import pytest
 from app.utils.password import (
-    get_password_hash,
-    verify_password,
-    md5_encrypt,
     generate_password,
+    get_password_hash,
+    md5_encrypt,
+    verify_password,
 )
 
 

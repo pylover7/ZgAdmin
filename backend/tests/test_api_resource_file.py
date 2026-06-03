@@ -1,11 +1,8 @@
 """API 集成测试 — resource/file 路由（文件上传/列表/删除/预览/签名/统计）"""
 import os
-import pytest
-from unittest.mock import patch
 
 from app.models.file import File
 from app.settings import settings
-
 
 # ═══════════════════════════════════════════════════════════════════════
 # 文件上传

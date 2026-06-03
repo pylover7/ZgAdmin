@@ -1,10 +1,7 @@
 """API 集成测试 — monitor 路由（日志管理 + 系统监控）"""
-import pytest
-from datetime import datetime
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 from app.models import LoginLog, OperationLog, SystemLog
-
 
 # ═══════════════════════════════════════════════════════════════════════
 # 登录日志
@@ -178,35 +175,35 @@ class TestSystemMonitorAPI:
     def test_system_status(self, client, admin_headers, db):
         """系统状态 — 需要 mock psutil"""
         mock_cpu = MagicMock(return_value=45.0)
-        with patch("app.api.v1.monitor.system.psutil.cpu_percent", mock_cpu):
-            with patch("app.api.v1.monitor.system.get_load_info") as mock_load:
-                mock_load.return_value = MagicMock(
-                    load1=1.0, load5=1.5, load15=2.0,
-                    status="正常", cores=4, percent=45.0,
-                )
-                with patch("app.api.v1.monitor.system.get_cpu_info") as mock_cpu_info:
-                    mock_cpu_info.return_value = MagicMock(
-                        percent=45.0, freq=2400, per_cpu=[40, 50],
-                        physical_cores=2, logical_cores=4,
-                    )
-                    with patch("app.api.v1.monitor.system.get_memory_info") as mock_mem:
-                        mock_mem.return_value = MagicMock(
-                            percent=60.0, total=16384, used=9830,
-                            available=6554, cached=2000, buffers=500, shared=100,
-                        )
-                        with patch("app.api.v1.monitor.system.get_disk_info") as mock_disk:
-                            mock_disk.return_value = MagicMock(
-                                percent=70.0, total=512000, used=358400, free=153600,
-                            )
-                            with patch("app.api.v1.monitor.system.get_top_processes") as mock_top:
-                                mock_top.return_value = []
-                                resp = client.get("/api/v1/monitor/system/status", headers=admin_headers)
-                                body = resp.json()
-                                assert body["code"] == 200
-                                assert "load" in body["data"]
-                                assert "cpu" in body["data"]
-                                assert "memory" in body["data"]
-                                assert "disk" in body["data"]
+        with patch("app.api.v1.monitor.system.psutil.cpu_percent", mock_cpu), \
+             patch("app.api.v1.monitor.system.get_load_info") as mock_load, \
+             patch("app.api.v1.monitor.system.get_cpu_info") as mock_cpu_info, \
+             patch("app.api.v1.monitor.system.get_memory_info") as mock_mem, \
+             patch("app.api.v1.monitor.system.get_disk_info") as mock_disk, \
+             patch("app.api.v1.monitor.system.get_top_processes") as mock_top:
+            mock_load.return_value = MagicMock(
+                load1=1.0, load5=1.5, load15=2.0,
+                status="正常", cores=4, percent=45.0,
+            )
+            mock_cpu_info.return_value = MagicMock(
+                percent=45.0, freq=2400, per_cpu=[40, 50],
+                physical_cores=2, logical_cores=4,
+            )
+            mock_mem.return_value = MagicMock(
+                percent=60.0, total=16384, used=9830,
+                available=6554, cached=2000, buffers=500, shared=100,
+            )
+            mock_disk.return_value = MagicMock(
+                percent=70.0, total=512000, used=358400, free=153600,
+            )
+            mock_top.return_value = []
+            resp = client.get("/api/v1/monitor/system/status", headers=admin_headers)
+            body = resp.json()
+            assert body["code"] == 200
+            assert "load" in body["data"]
+            assert "cpu" in body["data"]
+            assert "memory" in body["data"]
+            assert "disk" in body["data"]
 
     def test_network_monitor(self, client, admin_headers, db):
         with patch("app.api.v1.monitor.system.get_network_io") as mock_net:
