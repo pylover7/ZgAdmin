@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 from pydantic import EmailStr
-from sqlalchemy import JSON, Column
+from sqlalchemy import JSON, Column, DateTime
 from sqlmodel import Field, Relationship, SQLModel
 
 from .base import BaseModel, TimestampMixin
@@ -83,11 +83,17 @@ class UserBase(BaseModel):
 
 class User(UserBase, TimestampMixin, table=True):
     last_login: datetime = Field(
-        default=None, nullable=True, description="最后登录时间", schema_extra={"examples": ["2026-05-26T10:30:00"]}
+        default=None,
+        sa_column=Column(DateTime(timezone=True), nullable=True),
+        description="最后登录时间",
+        schema_extra={"examples": ["2026-05-26T10:30:00+00:00"]},
     )
     failed_login_count: int = Field(default=0, description="连续登录失败次数", schema_extra={"examples": [0]})
     locked_until: datetime | None = Field(
-        default=None, nullable=True, description="锁定截止时间", schema_extra={"examples": ["2026-05-26T11:00:00"]}
+        default=None,
+        sa_column=Column(DateTime(timezone=True), nullable=True),
+        description="锁定截止时间",
+        schema_extra={"examples": ["2026-05-26T11:00:00+00:00"]},
     )
     password_history: list[str] | None = Field(
         default=None, sa_column=Column(JSON, nullable=True), description="最近N次密码hash列表，防止重复使用"

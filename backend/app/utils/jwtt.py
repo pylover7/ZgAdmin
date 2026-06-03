@@ -155,7 +155,7 @@ async def find_or_create_qq_user(session, qq_userinfo: QQUserInfo) -> User:
             return user
 
         # 如果用户不存在，创建新用户
-        timestamp = str(int(datetime.now().timestamp()))
+        timestamp = str(int(datetime.now(UTC).timestamp()))
         new_user = User(
             username=f"qq_{qq_userinfo.openid[:8]}_{timestamp}",
             email=f"qq_{qq_userinfo.openid}@qq.local",  # 临时邮箱

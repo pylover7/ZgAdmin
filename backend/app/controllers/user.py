@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
 from fastapi import Request
@@ -88,8 +88,8 @@ class UserController(CRUDBase[User, UserCreate, UserUpdate]):
 
         # 检查账号锁定（超级管理员不受锁定限制）
         if not user.is_superuser and user.locked_until:
-            if datetime.now() < user.locked_until:
-                remaining = int((user.locked_until - datetime.now()).total_seconds() / 60)
+            if datetime.now(UTC) < user.locked_until:
+                remaining = int((user.locked_until - datetime.now(UTC)).total_seconds() / 60)
                 raise HTTPException(status_code=400, detail=f"账号已锁定，请 {remaining} 分钟后重试")
             # 锁定已过期，重置
             user.failed_login_count = 0
@@ -107,7 +107,7 @@ class UserController(CRUDBase[User, UserCreate, UserUpdate]):
                 user.failed_login_count = (user.failed_login_count or 0) + 1
 
                 if user.failed_login_count >= max_attempts:
-                    user.locked_until = datetime.now() + timedelta(minutes=lockout_minutes)
+                    user.locked_until = datetime.now(UTC) + timedelta(minutes=lockout_minutes)
                     user.failed_login_count = 0
                     await logger.loginFail(
                         username=user.username,

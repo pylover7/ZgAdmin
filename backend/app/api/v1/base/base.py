@@ -1,6 +1,6 @@
 import hashlib
 import urllib.parse
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import cast
 from uuid import UUID
@@ -128,8 +128,8 @@ async def login_access_token(session: SessionDep, request: Request, credentials:
         depart = ""
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     refresh_token_expires = timedelta(minutes=settings.REFRESH_TOKEN_EXPIRE_MINUTES)
-    expire = datetime.now() + access_token_expires
-    expire_refresh = datetime.now() + refresh_token_expires
+    expire = datetime.now(UTC) + access_token_expires
+    expire_refresh = datetime.now(UTC) + refresh_token_expires
 
     data = JWTOut(
         username=user.username,
@@ -168,7 +168,7 @@ async def logout(current_user: DependUser, authorization: str = Header(..., desc
     except InvalidTokenError as exc:
         raise HTTPException(status_code=401, detail="无效的Token") from exc
     exp = decode_data.get("exp", 0)
-    now = datetime.now().timestamp()
+    now = datetime.now(UTC).timestamp()
     remaining_ttl = int(exp - now)
     if remaining_ttl > 0:
         redis = get_redis()
@@ -187,8 +187,8 @@ async def refresh_token(refreshToken: refreshTokenSchema):
         return FailAuth(msg="refreshToken已过期")
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     refresh_token_expires = timedelta(minutes=settings.REFRESH_TOKEN_EXPIRE_MINUTES)
-    expire = datetime.now() + access_token_expires
-    expire_refresh = datetime.now() + refresh_token_expires
+    expire = datetime.now(UTC) + access_token_expires
+    expire_refresh = datetime.now(UTC) + refresh_token_expires
 
     data = JWTReOut(
         accessToken=create_access_token(
@@ -462,8 +462,8 @@ async def qq_login(session: SessionDep, qq_login_data: QQLoginSchema):
 
         access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
         refresh_token_expires = timedelta(minutes=settings.REFRESH_TOKEN_EXPIRE_MINUTES)
-        expire = datetime.now() + access_token_expires
-        expire_refresh = datetime.now() + refresh_token_expires
+        expire = datetime.now(UTC) + access_token_expires
+        expire_refresh = datetime.now(UTC) + refresh_token_expires
 
         data = JWTOut(
             username=user.username,

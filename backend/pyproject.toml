@@ -21,7 +21,6 @@ dependencies = [
     "python-magic>=0.4.27",
     "python-multipart>=0.0.18",
     "pymysql>=1.1.1",
-    "pytz>=2025.2",
     "redis>=5.0.0",
     "sentry-sdk>=2.34.1",
     "setuptools>=80.9.0",
@@ -83,6 +82,10 @@ select = [
     "G",    # flake8-logging-format
     # ── Pylint 兼容层（复杂度规则） ──
     "PL",   # pylint 规则集
+    # ── 时区安全 ──
+    "DTZ",  # flake8-datetimez
+    # ── 日志规范 ──
+    "LOG",  # flake8-logging
 ]
 ignore = [
     # ── 行长度由 formatter 处理 ──

@@ -1,6 +1,7 @@
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 from uuid import UUID, uuid4
+from zoneinfo import ZoneInfo
 
 from fastapi.responses import JSONResponse
 from sqlmodel import Field, SQLModel
@@ -36,6 +37,8 @@ class BaseModel(SQLModel):
             if field not in exclude_fields:
                 value = getattr(self, field)
                 if isinstance(value, datetime):
+                    if value.tzinfo is not None:
+                        value = value.astimezone(ZoneInfo(settings.DISPLAY_TIMEZONE))
                     value = value.strftime(settings.DATETIME_FORMAT)
                 if isinstance(value, UUID):
                     value = str(value)
@@ -45,7 +48,9 @@ class BaseModel(SQLModel):
 
 class TimestampMixin(SQLModel):
     created_at: datetime = Field(
-        default_factory=datetime.now, description="创建时间", schema_extra={"examples": ["2026-05-26T10:30:00"]}
+        default_factory=lambda: datetime.now(UTC),
+        description="创建时间",
+        schema_extra={"examples": ["2026-05-26T10:30:00+00:00"]},
     )
 
 

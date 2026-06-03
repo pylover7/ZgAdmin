@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 from enum import StrEnum
 
 from sqlmodel import Field, SQLModel
@@ -16,10 +16,10 @@ class LogModule(StrEnum):
 
 class Log(BaseModel):
     time: datetime = Field(
-        default_factory=datetime.now,
+        default_factory=lambda: datetime.now(UTC),
         index=True,
         description="日志时间",
-        schema_extra={"examples": ["2026-05-26T10:30:00"]},
+        schema_extra={"examples": ["2026-05-26T10:30:00+00:00"]},
     )
 
 

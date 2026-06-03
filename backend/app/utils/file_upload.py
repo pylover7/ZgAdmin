@@ -1,6 +1,6 @@
 import os
 import uuid
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 
 import magic
@@ -94,7 +94,7 @@ def classify_file(mime_type: str, extension: str) -> str:
 
 def generate_storage_path(extension: str) -> str:
     """生成存储相对路径: uploads/YYYY/MM/<uuid>.ext"""
-    now = datetime.now()
+    now = datetime.now(UTC)
     dir_path = f"uploads/{now.strftime('%Y')}/{now.strftime('%m')}"
     filename = f"{uuid.uuid4().hex}.{extension}"
     return os.path.join(dir_path, filename)

@@ -57,7 +57,7 @@ def now(s: int = 1) -> str | datetime | float:
 
     :return: 当前日期时间
     """
-    today = datetime.now()
+    today = datetime.now(UTC)
     match s:
         case 0:
             return today

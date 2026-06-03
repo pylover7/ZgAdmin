@@ -40,6 +40,7 @@ class Settings(BaseSettings):
     DEBUG: bool = False
     ENVIRONMENT: Literal["local", "staging", "production"] = "local"
     DATETIME_FORMAT: str = "%Y-%m-%d %H:%M:%S"
+    DISPLAY_TIMEZONE: str = "Asia/Shanghai"
 
     BACKEND_CORS_ORIGINS: Annotated[list[AnyUrl] | list[str] | str, BeforeValidator(parse_cors)] = ["*"]
 
