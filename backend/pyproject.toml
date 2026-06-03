@@ -7,25 +7,25 @@ requires-python = ">=3.13"
 dependencies = [
     "alembic>=1.18.4",
     "apscheduler>=3.11.0",
-    "bcrypt==4.0.1",
-    "email-validator>=2.2.0",
-    "emails>=0.6",
-    "fastapi>=0.116.1",
+    "bcrypt>=4.0.1",
+    "email-validator>=2.3.0",
+    "emails>=1.1.2",
+    "fastapi>=0.136.3",
     "httpx>=0.28.1",
     "loguru>=0.7.3",
-    "pillow>=10.0.0",
-    "psycopg>=3.2.9",
-    "pydantic-settings>=2.10.1",
-    "pyjwt>=2.10.1",
-    "psutil>=5.9.0",
+    "pillow>=12.2.0",
+    "psycopg>=3.3.4",
+    "pydantic-settings>=2.14.1",
+    "pyjwt>=2.13.0",
+    "psutil>=7.2.2",
     "python-magic>=0.4.27",
-    "python-multipart>=0.0.18",
-    "pymysql>=1.1.1",
-    "redis>=5.0.0",
-    "sentry-sdk>=2.34.1",
-    "setuptools>=80.9.0",
+    "python-multipart>=0.0.30",
+    "pymysql>=1.2.0",
+    "redis>=8.0.0",
+    "sentry-sdk>=2.61.1",
+    "setuptools>=82.0.1",
     "sqlmodel>=0.0.38",
-    "uvicorn>=0.35.0",
+    "uvicorn>=0.48.0",
 ]
 
 [[tool.uv.index]]
@@ -34,10 +34,10 @@ default = true
 
 [dependency-groups]
 dev = [
-    "ruff>=0.4.0",
-    "pytest>=8.0.0",
-    "pytest-cov>=4.0.0",
-    "pytest-asyncio>=0.23.0",
+    "ruff>=0.15.15",
+    "pytest>=9.0.3",
+    "pytest-cov>=7.1.0",
+    "pytest-asyncio>=1.4.0",
 ]
 
 [tool.pytest.ini_options]
