@@ -1,9 +1,10 @@
 """邮件配置 API"""
+
 from fastapi import APIRouter
 
-from app.core.dependency import DependUser, SessionDep
-from app.models.base import Success, Fail
 from app.controllers.config import emailConfigController
+from app.core.dependency import DependUser, SessionDep
+from app.models.base import Fail, Success
 from app.models.config import EmailConfigUpdate
 from app.settings.log import logger
 
@@ -22,8 +23,7 @@ async def get_email_config(session: SessionDep):
 
 
 @emailProtectedRouter.post("", summary="更新邮件配置")
-async def update_email_config(
-        session: SessionDep, current_user: DependUser, data: EmailConfigUpdate):
+async def update_email_config(session: SessionDep, current_user: DependUser, data: EmailConfigUpdate):
     """更新邮件配置"""
     config = emailConfigController.update(session, data)
     if not config:

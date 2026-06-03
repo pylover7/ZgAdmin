@@ -1,20 +1,22 @@
 """安全设置 API — 安全策略 + IP 黑白名单管理"""
+
 import ipaddress
 from uuid import UUID
 
 from fastapi import APIRouter
-from sqlmodel import select, col
+from sqlmodel import col, select
 
-from app.core.dependency import DependUser, SessionDep
-from app.models.security import (
-    SecurityPolicyUpdate,
-    IPRule, IPRuleCreate, IPRuleUpdate,
-)
-from app.models.base import Success, Fail
 from app.controllers.config import securityPolicyController
+from app.core.dependency import DependUser, SessionDep
 from app.core.redis import get_redis
+from app.models.base import Fail, Success
+from app.models.security import (
+    IPRule,
+    IPRuleCreate,
+    IPRuleUpdate,
+    SecurityPolicyUpdate,
+)
 from app.settings.log import logger
-
 
 # ─── 认证接口 ──────────────────────────────────────────────────────────
 securityProtectedRouter = APIRouter()
@@ -23,6 +25,7 @@ securityProtectedRouter = APIRouter()
 # ═══════════════════════════════════════════════════════════════════════
 # 安全策略
 # ═══════════════════════════════════════════════════════════════════════
+
 
 @securityProtectedRouter.get("/policy", summary="获取安全策略")
 async def get_security_policy(session: SessionDep):
@@ -35,10 +38,7 @@ async def get_security_policy(session: SessionDep):
 
 
 @securityProtectedRouter.post("/policy", summary="更新安全策略")
-async def update_security_policy(
-        session: SessionDep,
-        current_user: DependUser,
-        data: SecurityPolicyUpdate):
+async def update_security_policy(session: SessionDep, current_user: DependUser, data: SecurityPolicyUpdate):
     policy = securityPolicyController.update(session, data)
     if not policy:
         return Fail(msg="安全策略未初始化")
@@ -52,6 +52,7 @@ async def update_security_policy(
 # ═══════════════════════════════════════════════════════════════════════
 # IP 规则管理
 # ═══════════════════════════════════════════════════════════════════════
+
 
 @securityProtectedRouter.get("/ip-rules", summary="获取IP规则列表")
 async def get_ip_rules(session: SessionDep):
@@ -68,7 +69,7 @@ async def add_ip_rule(session: SessionDep, current_user: DependUser, data: IPRul
 
     # 校验 IP/CIDR 格式
     try:
-        if '/' in data.ip_cidr:
+        if "/" in data.ip_cidr:
             ipaddress.ip_network(data.ip_cidr, strict=False)
         else:
             ipaddress.ip_address(data.ip_cidr)
@@ -77,10 +78,7 @@ async def add_ip_rule(session: SessionDep, current_user: DependUser, data: IPRul
 
     # 检查重复
     existing = session.exec(
-        select(IPRule).where(
-            IPRule.ip_cidr == data.ip_cidr,
-            IPRule.rule_type == data.rule_type
-        )
+        select(IPRule).where(IPRule.ip_cidr == data.ip_cidr, IPRule.rule_type == data.rule_type)
     ).first()
     if existing:
         return Fail(msg="该 IP 规则已存在")
@@ -115,7 +113,7 @@ async def update_ip_rule(session: SessionDep, current_user: DependUser, data: IP
     if "ip_cidr" in update_data:
         try:
             cidr = update_data["ip_cidr"]
-            if '/' in cidr:
+            if "/" in cidr:
                 ipaddress.ip_network(cidr, strict=False)
             else:
                 ipaddress.ip_address(cidr)

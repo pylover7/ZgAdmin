@@ -1,18 +1,17 @@
-from datetime import datetime, timedelta, timezone
-import urllib.parse
 import secrets
-import jwt
-import httpx
+import urllib.parse
+from datetime import UTC, datetime, timedelta
 
+import httpx
+import jwt
 from fastapi import HTTPException
 from sqlmodel import select
 
-from app.models.login import JWTPayload
-from app.settings import settings
 from app.core.database import DatabaseSession
-from app.models.config import OAuthConfig
 from app.models import User
-from app.models.login import QQAccessToken, QQUserInfo
+from app.models.config import OAuthConfig
+from app.models.login import JWTPayload, QQAccessToken, QQUserInfo
+from app.settings import settings
 from app.settings.log import logger
 from app.utils.password import get_password_hash
 
@@ -25,10 +24,7 @@ def create_access_token(*, data: JWTPayload) -> str:
     :return: 令牌
     """
     payload = data.model_dump().copy()
-    encoded_jwt = jwt.encode(
-        payload,
-        settings.SECRET_KEY,
-        algorithm=settings.JWT_ALGORITHM)
+    encoded_jwt = jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
     return encoded_jwt
 
 
@@ -39,9 +35,7 @@ def decode_access_token(token: str) -> JWTPayload:
     :param token: 令牌
     :return: 数据
     """
-    payload = jwt.decode(
-        token, settings.SECRET_KEY, algorithms=[
-            settings.JWT_ALGORITHM])
+    payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
     return JWTPayload(**payload)
 
 
@@ -52,10 +46,12 @@ async def get_qq_access_token(code: str) -> QQAccessToken:
 
     app_id = (oauth_config.qq_app_id if oauth_config and oauth_config.qq_app_id else None) or settings.QQ_APP_ID
     app_key = (oauth_config.qq_app_key if oauth_config and oauth_config.qq_app_key else None) or settings.QQ_APP_KEY
-    redirect_uri = (oauth_config.qq_redirect_uri if oauth_config and oauth_config.qq_redirect_uri else None) or settings.QQ_REDIRECT_URI
+    redirect_uri = (
+        oauth_config.qq_redirect_uri if oauth_config and oauth_config.qq_redirect_uri else None
+    ) or settings.QQ_REDIRECT_URI
 
     # URL编码确保参数安全
-    encoded_redirect_uri = urllib.parse.quote(redirect_uri, safe='')
+    encoded_redirect_uri = urllib.parse.quote(redirect_uri, safe="")
 
     token_url = (
         f"https://graph.qq.com/oauth2.0/token?"
@@ -89,10 +85,10 @@ async def get_qq_access_token(code: str) -> QQAccessToken:
                 refresh_token=query_params.get("refresh_token", [None])[0] or "",
                 openid=openid,
                 scope=query_params.get("scope", [None])[0] or "",
-                unionid=query_params.get("unionid", [None])[0]
+                unionid=query_params.get("unionid", [None])[0],
             )
         except httpx.RequestError as e:
-            logger.error(f"QQ API请求失败: {str(e)}")
+            logger.error(f"QQ API请求失败: {e!s}")
             raise HTTPException(status_code=500, detail="QQ服务不可用") from e
 
 
@@ -119,25 +115,21 @@ async def get_qq_userinfo(access_token: str, openid: str) -> QQUserInfo:
             user_data = response.json()
 
             if user_data.get("ret") != 0:
-                error_msg = user_data.get('msg', '未知错误')
+                error_msg = user_data.get("msg", "未知错误")
                 logger.error(f"QQ用户信息API错误: {error_msg}")
                 raise HTTPException(status_code=400, detail=f"QQ API错误: {error_msg}")
 
             # 获取头像，优先使用高清头像
-            avatar = (
-                user_data.get("figureurl_qq_2")
-                or user_data.get("figureurl_qq_1")
-                or ""
-            )
+            avatar = user_data.get("figureurl_qq_2") or user_data.get("figureurl_qq_1") or ""
 
             return QQUserInfo(
                 openid=openid,
                 nickname=user_data.get("nickname", "QQ用户"),
                 avatar=avatar,
-                unionid=None  # 需要额外API调用获取
+                unionid=None,  # 需要额外API调用获取
             )
         except httpx.RequestError as e:
-            logger.error(f"QQ用户信息API请求失败: {str(e)}")
+            logger.error(f"QQ用户信息API请求失败: {e!s}")
             raise HTTPException(status_code=500, detail="QQ服务不可用") from e
 
 
@@ -171,7 +163,7 @@ async def find_or_create_qq_user(session, qq_userinfo: QQUserInfo) -> User:
             qq_nickname=qq_userinfo.nickname,
             qq_avatar=qq_userinfo.avatar,
             status=1,
-            is_superuser=False
+            is_superuser=False,
         )
 
         session.add(new_user)
@@ -182,7 +174,7 @@ async def find_or_create_qq_user(session, qq_userinfo: QQUserInfo) -> User:
         return new_user
 
     except Exception as e:
-        logger.error(f"创建或更新QQ用户失败: {str(e)}")
+        logger.error(f"创建或更新QQ用户失败: {e!s}")
         session.rollback()
         raise HTTPException(status_code=500, detail="用户信息保存失败") from e
 
@@ -192,7 +184,7 @@ def create_oauth_state(purpose: str = "qq_login") -> str:
     payload = {
         "purpose": purpose,
         "nonce": secrets.token_hex(16),
-        "exp": datetime.now(timezone.utc) + timedelta(minutes=10),
+        "exp": datetime.now(UTC) + timedelta(minutes=10),
     }
     return jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
 
@@ -200,8 +192,7 @@ def create_oauth_state(purpose: str = "qq_login") -> str:
 def verify_oauth_state(state: str, purpose: str = "qq_login") -> bool:
     """验证OAuth state令牌"""
     try:
-        payload = jwt.decode(
-            state, settings.SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
+        payload = jwt.decode(state, settings.SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
         return payload.get("purpose") == purpose
     except jwt.ExpiredSignatureError:
         logger.warning("OAuth state令牌已过期")

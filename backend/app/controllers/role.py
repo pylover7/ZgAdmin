@@ -1,10 +1,11 @@
 from uuid import UUID
+
 from sqlmodel import Session
 
+from app.controllers.api import apiController
+from app.controllers.menu import menuController
 from app.core.crud import CRUDBase
 from app.models import Role, RoleCreate, RoleUpdate
-from app.controllers.menu import menuController
-from app.controllers.api import apiController
 
 
 class RoleController(CRUDBase[Role, RoleCreate, RoleUpdate]):

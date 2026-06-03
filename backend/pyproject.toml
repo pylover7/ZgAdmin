@@ -35,8 +35,7 @@ default = true
 
 [dependency-groups]
 dev = [
-    "autopep8>=2.3.2",
-    "pylint>=3.3.7",
+    "ruff>=0.4.0",
     "pytest>=8.0.0",
     "pytest-cov>=4.0.0",
     "pytest-asyncio>=0.23.0",
@@ -56,64 +55,64 @@ omit = ["tests/*", "app/alembic/*"]
 [tool.coverage.report]
 show_missing = true
 
-[tool.autopep8]
-max-line-length = 100
-aggressive = 2
-recursive = true
-in-place = true
-exclude = "tests/*,migrations/*"
-ignore = "E226,E24,E501,W503"
-select = "E,W"
+[tool.ruff]
+line-length = 120
+target-version = "py313"
+src = ["app"]
 
-[tool.pylint]
-# 文件和目录控制
-ignore = ["tests/*", "migrations/*", "**/__pycache__/*"]  # 忽略测试、迁移和缓存
-ignore-patterns = ["_test.py$", "_mock.py$"]             # 忽略测试模式文件
+[tool.ruff.lint]
+select = [
+    # ── 基础必需 ──
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "UP",   # pyupgrade
+    "B",    # flake8-bugbear
+    "C4",   # flake8-comprehensions
+    "SIM",  # flake8-simplify
+    # ── 安全与质量 ──
+    "S",    # flake8-bandit（安全）
+    "RUF",  # Ruff 自有规则
+    "T10",  # flake8-debugger
+    "ERA",  # eradicate（注释掉的代码）
+    "PGH",  # pygrep-hooks
+    # ── 代码整洁 ──
+    "T20",  # flake8-print
+    "PIE",  # flake8-pie
+    "G",    # flake8-logging-format
+    # ── Pylint 兼容层（复杂度规则） ──
+    "PL",   # pylint 规则集
+]
+ignore = [
+    # ── 行长度由 formatter 处理 ──
+    "E501",
+    # ── Loguru 使用 f-string 是标准做法 ──
+    "G004",
+    # ── 缺少文档字符串（不强制） ──
+    "D100", "D101", "D102", "D103",
+    # ── 中文项目：全角标点在字符串/注释/文档中是正常的 ──
+    "RUF001",  # 中文字符串中的全角标点
+    "RUF002",  # 中文 docstring 中的全角标点
+    "RUF003",  # 中文注释中的全角标点
+    # ── FastAPI 模式 ──
+    "B008",    # 函数默认参数中的函数调用（Depends() 标准用法）
+    "PLC0415", # 延迟导入（FastAPI lifespan/中间件中避免循环导入）
+    "PLW0603", # global 声明（全局单例模式）
+    # ── 业务逻辑可接受的随机数 ──
+    "S311",    # 非密码学随机数（验证码、ID 等非安全场景）
+    # ── 暂时忽略，后续迭代收紧 ──
+    "PLR2004", # 魔法值比较（业务代码中大量硬编码比较，逐步重构）
+]
 
-# 通用规则控制
-disable = """
-    C0114, C0115, C0116,
-    R0903, R0911, R0912, R0913, R0914, R0917,
-    W1203,
-    E0213,
-    W0221,
-    E0611,
-    E1102, E1120
-"""
+[tool.ruff.lint.isort]
+known-first-party = ["app"]
 
-# 代码质量强化
-enable = """
-    consider-using-f-string,
-    unused-import,
-    inconsistent-return-statements,
-    consider-using-with
-"""
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S", "T20", "ERA", "PL"]
+"alembic/**" = ["E501", "ERA", "PL"]
+"app/seed/**" = ["S"]
 
-# 允许FastAPI路由函数的参数名（如`db: Session`）
-good-names = """
-    db, session, request, response, app, 
-    client, user_id, item_id
-"""
-
-[tool.pylint.messages_control]
-disable = """
-    invalid-name,
-    too-few-public-methods,
-    broad-except,
-    duplicate-code
-"""
-
-# 格式和设计
-[tool.pylint.format]
-max-line-length = 120    # 与autopep8一致
-max-module-lines = 1500  # 单文件最大行数（避免过长）
-max-args = 6             # 函数最多参数数
-max-locals = 15          # 函数内局部变量数限制
-
-[tool.pylint.design]
-max-attributes = 15      # 类最大属性数
-min-public-methods = 1   # 类最少公共方法数
-
-# 类型提示增强
-[tool.pylint.typecheck]
-generated-members = "sqlmodel.*,sqlalchemy.*"
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"

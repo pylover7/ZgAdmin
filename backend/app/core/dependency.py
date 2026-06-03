@@ -1,23 +1,25 @@
-from uuid import UUID
+import functools
 import hashlib
+import operator
 import time
 from collections.abc import Generator
 from typing import Annotated
+from uuid import UUID
 
 import jwt
-from sqlmodel import Session
 from fastapi import Depends, Header, HTTPException, Request
+from sqlmodel import Session
 
 from app.controllers.user import userController
-from app.core.database import engine
 from app.core.ctx import CTX_USER_ID
+from app.core.database import engine
 from app.core.redis import get_redis
 from app.models import Role, User
 from app.settings import settings
 from app.settings.log import logger
 
 
-def get_db() -> Generator[Session, None, None]:
+def get_db() -> Generator[Session]:
     with Session(engine) as session:
         yield session
 
@@ -35,8 +37,7 @@ async def _is_token_blacklisted(token: str) -> bool:
 
 class AuthControl:
     @classmethod
-    async def is_authed(cls, session: SessionDep,
-                        authorization: str = Header(..., description="token验证")):
+    async def is_authed(cls, session: SessionDep, authorization: str = Header(..., description="token验证")):
         try:
             token = authorization.split(" ")[1]
 
@@ -44,10 +45,7 @@ class AuthControl:
             if await _is_token_blacklisted(token):
                 raise HTTPException(status_code=401, detail="Token已失效")
 
-            decode_data = jwt.decode(
-                token,
-                settings.SECRET_KEY,
-                algorithms=settings.JWT_ALGORITHM)
+            decode_data = jwt.decode(token, settings.SECRET_KEY, algorithms=settings.JWT_ALGORITHM)
             user_id: str = decode_data.get("user_id")
             CTX_USER_ID.set(user_id)
             user = await userController.get(session, UUID(user_id))
@@ -69,31 +67,20 @@ class AuthControl:
 
 class PermissionControl:
     @classmethod
-    async def has_permission(cls, request: Request, current_user: User = Depends(
-            AuthControl.is_authed)) -> None:
+    async def has_permission(cls, request: Request, current_user: User = Depends(AuthControl.is_authed)) -> None:
         if current_user.is_superuser:
             return
         method = request.method
         path = request.url.path
         roles: list[Role] = current_user.roles
         if not roles:
-            raise HTTPException(status_code=403,
-                                detail="The user is not bound to a role")
+            raise HTTPException(status_code=403, detail="The user is not bound to a role")
         apis = [role.apis for role in roles]
-        permission_apis = list(set((api.method, api.path)
-                               for api in sum(apis, [])))
-        # path = "/api/v1/auth/userinfo"
-        # method = "GET"
+        permission_apis = list({(api.method, api.path) for api in functools.reduce(operator.iadd, apis, [])})
         if (method, path) not in permission_apis:
-            logger.debug(
-                f"已禁止用户 {
-                    current_user.username} 访问 {method} {path} 接口")
-            raise HTTPException(
-                status_code=403,
-                detail=f"Permission denied method:{method} path:{path}")
-        logger.debug(
-            f"已允许用户 {
-                current_user.username} 访问 {method} {path} 接口")
+            logger.debug(f"已禁止用户 {current_user.username} 访问 {method} {path} 接口")
+            raise HTTPException(status_code=403, detail=f"Permission denied method:{method} path:{path}")
+        logger.debug(f"已允许用户 {current_user.username} 访问 {method} {path} 接口")
 
 
 DependAuth = Depends(AuthControl.is_authed)
@@ -115,18 +102,17 @@ class RateLimiter:
         key = f"rate_limit:{ip}"
         now = time.monotonic()
 
-        results = await redis.pipeline_exec([
-            ("zremrangebyscore", key, 0, now - self.window),
-            ("zcard", key),
-            ("zadd", key, {str(now): now}),
-            ("expire", key, self.window),
-        ])
+        results = await redis.pipeline_exec(
+            [
+                ("zremrangebyscore", key, 0, now - self.window),
+                ("zcard", key),
+                ("zadd", key, {str(now): now}),
+                ("expire", key, self.window),
+            ]
+        )
         count = results[1]
         if count >= self.max:
-            raise HTTPException(
-                status_code=429,
-                detail="请求过于频繁，请稍后再试"
-            )
+            raise HTTPException(status_code=429, detail="请求过于频繁，请稍后再试")
 
 
 rate_limiter = RateLimiter()

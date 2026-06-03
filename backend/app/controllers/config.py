@@ -1,8 +1,9 @@
 """单行配置表统一控制器 — 所有全局配置表共享同一模式：
 获取唯一行 / 更新字段 / 敏感字段脱敏"""
-from typing import Generic, Type, TypeVar
 
-from sqlmodel import Session, select, SQLModel
+from typing import TypeVar
+
+from sqlmodel import Session, SQLModel, select
 
 from app.models.base import BaseModel
 
@@ -10,10 +11,10 @@ T = TypeVar("T", bound=BaseModel)
 U = TypeVar("U", bound=SQLModel)
 
 
-class ConfigController(Generic[T, U]):
+class ConfigController[T: BaseModel, U: SQLModel]:
     """单行配置表控制器 — 不继承 CRUDBase，因为单行表的访问模式与多行 CRUD 完全不同"""
 
-    def __init__(self, model: Type[T], update_model: Type[U]):
+    def __init__(self, model: type[T], update_model: type[U]):
         self.model = model
         self.update_model = update_model
 
@@ -54,10 +55,15 @@ class ConfigController(Generic[T, U]):
 
 # ─── 实例 ────────────────────────────────────────────────────────────────
 
-from app.models.config import SiteConfig, SiteConfigUpdate
-from app.models.config import OAuthConfig, OAuthConfigUpdate
-from app.models.config import EmailConfig, EmailConfigUpdate
-from app.models.security import SecurityPolicy, SecurityPolicyUpdate
+from app.models.config import (  # noqa: E402
+    EmailConfig,
+    EmailConfigUpdate,
+    OAuthConfig,
+    OAuthConfigUpdate,
+    SiteConfig,
+    SiteConfigUpdate,
+)
+from app.models.security import SecurityPolicy, SecurityPolicyUpdate  # noqa: E402
 
 siteConfigController = ConfigController(SiteConfig, SiteConfigUpdate)
 oauthConfigController = ConfigController(OAuthConfig, OAuthConfigUpdate)

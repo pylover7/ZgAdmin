@@ -1,7 +1,7 @@
 from sqlmodel import Session
 
 from app.core.crud import CRUDBase
-from app.models import User, Department, DepartCreate, DepartUpdate
+from app.models import DepartCreate, Department, DepartUpdate, User
 
 
 class DepartmentController(CRUDBase[Department, DepartCreate, DepartUpdate]):

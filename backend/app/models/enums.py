@@ -11,12 +11,10 @@ class EnumBase(Enum):
         return list(cls.__members__.keys())
 
 
-class IntEnum(int, EnumBase):
-    ...
+class IntEnum(int, EnumBase): ...
 
 
-class StrEnum(str, EnumBase):
-    ...
+class StrEnum(str, EnumBase): ...
 
 
 class MethodType(StrEnum):

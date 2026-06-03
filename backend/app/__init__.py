@@ -1,15 +1,15 @@
-from pathlib import Path
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 import sentry_sdk
 from fastapi import FastAPI
 from fastapi.routing import APIRoute
 
 from app.core.database import init_data
-from app.core.exceptions import SettingNotFound
-from app.core.init import make_middlewares, register_routers, register_exceptions
+from app.core.exceptions import SettingNotFound  # noqa: F401
+from app.core.init import make_middlewares, register_exceptions, register_routers
 from app.settings import settings
-from app.settings.log import logger
+from app.settings.log import logger  # noqa: F401
 
 
 def custom_generate_unique_id(route: APIRoute) -> str:
@@ -39,7 +39,8 @@ def create_app() -> FastAPI:
 @asynccontextmanager
 async def lifespan_context(application: FastAPI):
     # 启动时执行的逻辑
-    from app.core.redis import init_redis, close_redis  # pylint: disable=import-outside-toplevel
+    from app.core.redis import close_redis, init_redis
+
     await init_redis()
     await init_data(application)
     yield

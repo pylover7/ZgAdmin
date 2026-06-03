@@ -1,39 +1,44 @@
 import hashlib
 import urllib.parse
-from datetime import timedelta, datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import cast
 from uuid import UUID
 
-from fastapi import APIRouter, Request, HTTPException, Query, Depends, Header
+import jwt
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request
 from fastapi.responses import FileResponse
 from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
-import jwt
-from sqlalchemy.orm import selectinload, InstrumentedAttribute
 from sqlalchemy import func
-from sqlmodel import select, col, Session
+from sqlalchemy.orm import InstrumentedAttribute, selectinload
+from sqlmodel import Session, col, select
 
+from app.controllers.config import oauthConfigController, securityPolicyController, siteConfigController
 from app.controllers.department import deptController
 from app.controllers.user import userController
-from app.settings.log import logger
-from app.models.login import CredentialsSchema, JWTPayload, JWTOut, refreshTokenSchema, \
-    JWTReOut, QQLoginSchema
+from app.core.dependency import DependRateLimit, DependUser, SessionDep, get_db
+from app.core.redis import get_redis
+from app.models import Api, Menu, Role, UpdatePassword, UpdatePreferences, UpdateProfile, User
+from app.models.base import Fail, FailAuth, Success, SuccessExtra
+from app.models.file import File
+from app.models.login import CredentialsSchema, JWTOut, JWTPayload, JWTReOut, QQLoginSchema, refreshTokenSchema
 from app.models.logs import LoginLog
 from app.models.security import SecurityPolicy
-from app.core.dependency import DependUser, DependRateLimit, SessionDep, get_db
-from app.core.redis import get_redis
-from app.models import Api, Menu, Role, User, UpdatePassword, UpdateProfile, UpdatePreferences
-from app.models.file import File
-from app.models.base import Fail, Success, FailAuth, SuccessExtra
-from app.controllers.config import siteConfigController, oauthConfigController, securityPolicyController
 from app.settings import settings
+from app.settings.log import logger
 from app.utils import menuTree
 from app.utils.captcha import generate_captcha, verify_captcha
-from app.utils.jwtt import create_access_token, decode_access_token, \
-    get_qq_access_token, get_qq_userinfo, find_or_create_qq_user, \
-    create_oauth_state, verify_oauth_state
+from app.utils.jwtt import (
+    create_access_token,
+    create_oauth_state,
+    decode_access_token,
+    find_or_create_qq_user,
+    get_qq_access_token,
+    get_qq_userinfo,
+    verify_oauth_state,
+)
 from app.utils.password import get_password_hash, verify_password
-from app.utils.password_policy import validate_password_strength, check_password_history, update_password_history
+from app.utils.password_policy import check_password_history, update_password_history, validate_password_strength
 from app.utils.signed_url import verify_signed_url
 
 router = APIRouter()
@@ -44,10 +49,12 @@ async def get_captcha():
     """获取服务端图形验证码（公开接口，无需认证）"""
     redis = get_redis()
     captcha_key, captcha_image = await generate_captcha(redis)
-    return Success(data={
-        "captcha_key": captcha_key,
-        "captcha_image": captcha_image,
-    })
+    return Success(
+        data={
+            "captcha_key": captcha_key,
+            "captcha_image": captcha_image,
+        }
+    )
 
 
 @router.get("/init", summary="获取前端初始化配置（公开）")
@@ -55,19 +62,23 @@ async def get_init_config(session: SessionDep):
     """一次性返回前端初始化所需的所有公开数据：站点信息、功能开关、安全配置"""
     # 站点信息
     site_config = siteConfigController.get(session)
-    site = (await site_config.to_dict()) if site_config else {
-        "site_name": "ZgAdmin",
-        "site_desc": "一个开源的在线工具箱",
-        "logo": "",
-        "default_lang": "zh-CN",
-        "copyright": "",
-        "icp": "",
-    }
+    site = (
+        (await site_config.to_dict())
+        if site_config
+        else {
+            "site_name": "ZgAdmin",
+            "site_desc": "一个开源的在线工具箱",
+            "logo": "",
+            "default_lang": "zh-CN",
+            "copyright": "",
+            "icp": "",
+        }
+    )
     # 功能开关
     oauth_config = oauthConfigController.get(session)
     features = {
-        "qq_login": settings.FEATURE_QQ_LOGIN and (
-            bool(oauth_config.qq_app_id) if oauth_config else bool(settings.QQ_APP_ID)),
+        "qq_login": settings.FEATURE_QQ_LOGIN
+        and (bool(oauth_config.qq_app_id) if oauth_config else bool(settings.QQ_APP_ID)),
         "wechat_login": settings.FEATURE_WECHAT_LOGIN,
         "email": settings.FEATURE_EMAIL,
         "monitor_log": settings.FEATURE_MONITOR_LOG,
@@ -77,11 +88,13 @@ async def get_init_config(session: SessionDep):
     security = {
         "captcha_enabled": policy.captcha_enabled if policy else True,
     }
-    return Success(data={
-        "site": site,
-        "features": features,
-        "security": security,
-    })
+    return Success(
+        data={
+            "site": site,
+            "features": features,
+            "security": security,
+        }
+    )
 
 
 @router.get("/health", summary="健康检查")
@@ -90,8 +103,7 @@ async def health_check():
 
 
 @router.post("/accessToken", summary="获取token", dependencies=[DependRateLimit])
-async def login_access_token(
-        session: SessionDep, request: Request, credentials: CredentialsSchema):
+async def login_access_token(session: SessionDep, request: Request, credentials: CredentialsSchema):
     # 验证码校验
     policy = session.exec(select(SecurityPolicy)).first()
     captcha_enabled = policy.captcha_enabled if policy else True
@@ -104,11 +116,7 @@ async def login_access_token(
         if not captcha_valid:
             return Fail(msg="验证码错误或已过期")
 
-    user: User | None = await userController.authenticate(
-        session=session,
-        credentials=credentials,
-        request=request
-    )
+    user: User | None = await userController.authenticate(session=session, credentials=credentials, request=request)
     if not user:
         return FailAuth(msg="用户名或密码错误！")
     await userController.update_last_login(session=session, pk=user.id)
@@ -118,10 +126,8 @@ async def login_access_token(
     except Exception:
         logger.debug("获取部门名称失败")
         depart = ""
-    access_token_expires = timedelta(
-        minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    refresh_token_expires = timedelta(
-        minutes=settings.REFRESH_TOKEN_EXPIRE_MINUTES)
+    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    refresh_token_expires = timedelta(minutes=settings.REFRESH_TOKEN_EXPIRE_MINUTES)
     expire = datetime.now() + access_token_expires
     expire_refresh = datetime.now() + refresh_token_expires
 
@@ -146,20 +152,17 @@ async def login_access_token(
                 exp=expire_refresh,
             )
         ),
-        expires=expire.strftime("%Y-%m-%d %H:%M:%S")  # expire.timestamp()
+        expires=expire.strftime("%Y-%m-%d %H:%M:%S"),  # expire.timestamp()
     )
     return Success(data=data.model_dump())
 
 
 @router.post("/logout", summary="登出（将Token加入黑名单）")
-async def logout(current_user: DependUser,
-                 authorization: str = Header(..., description="token验证")):
+async def logout(current_user: DependUser, authorization: str = Header(..., description="token验证")):
     """将当前 Token 加入 Redis 黑名单，TTL = Token 剩余过期时间"""
     token = authorization.split(" ")[1]
     try:
-        decode_data = jwt.decode(
-            token, settings.SECRET_KEY, algorithms=[settings.JWT_ALGORITHM]
-        )
+        decode_data = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
     except ExpiredSignatureError as exc:
         raise HTTPException(status_code=401, detail="登录已过期") from exc
     except InvalidTokenError as exc:
@@ -182,10 +185,8 @@ async def refresh_token(refreshToken: refreshTokenSchema):
         payload = decode_access_token(refreshToken.refreshToken)
     except ExpiredSignatureError:
         return FailAuth(msg="refreshToken已过期")
-    access_token_expires = timedelta(
-        minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    refresh_token_expires = timedelta(
-        minutes=settings.REFRESH_TOKEN_EXPIRE_MINUTES)
+    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    refresh_token_expires = timedelta(minutes=settings.REFRESH_TOKEN_EXPIRE_MINUTES)
     expire = datetime.now() + access_token_expires
     expire_refresh = datetime.now() + refresh_token_expires
 
@@ -206,7 +207,7 @@ async def refresh_token(refreshToken: refreshTokenSchema):
                 exp=expire_refresh,
             )
         ),
-        expires=expire.strftime("%Y-%m-%d %H:%M:%S")  # expire.timestamp()
+        expires=expire.strftime("%Y-%m-%d %H:%M:%S"),  # expire.timestamp()
     )
 
     return Success(data=data.model_dump())
@@ -223,8 +224,13 @@ async def get_userinfo(session: SessionDep, current_user: DependUser):
 
 @router.get("/userMenu", summary="查看用户菜单")
 async def get_user_menu(session: SessionDep, current_user: DependUser):
-    statement = select(User).where(col(User.id) == current_user.id).options(selectinload(
-        cast(InstrumentedAttribute, User.roles)).selectinload(cast(InstrumentedAttribute, Role.menus)))
+    statement = (
+        select(User)
+        .where(col(User.id) == current_user.id)
+        .options(
+            selectinload(cast(InstrumentedAttribute, User.roles)).selectinload(cast(InstrumentedAttribute, Role.menus))
+        )
+    )
     user_obj = session.exec(statement).first()
     if not user_obj:
         return FailAuth(msg="用户不存在或已被删除！")
@@ -256,8 +262,13 @@ async def get_user_menu(session: SessionDep, current_user: DependUser):
 
 @router.get("/userApi", summary="查看用户API")
 async def get_user_api(session: SessionDep, current_user: DependUser):
-    statement = select(User).where(col(User.id) == current_user.id).options(selectinload(
-        cast(InstrumentedAttribute, User.roles)).selectinload(cast(InstrumentedAttribute, Role.apis)))
+    statement = (
+        select(User)
+        .where(col(User.id) == current_user.id)
+        .options(
+            selectinload(cast(InstrumentedAttribute, User.roles)).selectinload(cast(InstrumentedAttribute, Role.apis))
+        )
+    )
     user_obj = session.exec(statement).first()
     if not user_obj:
         return FailAuth(msg="用户不存在或已被删除！")
@@ -275,10 +286,7 @@ async def get_user_api(session: SessionDep, current_user: DependUser):
 
 
 @router.post("/updatePwd", summary="更新用户密码")
-async def update_user_password(
-        session: SessionDep,
-        req_in: UpdatePassword,
-        current_user: DependUser):
+async def update_user_password(session: SessionDep, req_in: UpdatePassword, current_user: DependUser):
     user = await userController.get(session=session, pk=current_user.id)
     if not user:
         return FailAuth(msg="用户不存在或已被删除！")
@@ -302,19 +310,14 @@ async def update_user_password(
     old_hash = user.password
     user.password = get_password_hash(req_in.new_password)
     if policy and policy.password_history_count > 0:
-        user.password_history = update_password_history(
-            old_hash, user.password_history, policy.password_history_count
-        )
+        user.password_history = update_password_history(old_hash, user.password_history, policy.password_history_count)
     session.add(user)
     session.commit()
     return Success(msg="修改成功")
 
 
 @router.post("/updateProfile", summary="更新用户资料")
-async def update_user_profile(
-        session: SessionDep,
-        req_in: UpdateProfile,
-        current_user: DependUser):
+async def update_user_profile(session: SessionDep, req_in: UpdateProfile, current_user: DependUser):
     user = await userController.get(session=session, pk=current_user.id)
     if not user:
         return FailAuth(msg="用户不存在或已被删除！")
@@ -331,9 +334,7 @@ async def update_user_profile(
 
 
 @router.get("/preferences", summary="获取用户偏好设置")
-async def get_user_preferences(
-        session: SessionDep,
-        current_user: DependUser):
+async def get_user_preferences(session: SessionDep, current_user: DependUser):
     user = await userController.get(session=session, pk=current_user.id)
     if not user:
         return FailAuth(msg="用户不存在或已被删除！")
@@ -348,10 +349,7 @@ async def get_user_preferences(
 
 
 @router.post("/updatePreferences", summary="更新用户偏好设置")
-async def update_user_preferences(
-        session: SessionDep,
-        req_in: UpdatePreferences,
-        current_user: DependUser):
+async def update_user_preferences(session: SessionDep, req_in: UpdatePreferences, current_user: DependUser):
     user = await userController.get(session=session, pk=current_user.id)
     if not user:
         return FailAuth(msg="用户不存在或已被删除！")
@@ -374,21 +372,24 @@ async def update_user_preferences(
 
 @router.get("/loginLogs", summary="获取登录日志")
 async def get_login_logs(
-        session: SessionDep,
-        current_user: DependUser,
-        pageSize: int = Query(default=10, ge=1, le=100),
-        currentPage: int = Query(default=1, ge=1)):
+    session: SessionDep,
+    current_user: DependUser,
+    pageSize: int = Query(default=10, ge=1, le=100),
+    currentPage: int = Query(default=1, ge=1),
+):
     user = await userController.get(session=session, pk=current_user.id)
     if not user:
         return FailAuth(msg="用户不存在或已被删除！")
     offset = (currentPage - 1) * pageSize
-    count_stmt = select(func.count()).select_from(LoginLog).where(
-        LoginLog.username == user.username
-    )
+    count_stmt = select(func.count()).select_from(LoginLog).where(LoginLog.username == user.username)
     total = session.exec(count_stmt).one()
-    stmt = select(LoginLog).where(
-        LoginLog.username == user.username
-    ).order_by(col(LoginLog.time).desc()).offset(offset).limit(pageSize)
+    stmt = (
+        select(LoginLog)
+        .where(LoginLog.username == user.username)
+        .order_by(col(LoginLog.time).desc())
+        .offset(offset)
+        .limit(pageSize)
+    )
     logs = session.exec(stmt).all()
     list_data = []
     for log in logs:
@@ -404,9 +405,10 @@ async def get_qq_auth_url(session: SessionDep):
     """获取QQ登录授权URL"""
     oauth_config = oauthConfigController.get(session)
     app_id = (oauth_config.qq_app_id if oauth_config and oauth_config.qq_app_id else None) or settings.QQ_APP_ID
-    redirect_uri = (oauth_config.qq_redirect_uri if oauth_config and oauth_config.qq_redirect_uri else None) or settings.QQ_REDIRECT_URI
-    qq_enabled = settings.FEATURE_QQ_LOGIN and (
-        oauth_config.qq_enabled if oauth_config else False)
+    redirect_uri = (
+        oauth_config.qq_redirect_uri if oauth_config and oauth_config.qq_redirect_uri else None
+    ) or settings.QQ_REDIRECT_URI
+    qq_enabled = settings.FEATURE_QQ_LOGIN and (oauth_config.qq_enabled if oauth_config else False)
 
     if not qq_enabled:
         return Fail(msg="QQ登录未启用")
@@ -415,7 +417,7 @@ async def get_qq_auth_url(session: SessionDep):
         return Fail(msg="QQ登录未配置")
 
     state = create_oauth_state()
-    encoded_redirect_uri = urllib.parse.quote(redirect_uri, safe='')
+    encoded_redirect_uri = urllib.parse.quote(redirect_uri, safe="")
 
     auth_url = (
         f"https://graph.qq.com/oauth2.0/authorize?"
@@ -426,10 +428,7 @@ async def get_qq_auth_url(session: SessionDep):
         f"scope=get_user_info"
     )
 
-    return Success(data={
-        "auth_url": auth_url,
-        "state": state
-    })
+    return Success(data={"auth_url": auth_url, "state": state})
 
 
 @router.post("/qq/login", summary="QQ登录", dependencies=[DependRateLimit])
@@ -458,7 +457,7 @@ async def qq_login(session: SessionDep, qq_login_data: QQLoginSchema):
         try:
             depart = deptController.get_all_name(session, user)
         except Exception as e:
-            logger.debug(f"获取部门名称失败: {str(e)}")
+            logger.debug(f"获取部门名称失败: {e!s}")
             depart = ""
 
         access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
@@ -487,7 +486,7 @@ async def qq_login(session: SessionDep, qq_login_data: QQLoginSchema):
                     exp=expire_refresh,
                 )
             ),
-            expires=expire.strftime("%Y-%m-%d %H:%M:%S")
+            expires=expire.strftime("%Y-%m-%d %H:%M:%S"),
         )
 
         # 更新最后登录时间
@@ -499,7 +498,7 @@ async def qq_login(session: SessionDep, qq_login_data: QQLoginSchema):
         # HTTP异常直接抛出，保持原有错误信息
         raise
     except Exception as e:
-        logger.error(f"QQ登录失败: {str(e)}")
+        logger.error(f"QQ登录失败: {e!s}")
         return FailAuth(msg="QQ登录失败，请稍后重试")
 
 

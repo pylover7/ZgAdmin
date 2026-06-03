@@ -1,7 +1,8 @@
 import os
 from uuid import UUID
 
-from fastapi import APIRouter, Query, UploadFile, File as FastAPIFile
+from fastapi import APIRouter, Query, UploadFile
+from fastapi import File as FastAPIFile
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import selectinload
 from sqlmodel import and_, col
@@ -36,9 +37,7 @@ async def upload_file(
     if isinstance(result, tuple):
         _, err = result
         return Fail(msg=err)
-    await logger.operationInfo(
-        user=current_user.username, msg=f"上传文件: {result.name}"
-    )
+    await logger.operationInfo(user=current_user.username, msg=f"上传文件: {result.name}")
     data = await result.to_dict()
     data["uploader_name"] = current_user.nickname or current_user.username
     return Success(msg="上传成功", data=data)
@@ -71,8 +70,7 @@ async def upload_batch(
             data["uploader_name"] = current_user.nickname or current_user.username
             success_list.append(data)
     await logger.operationInfo(
-        user=current_user.username,
-        msg=f"批量上传文件: {len(success_list)}个成功, {len(fail_list)}个失败"
+        user=current_user.username, msg=f"批量上传文件: {len(success_list)}个成功, {len(fail_list)}个失败"
     )
     return Success(
         msg=f"上传完成: {len(success_list)}个成功, {len(fail_list)}个失败",
@@ -97,22 +95,14 @@ async def get_file_list(
     where_clause = and_(*where) if where else None
     order = col(File.created_at).desc()
     options = [selectinload(File.uploader)]
-    total, items = await fileController.list(
-        session, currentPage, pageSize, where_clause, order, options
-    )
+    total, items = await fileController.list(session, currentPage, pageSize, where_clause, order, options)
     result = []
     for obj in items:
         d = await obj.to_dict()
-        d["uploader_name"] = (
-            obj.uploader.nickname or obj.uploader.username
-            if obj.uploader
-            else ""
-        )
+        d["uploader_name"] = obj.uploader.nickname or obj.uploader.username if obj.uploader else ""
         d["size_display"] = format_file_size(obj.size)
         result.append(d)
-    return SuccessExtra(
-        data=result, total=total, currentPage=currentPage, pageSize=pageSize
-    )
+    return SuccessExtra(data=result, total=total, currentPage=currentPage, pageSize=pageSize)
 
 
 @fileRouter.post("/update", summary="重命名文件")
@@ -126,10 +116,7 @@ async def update_file(session: SessionDep, data: FileUpdate):
 @fileRouter.post("/delete", summary="删除文件")
 async def delete_file(session: SessionDep, current_user: DependUser, data: list[UUID]):
     success, failed = await fileController.delete_files(session, data)
-    await logger.operationInfo(
-        user=current_user.username,
-        msg=f"删除文件: {success}个成功, {failed}个失败"
-    )
+    await logger.operationInfo(user=current_user.username, msg=f"删除文件: {success}个成功, {failed}个失败")
     return Success(msg=f"删除完成: {success}个成功, {failed}个失败")
 
 

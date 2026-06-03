@@ -4,9 +4,9 @@ from fastapi import APIRouter
 
 from app.controllers.menu import menuController
 from app.core.dependency import SessionDep
-from app.models import MenuCreate, Success, MenuUpdate
-from app.settings.log import logger
+from app.models import MenuCreate, MenuUpdate, Success
 from app.models.logs import LogModule
+from app.settings.log import logger
 
 menuRouter = APIRouter()
 

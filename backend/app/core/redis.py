@@ -40,7 +40,7 @@ class MemoryRedis:
 
     def __init__(self):
         self._data: dict[str, tuple[str, float | None]] = {}  # key -> (value, expire_at)
-        self._sorted_sets: dict[str, dict[str, float]] = {}   # key -> {member: score}
+        self._sorted_sets: dict[str, dict[str, float]] = {}  # key -> {member: score}
         self._lock = asyncio.Lock()
 
     def _is_expired(self, key: str) -> bool:
@@ -122,10 +122,7 @@ class MemoryRedis:
         async with self._lock:
             if key not in self._sorted_sets:
                 return 0
-            to_remove = [
-                member for member, score in self._sorted_sets[key].items()
-                if min_score <= score <= max_score
-            ]
+            to_remove = [member for member, score in self._sorted_sets[key].items() if min_score <= score <= max_score]
             for member in to_remove:
                 del self._sorted_sets[key][member]
             return len(to_remove)
@@ -172,11 +169,9 @@ class RealRedis:
 
     def __init__(self, url: str):
         try:
-            import redis.asyncio as aioredis  # pylint: disable=import-outside-toplevel
+            import redis.asyncio as aioredis
         except ImportError as exc:
-            raise ImportError(
-                "生产环境需要 redis 包，请运行: uv add redis"
-            ) from exc
+            raise ImportError("生产环境需要 redis 包，请运行: uv add redis") from exc
         self._pool = aioredis.ConnectionPool.from_url(url, decode_responses=True)
         self._redis = aioredis.Redis(connection_pool=self._pool)
 
@@ -257,15 +252,13 @@ def _create_redis() -> RedisClient:
         return MemoryRedis()
 
     # 非本地环境没有 REDIS_URL 时，降级到内存模式并警告
-    logger.warning(
-        "⚠ 生产环境未配置 REDIS_URL，降级使用内存适配器（多进程不可用）"
-    )
+    logger.warning("⚠ 生产环境未配置 REDIS_URL，降级使用内存适配器（多进程不可用）")
     return MemoryRedis()
 
 
 def get_redis() -> RedisClient:
     """获取 Redis 全局单例"""
-    global _redis_instance  # pylint: disable=global-statement
+    global _redis_instance
     if _redis_instance is None:
         _redis_instance = _create_redis()
     return _redis_instance
@@ -273,7 +266,7 @@ def get_redis() -> RedisClient:
 
 async def init_redis() -> None:
     """应用启动时调用 — 初始化 Redis 连接"""
-    global _redis_instance  # pylint: disable=global-statement
+    global _redis_instance
     _redis_instance = _create_redis()
 
     # 测试连接
@@ -291,7 +284,7 @@ async def init_redis() -> None:
 
 async def close_redis() -> None:
     """应用关闭时调用 — 关闭 Redis 连接"""
-    global _redis_instance  # pylint: disable=global-statement
+    global _redis_instance
     if _redis_instance is not None:
         await _redis_instance.close()
         _redis_instance = None

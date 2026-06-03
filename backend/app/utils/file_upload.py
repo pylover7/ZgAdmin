@@ -84,7 +84,7 @@ def classify_file(mime_type: str, extension: str) -> str:
     for category, exts in ALLOWED_EXTENSIONS.items():
         if extension in exts:
             return category
-    mime_prefix = mime_type.split("/")[0] if mime_type else ""
+    mime_prefix = mime_type.split("/", maxsplit=1)[0] if mime_type else ""
     if mime_prefix in ("image", "video", "audio"):
         return mime_prefix
     if mime_type == "application/pdf" or "word" in mime_type or "spreadsheet" in mime_type:

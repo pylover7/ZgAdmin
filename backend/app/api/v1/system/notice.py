@@ -1,25 +1,22 @@
 from uuid import UUID
+
 from fastapi import APIRouter, Query
 from sqlmodel import and_, col
 
-from app.models import Success, SuccessExtra, Fail
-from app.models.notice import NoticeCreate, NoticeUpdate, NoticeFilter, Notice
 from app.controllers.notice import noticeController
 from app.core.dependency import DependUser, SessionDep
+from app.models import Fail, Success, SuccessExtra
+from app.models.notice import Notice, NoticeCreate, NoticeFilter, NoticeUpdate
 from app.settings.log import logger
 
 noticeRouter = APIRouter()
 
 
 @noticeRouter.post("/add", summary="发布通知")
-async def add_notice(session: SessionDep, current_user: DependUser,
-                     data: NoticeCreate):
+async def add_notice(session: SessionDep, current_user: DependUser, data: NoticeCreate):
     obj = await noticeController.create(session, data)
     # 写入操作日志
-    await logger.operationInfo(
-        user=current_user.username,
-        msg=f"发布通知: {obj.title}"
-    )
+    await logger.operationInfo(user=current_user.username, msg=f"发布通知: {obj.title}")
     return Success(msg="通知发布成功！", data=await obj.to_dict())
 
 
@@ -41,12 +38,9 @@ async def get_notice_list(
         where.append(Notice.status == data.status)
     where_clause = and_(*where) if where else None
     order = col(Notice.created_at).desc()
-    total, items = await noticeController.list(
-        session, currentPage, pageSize, where_clause, order
-    )
+    total, items = await noticeController.list(session, currentPage, pageSize, where_clause, order)
     result = [await obj.to_dict() for obj in items]
-    return SuccessExtra(data=result, total=total,
-                        currentPage=currentPage, pageSize=pageSize)
+    return SuccessExtra(data=result, total=total, currentPage=currentPage, pageSize=pageSize)
 
 
 @noticeRouter.post("/update", summary="编辑通知")
@@ -80,16 +74,11 @@ async def get_unread_notices(session: SessionDep, current_user: DependUser):
         else:
             notify_list.append(d)
 
-    return Success(data={
-        "count": count,
-        "notify": notify_list,
-        "message": message_list
-    })
+    return Success(data={"count": count, "notify": notify_list, "message": message_list})
 
 
 @noticeRouter.post("/read", summary="标记单条已读")
-async def mark_notice_read(session: SessionDep, current_user: DependUser,
-                           data: dict):
+async def mark_notice_read(session: SessionDep, current_user: DependUser, data: dict):
     notice_id = data.get("notice_id")
     if not notice_id:
         return Fail(msg="缺少 notice_id")

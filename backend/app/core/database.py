@@ -1,21 +1,22 @@
-from sqlmodel import Session, SQLModel, select
-from fastapi import FastAPI
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from alembic.config import Config
-from alembic import command
 from pathlib import Path
 
+from alembic import command
+from alembic.config import Config
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from fastapi import FastAPI
+from sqlmodel import Session, SQLModel, select
+
 from app.controllers.user import userController
+from app.core import DatabaseSession, engine
 from app.core.schedule import update_expired_orders
-from app.models import User, UserCreate, Api
+from app.models import Api, User, UserCreate
+from app.models.config import EmailConfig, OAuthConfig, SiteConfig
 from app.models.link import RoleApiLink
 from app.models.security import SecurityPolicy
-from app.models.config import SiteConfig, OAuthConfig, EmailConfig
-from app.settings.log import logger
-from app.settings import settings
-from app.utils.staticFileUtils import check_dir_exists
-from app.core import engine, DatabaseSession
 from app.seed import seed_all
+from app.settings import settings
+from app.settings.log import logger
+from app.utils.staticFileUtils import check_dir_exists
 
 scheduler = AsyncIOScheduler()
 
@@ -30,9 +31,7 @@ def _sync_api_routes(app: FastAPI, session: Session):
             summary = meta.get("summary", "")
             method_upper = method.upper()
             current_routes.add((method_upper, path))
-            existing = session.exec(
-                select(Api).where(Api.path == path, Api.method == method_upper)
-            ).first()
+            existing = session.exec(select(Api).where(Api.path == path, Api.method == method_upper)).first()
             if existing:
                 existing.summary = summary
                 existing.tags = tags
@@ -43,9 +42,7 @@ def _sync_api_routes(app: FastAPI, session: Session):
     all_db_apis = session.exec(select(Api)).all()
     for db_api in all_db_apis:
         if (db_api.method, db_api.path) not in current_routes:
-            for link in session.exec(
-                select(RoleApiLink).where(RoleApiLink.api_id == db_api.id)
-            ).all():
+            for link in session.exec(select(RoleApiLink).where(RoleApiLink.api_id == db_api.id)).all():
                 session.delete(link)
             session.delete(db_api)
     session.commit()
@@ -79,7 +76,7 @@ async def init_data(app: FastAPI) -> None:
                 status=1,
                 is_superuser=True,
                 phone="13800138000",
-                remark="这是管理员"
+                remark="这是管理员",
             )
             admin = await userController.create(session=session, obj_in=user_in)
             logger.info(f"管理员创建成功: {admin.username}")

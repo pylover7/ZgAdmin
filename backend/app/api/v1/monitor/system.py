@@ -6,8 +6,14 @@ from fastapi import APIRouter, Query
 
 from app.models import Success
 from app.utils.system_info import (
-    get_load_info, get_cpu_info, get_memory_info, get_disk_info,
-    get_network_io, get_disk_io, get_top_processes, _fmt_rate,
+    _fmt_rate,
+    get_cpu_info,
+    get_disk_info,
+    get_disk_io,
+    get_load_info,
+    get_memory_info,
+    get_network_io,
+    get_top_processes,
 )
 
 systemMonitorRouter = APIRouter()
@@ -33,37 +39,49 @@ async def system_status():
     mem = get_memory_info()
     disk = get_disk_info()
     top_cpu = get_top_processes(5)
-    return Success(data={
-        "load": {
-            "load1": load.load1, "load5": load.load5, "load15": load.load15,
-            "status": load.status, "cores": load.cores, "percent": load.percent,
-        },
-        "cpu": {
-            "percent": cpu.percent, "freq": cpu.freq,
-            "per_cpu": cpu.per_cpu,
-            "physical_cores": cpu.physical_cores,
-            "logical_cores": cpu.logical_cores,
-        },
-        "memory": {
-            "percent": mem.percent, "total": mem.total,
-            "used": mem.used, "available": mem.available,
-            "cached": mem.cached, "buffers": mem.buffers, "shared": mem.shared,
-        },
-        "disk": {
-            "percent": disk.percent, "total": disk.total,
-            "used": disk.used, "free": disk.free,
-        },
-        "top_cpu": [
-            {"pid": p.pid, "name": p.name,
-             "cpu_percent": p.cpu_percent, "memory_percent": p.memory_percent}
-            for p in top_cpu
-        ],
-    })
+    return Success(
+        data={
+            "load": {
+                "load1": load.load1,
+                "load5": load.load5,
+                "load15": load.load15,
+                "status": load.status,
+                "cores": load.cores,
+                "percent": load.percent,
+            },
+            "cpu": {
+                "percent": cpu.percent,
+                "freq": cpu.freq,
+                "per_cpu": cpu.per_cpu,
+                "physical_cores": cpu.physical_cores,
+                "logical_cores": cpu.logical_cores,
+            },
+            "memory": {
+                "percent": mem.percent,
+                "total": mem.total,
+                "used": mem.used,
+                "available": mem.available,
+                "cached": mem.cached,
+                "buffers": mem.buffers,
+                "shared": mem.shared,
+            },
+            "disk": {
+                "percent": disk.percent,
+                "total": disk.total,
+                "used": disk.used,
+                "free": disk.free,
+            },
+            "top_cpu": [
+                {"pid": p.pid, "name": p.name, "cpu_percent": p.cpu_percent, "memory_percent": p.memory_percent}
+                for p in top_cpu
+            ],
+        }
+    )
 
 
 @systemMonitorRouter.get("/network")
 async def network_monitor(iface: str = Query(default="")):
-    global _prev_net, _prev_net_time  # pylint: disable=global-statement
+    global _prev_net, _prev_net_time
     current = get_network_io()
     now = time.time()
 
@@ -81,11 +99,13 @@ async def network_monitor(iface: str = Query(default="")):
 
         if name not in _net_history:
             _net_history[name] = deque(maxlen=HISTORY_MAX)
-        _net_history[name].append({
-            "time": round(now * 1000),
-            "sent_speed": round(sent_speed, 1),
-            "recv_speed": round(recv_speed, 1),
-        })
+        _net_history[name].append(
+            {
+                "time": round(now * 1000),
+                "sent_speed": round(sent_speed, 1),
+                "recv_speed": round(recv_speed, 1),
+            }
+        )
         result[name] = {
             "bytes_sent": counters["bytes_sent"],
             "bytes_recv": counters["bytes_recv"],
@@ -106,7 +126,7 @@ async def network_monitor(iface: str = Query(default="")):
 
 @systemMonitorRouter.get("/disk-io")
 async def disk_io_monitor():
-    global _prev_disk, _prev_disk_time  # pylint: disable=global-statement
+    global _prev_disk, _prev_disk_time
     current = get_disk_io()
     now = time.time()
 
@@ -122,11 +142,13 @@ async def disk_io_monitor():
 
         if name not in _disk_io_history:
             _disk_io_history[name] = deque(maxlen=HISTORY_MAX)
-        _disk_io_history[name].append({
-            "time": round(now * 1000),
-            "read_speed": round(read_speed, 1),
-            "write_speed": round(write_speed, 1),
-        })
+        _disk_io_history[name].append(
+            {
+                "time": round(now * 1000),
+                "read_speed": round(read_speed, 1),
+                "write_speed": round(write_speed, 1),
+            }
+        )
         result[name] = {
             "read_bytes": counters["read_bytes"],
             "write_bytes": counters["write_bytes"],

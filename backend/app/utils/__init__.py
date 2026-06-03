@@ -1,10 +1,9 @@
 import base64
-import string
 import random
+import string
 import time
 import uuid
-from datetime import datetime, timedelta, timezone
-from typing import Union
+from datetime import UTC, datetime, timedelta
 
 import jwt
 from jwt.exceptions import InvalidTokenError
@@ -15,7 +14,7 @@ from app.settings import settings
 
 def generate_password_reset_token(email: str) -> str:
     delta = timedelta(hours=settings.EMAIL_RESET_TOKEN_EXPIRE_HOURS)
-    current_time = datetime.now(timezone.utc)
+    current_time = datetime.now(UTC)
     expires = current_time + delta
     exp = expires.timestamp()
     encoded_jwt = jwt.encode(
@@ -28,8 +27,7 @@ def generate_password_reset_token(email: str) -> str:
 
 def verify_password_reset_token(token: str) -> str | None:
     try:
-        decoded_token = jwt.decode(
-            token, settings.SECRET_KEY, algorithms=["HS256"])
+        decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
         return str(decoded_token["sub"])
     except InvalidTokenError:
         return None
@@ -48,7 +46,7 @@ def generate_uuid(name: str) -> uuid.UUID:
     return uuid.uuid5(uuid.NAMESPACE_DNS, name)
 
 
-def now(s: int = 1) -> Union[str, datetime, float]:
+def now(s: int = 1) -> str | datetime | float:
     """
     获取当前时间，形参取值
         - 0: datatime格式
@@ -83,7 +81,6 @@ async def menuTree(p_menu: dict, menus: list[Menu]) -> dict:
     """
     for menuItem in menus:
         if str(menuItem.parentId) == p_menu["id"]:
-            # roles = await menu.roles.all().values_list("code", flat=True)
             children_menu = await menuItem.to_dict()
             children_menu["children"] = []
             children_menu["meta"] = {}
@@ -92,7 +89,6 @@ async def menuTree(p_menu: dict, menus: list[Menu]) -> dict:
             children_menu["meta"]["extraIcon"] = children_menu["extraIcon"]
             children_menu["meta"]["showLink"] = children_menu["showLink"]
             children_menu["meta"]["showParent"] = children_menu["showParent"]
-            # children_menu["meta"]["roles"] = roles
             children_menu["meta"]["auths"] = children_menu["auths"]
             children_menu["meta"]["keepAlive"] = children_menu["keepAlive"]
             children_menu["meta"]["frameSrc"] = children_menu["frameSrc"]
@@ -119,6 +115,5 @@ async def menuTree(p_menu: dict, menus: list[Menu]) -> dict:
 
 def random_string(length: int, prefix: str = ""):
     letters = string.ascii_letters
-    code = prefix + "-" + "".join(random.choice(letters)
-                                  for i in range(length))
+    code = prefix + "-" + "".join(random.choice(letters) for i in range(length))
     return code

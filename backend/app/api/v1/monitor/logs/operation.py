@@ -1,12 +1,13 @@
 from uuid import UUID
+
 from fastapi import APIRouter, Query
 from sqlmodel import and_, col
 
+from app.controllers.logs import operationLogController
 from app.core.dependency import DependUser, SessionDep
 from app.models import SuccessExtra
-from app.models.logs import OperationLogFilter, OperationLog
-from app.controllers.logs import operationLogController
 from app.models.base import Success
+from app.models.logs import OperationLog, OperationLogFilter
 from app.settings.log import logger
 
 operationRouter = APIRouter()
@@ -46,25 +47,10 @@ async def get_operation_logs(
     if data.operationTime and len(data.operationTime) == 2:
         where.append(OperationLog.time >= data.operationTime[0])
         where.append(OperationLog.time <= data.operationTime[1])
-    if len(where) > 0:
-        where = and_(*where, )
-    else:
-        where = None
+    where = and_(*where) if len(where) > 0 else None
     order = col(OperationLog.time).desc()
-    total, log_objs = await operationLogController.list(
-        session,
-        currentPage,
-        pageSize,
-        where,
-        order
-    )
+    total, log_objs = await operationLogController.list(session, currentPage, pageSize, where, order)
     result = []
     for obj in log_objs:
         result.append(await obj.to_dict())
-    return SuccessExtra(
-        msg="登录日志查询成功！",
-        data=result,
-        total=total,
-        pageSize=pageSize,
-        currentPage=currentPage
-    )
+    return SuccessExtra(msg="登录日志查询成功！", data=result, total=total, pageSize=pageSize, currentPage=currentPage)

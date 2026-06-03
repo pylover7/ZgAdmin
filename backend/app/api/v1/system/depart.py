@@ -1,11 +1,12 @@
 from uuid import UUID
+
 from fastapi import APIRouter
 
 from app.controllers.department import deptController
-from app.models import Success, DepartCreate, DepartUpdate
 from app.core.dependency import SessionDep
-from app.settings.log import logger
+from app.models import DepartCreate, DepartUpdate, Success
 from app.models.logs import LogModule
+from app.settings.log import logger
 
 departRouter = APIRouter()
 
