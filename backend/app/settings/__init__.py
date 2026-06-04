@@ -36,6 +36,7 @@ class Settings(BaseSettings):
     FRONTEND_HOST: str = "http://localhost:7000"
     HOST: str = "0.0.0.0"  # noqa: S104
     PORT: int = 7001
+    WORKERS: int = 1
     RELOAD: bool = False
     DEBUG: bool = False
     ENVIRONMENT: Literal["local", "staging", "production"] = "local"

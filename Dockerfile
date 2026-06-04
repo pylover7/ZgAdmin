@@ -54,9 +54,6 @@ RUN uv sync --frozen --no-dev
 # 复制后端源代码
 COPY backend/ ./
 
-# 暴露后端端口
-EXPOSE 7001
-
 # 最终阶段 - 组合前后端
 FROM python:3.13-slim
 
@@ -73,18 +70,16 @@ WORKDIR /app
 COPY --from=frontend /etc/nginx/nginx.conf /etc/nginx/nginx.conf
 COPY --from=frontend /usr/share/nginx/html /usr/share/nginx/html
 
-# 从后端阶段复制后端应用
+# 从后端阶段复制后端应用（.venv 已包含在内，无需再次 uv sync）
 COPY --from=backend /app /backend
-# 安装后端依赖
 WORKDIR /backend
-RUN uv sync --frozen --no-dev
 
 # 复制启动脚本
 COPY scripts/docker-entrypoint.sh /start.sh
 RUN chmod +x /start.sh
 
-# 暴露端口
-EXPOSE 80 7001
+# 仅暴露 Nginx 端口（后端通过 Nginx 反代访问，不直接对外）
+EXPOSE 80
 
 # 健康检查
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
