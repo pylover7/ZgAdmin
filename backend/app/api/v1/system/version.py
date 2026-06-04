@@ -1,8 +1,11 @@
 """版本信息接口"""
-import sys
-import subprocess
+
 import asyncio
+import subprocess
+import sys
+
 from fastapi import APIRouter
+
 from app.models import Success
 from app.settings import settings
 from app.settings.log import logger
@@ -13,13 +16,7 @@ versionRouter = APIRouter()
 def _get_uv_version() -> str:
     """安全获取 uv 版本"""
     try:
-        result = subprocess.run(
-            ["uv", "--version"],
-            capture_output=True,
-            text=True,
-            timeout=5,
-            check=False
-        )
+        result = subprocess.run(["uv", "--version"], capture_output=True, text=True, timeout=5, check=False)  # noqa: S607
         return result.stdout.strip()
     except Exception as e:
         logger.debug(f"获取 uv 版本失败: {e}")

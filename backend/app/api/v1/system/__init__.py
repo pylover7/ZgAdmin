@@ -1,12 +1,12 @@
 from fastapi import APIRouter
 
-from .user import userRouter
-from .depart import departRouter
-from .role import roleRouter
-from .menu import menuRouter
 from .api import apiRouter
-from .version import versionRouter
+from .depart import departRouter
+from .menu import menuRouter
 from .notice import noticeRouter
+from .role import roleRouter
+from .user import userRouter
+from .version import versionRouter
 
 systemRouter = APIRouter()
 systemRouter.include_router(userRouter, prefix="/user", tags=["系统用户模块"])

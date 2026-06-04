@@ -1,18 +1,16 @@
 """models 层单元测试 — 序列化、校验、默认值、边界"""
-import pytest
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import UUID
 
-from app.models.base import BaseModel, TimestampMixin, Success, Fail, SuccessExtra, FailAuth
-from app.models.user import User, UserCreate, UserUpdate, UpdatePassword
-from app.models.role import Role, RoleCreate
-from app.models.notice import Notice, NoticeCreate, NoticeRead
-from app.models.security import SecurityPolicy, SecurityPolicyUpdate, IPRule, IPRuleCreate
-from app.models.login import CredentialsSchema, JWTPayload, JWTOut
-from app.models.file import File, FileCreate
-from app.models.logs import LoginLog, OperationLog, SystemLog
-from app.models.enums import MethodType
+import pytest
 
+from app.models.base import Fail, FailAuth, Success, SuccessExtra
+from app.models.enums import MethodType
+from app.models.login import CredentialsSchema, JWTPayload
+from app.models.notice import NoticeCreate
+from app.models.role import RoleCreate
+from app.models.security import IPRuleCreate, SecurityPolicy, SecurityPolicyUpdate
+from app.models.user import UpdatePassword, User, UserCreate
 
 # ═══════════════════════════════════════════════════════════════════════
 # BaseModel
@@ -219,7 +217,7 @@ class TestLoginModels:
             user_id="abc",
             username="admin",
             is_superuser=True,
-            exp=datetime.now(timezone.utc),
+            exp=datetime.now(UTC),
         )
         assert payload.user_id == "abc"
         assert payload.is_superuser is True

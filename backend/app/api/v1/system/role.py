@@ -6,8 +6,17 @@ from sqlmodel import col
 
 from app.controllers.role import roleController
 from app.core.dependency import DependUser, SessionDep
-from app.models import RoleCreate, Success, RoleFilter, Role, SuccessExtra, \
-    RoleUpdate, UpdateRoleStatus, BaseModel, UpdateRoleAuth
+from app.models import (
+    BaseModel,
+    Role,
+    RoleCreate,
+    RoleFilter,
+    RoleUpdate,
+    Success,
+    SuccessExtra,
+    UpdateRoleAuth,
+    UpdateRoleStatus,
+)
 from app.settings.log import logger
 
 roleRouter = APIRouter()
@@ -30,10 +39,10 @@ async def delete_role(session: SessionDep, current_user: DependUser, data: list[
 
 @roleRouter.post("/list", summary="获取角色列表")
 async def role_list(
-        session: SessionDep,
-        data: RoleFilter,
-        currentPage: int = Query(1, description="页码"),
-        pageSize: int = Query(15, description="每页数量"),
+    session: SessionDep,
+    data: RoleFilter,
+    currentPage: int = Query(1, description="页码"),
+    pageSize: int = Query(15, description="每页数量"),
 ):
     where = []
     if data.name:
@@ -42,10 +51,7 @@ async def role_list(
         where.append(col(Role.code) == data.code)
     if data.status:
         where.append(col(Role.status) == int(data.status))
-    if len(where) > 0:
-        where = and_(*where, )
-    else:
-        where = None
+    where = and_(*where) if len(where) > 0 else None
     total, role_obj = await roleController.list(session, currentPage, pageSize, where)
     total: int
     role_obj: list[Role]
@@ -54,8 +60,7 @@ async def role_list(
         role_dict = await item.to_dict()
         result.append(role_dict)
         role_dict["userCount"] = len(item.users)
-    return SuccessExtra(msg="角色列表查询成功！", data=result, total=total,
-                        currentPage=currentPage, pageSize=pageSize)
+    return SuccessExtra(msg="角色列表查询成功！", data=result, total=total, currentPage=currentPage, pageSize=pageSize)
 
 
 @roleRouter.get("/all", summary="获取所有角色")
@@ -89,10 +94,7 @@ async def get_role_auth(session: SessionDep, data: BaseModel):
     role_obj = await roleController.get(session, data.id)
     if not role_obj:
         raise HTTPException(status_code=404, detail="角色不存在！")
-    result = {
-        "menus": [str(item.id) for item in role_obj.menus],
-        "apis": [str(item.id) for item in role_obj.apis]
-    }
+    result = {"menus": [str(item.id) for item in role_obj.menus], "apis": [str(item.id) for item in role_obj.apis]}
     return Success(msg="角色权限查询成功！", data=result)
 
 

@@ -80,7 +80,7 @@ describe("auth utils", () => {
 
   describe("setToken", () => {
     it("sets cookie with future expiry and calls store SET methods when username+roles provided", () => {
-      const futureDate = new Date(Date.now() + 86400000);
+      const futureDate = Date.now() + 86400000;
       const data = {
         accessToken: "at",
         refreshToken: "rt",
@@ -116,7 +116,7 @@ describe("auth utils", () => {
       const data = {
         accessToken: "at",
         refreshToken: "rt",
-        expires: new Date(0)
+        expires: 0
       };
 
       (storageLocal as ReturnType<typeof vi.fn>).mockReturnValue({
@@ -140,7 +140,7 @@ describe("auth utils", () => {
       const data = {
         accessToken: "at",
         refreshToken: "rt",
-        expires: new Date(Date.now() + 86400000),
+        expires: Date.now() + 86400000,
         username: "admin",
         roles: ["admin"]
       };

@@ -1,20 +1,20 @@
 import os
 from uuid import UUID
 
-from sqlmodel import Session, select, func
+from sqlmodel import Session, func, select
 
 from app.core.crud import CRUDBase
 from app.models.file import File, FileCreate, FileUpdate
-from app.utils.file_upload import (
-    validate_extension,
-    detect_mime,
-    validate_mime_extension,
-    classify_file,
-    generate_storage_path,
-    ensure_storage_dir,
-)
 from app.settings import settings
 from app.settings.log import logger
+from app.utils.file_upload import (
+    classify_file,
+    detect_mime,
+    ensure_storage_dir,
+    generate_storage_path,
+    validate_extension,
+    validate_mime_extension,
+)
 
 
 class FileController(CRUDBase[File, FileCreate, FileUpdate]):
@@ -94,12 +94,8 @@ class FileController(CRUDBase[File, FileCreate, FileUpdate]):
 
     async def get_storage_stats(self, session: Session) -> dict:
         """获取存储统计信息"""
-        total_files = session.exec(
-            select(func.count()).select_from(File)
-        ).one()
-        total_size = session.exec(
-            select(func.coalesce(func.sum(File.size), 0)).select_from(File)
-        ).one()
+        total_files = session.exec(select(func.count()).select_from(File)).one()
+        total_size = session.exec(select(func.coalesce(func.sum(File.size), 0)).select_from(File)).one()
         # 按类型统计
         type_stats = []
         type_stmt = select(
@@ -108,11 +104,13 @@ class FileController(CRUDBase[File, FileCreate, FileUpdate]):
             func.coalesce(func.sum(File.size), 0).label("size"),
         ).group_by(File.file_type)
         for row in session.exec(type_stmt):
-            type_stats.append({
-                "file_type": row[0],
-                "count": row[1],
-                "size": row[2],
-            })
+            type_stats.append(
+                {
+                    "file_type": row[0],
+                    "count": row[1],
+                    "size": row[2],
+                }
+            )
         return {
             "total_files": total_files,
             "total_size": total_size,

@@ -1,8 +1,8 @@
 from fastapi import APIRouter
 
-from app.core.dependency import DependUser, SessionDep
-from app.models import Success, Fail
 from app.controllers.config import siteConfigController
+from app.core.dependency import DependUser, SessionDep
+from app.models import Fail, Success
 from app.models.config import SiteConfigUpdate
 from app.settings.log import logger
 
@@ -21,8 +21,7 @@ async def get_general_config(session: SessionDep):
 
 
 @generalProtectedRouter.post("", summary="更新通用设置")
-async def update_general_config(
-        session: SessionDep, current_user: DependUser, data: SiteConfigUpdate):
+async def update_general_config(session: SessionDep, current_user: DependUser, data: SiteConfigUpdate):
     """更新通用设置"""
     config = siteConfigController.update(session, data)
     if not config:

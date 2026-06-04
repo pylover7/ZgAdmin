@@ -18,6 +18,11 @@ vi.mock("@/api/user", () => ({
 
 vi.mock("@/utils/auth", () => ({
   setToken: vi.fn(),
+  getToken: vi.fn(() => ({
+    accessToken: "at",
+    refreshToken: "rt",
+    expires: 0
+  })),
   removeToken: vi.fn(),
   userKey: "user-info",
   TokenKey: "authorized-token"

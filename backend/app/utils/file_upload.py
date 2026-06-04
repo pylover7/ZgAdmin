@@ -1,6 +1,6 @@
 import os
 import uuid
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 
 import magic
@@ -84,7 +84,7 @@ def classify_file(mime_type: str, extension: str) -> str:
     for category, exts in ALLOWED_EXTENSIONS.items():
         if extension in exts:
             return category
-    mime_prefix = mime_type.split("/")[0] if mime_type else ""
+    mime_prefix = mime_type.split("/", maxsplit=1)[0] if mime_type else ""
     if mime_prefix in ("image", "video", "audio"):
         return mime_prefix
     if mime_type == "application/pdf" or "word" in mime_type or "spreadsheet" in mime_type:
@@ -94,7 +94,7 @@ def classify_file(mime_type: str, extension: str) -> str:
 
 def generate_storage_path(extension: str) -> str:
     """生成存储相对路径: uploads/YYYY/MM/<uuid>.ext"""
-    now = datetime.now()
+    now = datetime.now(UTC)
     dir_path = f"uploads/{now.strftime('%Y')}/{now.strftime('%m')}"
     filename = f"{uuid.uuid4().hex}.{extension}"
     return os.path.join(dir_path, filename)
@@ -107,12 +107,17 @@ def ensure_storage_dir(storage_path: str) -> str:
     return abs_path
 
 
+_KB = 1024
+_MB = 1024**2
+_GB = 1024**3
+
+
 def format_file_size(size_bytes: int) -> str:
     """格式化文件大小"""
-    if size_bytes < 1024:
+    if size_bytes < _KB:
         return f"{size_bytes} B"
-    if size_bytes < 1024 * 1024:
-        return f"{size_bytes / 1024:.1f} KB"
-    if size_bytes < 1024 * 1024 * 1024:
-        return f"{size_bytes / (1024 * 1024):.1f} MB"
-    return f"{size_bytes / (1024 * 1024 * 1024):.1f} GB"
+    if size_bytes < _MB:
+        return f"{size_bytes / _KB:.1f} KB"
+    if size_bytes < _GB:
+        return f"{size_bytes / _MB:.1f} MB"
+    return f"{size_bytes / _GB:.1f} GB"

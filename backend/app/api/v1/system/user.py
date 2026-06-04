@@ -3,14 +3,13 @@ from uuid import UUID
 from fastapi import APIRouter, Query
 from fastapi.exceptions import HTTPException
 from sqlalchemy.orm import selectinload
-from sqlmodel import col, and_, select
+from sqlmodel import and_, col, select
 
-from app.core.dependency import DependUser, SessionDep
 from app.controllers.user import userController
-from app.models.base import BaseModel, Success, SuccessExtra, Fail
-from app.models.user import UserCreate, UserUpdate, User, UserFiter, UserResetPwd, UpdateStatus, \
-    UpdateUserRoles
+from app.core.dependency import DependUser, SessionDep
+from app.models.base import BaseModel, Fail, Success, SuccessExtra
 from app.models.role import Role
+from app.models.user import UpdateStatus, UpdateUserRoles, User, UserCreate, UserFiter, UserResetPwd, UserUpdate
 from app.settings.log import logger
 from app.utils.password import get_password_hash
 
@@ -19,9 +18,9 @@ userRouter = APIRouter()
 
 @userRouter.post("/add", summary="新增用户")
 async def create_user(
-        session: SessionDep,
-        current_user: DependUser,
-        data: UserCreate,
+    session: SessionDep,
+    current_user: DependUser,
+    data: UserCreate,
 ):
     user = await userController.get_user_by_name(session, data.username)
     if user or (data.username == "admin"):
@@ -39,11 +38,7 @@ async def create_user(
 
 
 @userRouter.post("/delete", summary="删除用户")
-async def delete_user(
-        session: SessionDep,
-        current_user: DependUser,
-        data: list[UUID]
-):
+async def delete_user(session: SessionDep, current_user: DependUser, data: list[UUID]):
     try:
         await userController.delete(session, data)
         await logger.operationInfo(user=current_user.username, msg=f"删除用户: {[str(d) for d in data]}")
@@ -55,8 +50,8 @@ async def delete_user(
 
 @userRouter.get("/get", summary="查看用户")
 async def get_user(
-        session: SessionDep,
-        user_id: UUID = Query(..., description="用户ID"),
+    session: SessionDep,
+    user_id: UUID = Query(..., description="用户ID"),
 ):
     user_obj = await userController.get(session, user_id)
     if not user_obj:
@@ -67,10 +62,10 @@ async def get_user(
 
 @userRouter.post("/list", summary="查看用户列表")
 async def list_user(
-        session: SessionDep,
-        data: UserFiter,
-        currentPage: int = Query(1, description="页码"),
-        pageSize: int = Query(15, description="每页数量"),
+    session: SessionDep,
+    data: UserFiter,
+    currentPage: int = Query(1, description="页码"),
+    pageSize: int = Query(15, description="每页数量"),
 ):
     where = []
     if data.username:
@@ -79,19 +74,10 @@ async def list_user(
         where.append(User.email == data.email)
     if data.deptId:
         where.append(User.department_id == data.deptId)
-    if len(where) > 0:
-        where = and_(*where, )
-    else:
-        where = None
+    where = and_(*where) if len(where) > 0 else None
     order = col(User.id).desc()
     total, user_objs = await userController.list(
-        session,
-        currentPage,
-        pageSize,
-        where,
-        order,
-        options=[selectinload(User.department),
-                 selectinload(User.roles)]
+        session, currentPage, pageSize, where, order, options=[selectinload(User.department), selectinload(User.roles)]
     )
     result = []
     for obj in user_objs:
@@ -99,8 +85,7 @@ async def list_user(
         obj_dict["roleIds"] = [str(item.id) for item in obj.roles]
         obj_dict["dept"] = await obj.department.to_dict() if obj.department else None
         result.append(obj_dict)
-    return SuccessExtra(data=result, total=total,
-                        currentPage=currentPage, pageSize=pageSize)
+    return SuccessExtra(data=result, total=total, currentPage=currentPage, pageSize=pageSize)
 
 
 @userRouter.post("/getRolesIds", summary="获取用户角色 id 列表")
@@ -114,14 +99,14 @@ async def get_user_roles_id_list(session: SessionDep, data: BaseModel):
 
 @userRouter.post("/update", summary="更新用户")
 async def update_user(
-        session: SessionDep,
-        current_user: DependUser,
-        data: UserUpdate,
+    session: SessionDep,
+    current_user: DependUser,
+    data: UserUpdate,
 ):
     user = await userController.get(session, data.id)
     if not user:
         raise HTTPException(status_code=404, detail="用户不存在！")
-    if hasattr(data, 'username') and data.username:
+    if hasattr(data, "username") and data.username:
         existing = await userController.get_user_by_name(session, data.username)
         if existing and existing.id != data.id:
             raise HTTPException(status_code=400, detail="用户名已存在！")
@@ -133,9 +118,9 @@ async def update_user(
 
 @userRouter.post("/updateRoles", summary="更新用户角色")
 async def update_roles(
-        session: SessionDep,
-        current_user: DependUser,
-        data: UpdateUserRoles,
+    session: SessionDep,
+    current_user: DependUser,
+    data: UpdateUserRoles,
 ):
     user = await userController.get(session, data.id)
     if not user:
@@ -163,9 +148,9 @@ async def update_status(session: SessionDep, current_user: DependUser, data: Upd
 
 @userRouter.post("/resetPwd", summary="重置用户密码")
 async def reset_pwd(
-        session: SessionDep,
-        current_user: DependUser,
-        data: UserResetPwd,
+    session: SessionDep,
+    current_user: DependUser,
+    data: UserResetPwd,
 ):
     user = await userController.get(session, data.id)
     if not user:

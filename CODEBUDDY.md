@@ -25,7 +25,8 @@ cd frontend && bun install && bun dev
 
 ```bash
 cd backend && uv run pytest                # 后端测试
-cd backend && uv run pylint app/            # 后端 lint
+cd backend && uv run ruff check app/        # 后端 lint
+cd backend && uv run ruff format app/        # 后端格式化
 cd frontend && bun run typecheck            # 前端类型检查
 cd frontend && bun run lint                # 前端 lint
 cd frontend && bun run build                # 前端构建

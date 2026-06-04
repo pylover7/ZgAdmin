@@ -1,18 +1,17 @@
 """utils/jwtt.py 单元测试 — JWT 创建/解码、OAuth state"""
-import pytest
-from datetime import datetime, timedelta, timezone
-from unittest.mock import patch
+from datetime import UTC, datetime, timedelta
 
 import jwt as pyjwt
+import pytest
 
-from app.utils.jwtt import (
-    create_access_token,
-    decode_access_token,
-    create_oauth_state,
-    verify_oauth_state,
-)
 from app.models.login import JWTPayload
 from app.settings import settings
+from app.utils.jwtt import (
+    create_access_token,
+    create_oauth_state,
+    decode_access_token,
+    verify_oauth_state,
+)
 
 
 class TestCreateAccessToken:
@@ -21,7 +20,7 @@ class TestCreateAccessToken:
             user_id="test-user-id",
             username="testuser",
             is_superuser=False,
-            exp=datetime.now(timezone.utc) + timedelta(hours=1),
+            exp=datetime.now(UTC) + timedelta(hours=1),
         )
         token = create_access_token(data=payload)
         assert isinstance(token, str)
@@ -32,7 +31,7 @@ class TestCreateAccessToken:
             user_id="abc-123",
             username="admin",
             is_superuser=True,
-            exp=datetime.now(timezone.utc) + timedelta(hours=1),
+            exp=datetime.now(UTC) + timedelta(hours=1),
         )
         token = create_access_token(data=payload)
         decoded = decode_access_token(token)
@@ -41,7 +40,7 @@ class TestCreateAccessToken:
         assert decoded.is_superuser is True
 
     def test_token_contains_exp(self):
-        exp_time = datetime.now(timezone.utc) + timedelta(hours=2)
+        exp_time = datetime.now(UTC) + timedelta(hours=2)
         payload = JWTPayload(
             user_id="x", username="y", is_superuser=False, exp=exp_time,
         )
@@ -58,7 +57,7 @@ class TestDecodeAccessToken:
             user_id="user-1",
             username="testuser",
             is_superuser=False,
-            exp=datetime.now(timezone.utc) + timedelta(hours=1),
+            exp=datetime.now(UTC) + timedelta(hours=1),
         )
         token = create_access_token(data=payload)
         decoded = decode_access_token(token)
@@ -70,7 +69,7 @@ class TestDecodeAccessToken:
             user_id="expired",
             username="expired_user",
             is_superuser=False,
-            exp=datetime.now(timezone.utc) - timedelta(seconds=1),
+            exp=datetime.now(UTC) - timedelta(seconds=1),
         )
         token = create_access_token(data=payload)
         with pytest.raises(pyjwt.ExpiredSignatureError):
@@ -85,7 +84,7 @@ class TestDecodeAccessToken:
             user_id="tamper",
             username="tamper_user",
             is_superuser=False,
-            exp=datetime.now(timezone.utc) + timedelta(hours=1),
+            exp=datetime.now(UTC) + timedelta(hours=1),
         )
         token = create_access_token(data=payload)
         tampered = token + "x"
@@ -103,12 +102,12 @@ class TestOAuthState:
         assert verify_oauth_state(state, purpose="wechat_login") is False
 
     def test_expired_state_fails(self):
-        state = create_oauth_state(purpose="qq_login")
+        _state = create_oauth_state(purpose="qq_login")
         # 手动构造已过期的 state
         expired_payload = {
             "purpose": "qq_login",
             "nonce": "test",
-            "exp": datetime.now(timezone.utc) - timedelta(minutes=1),
+            "exp": datetime.now(UTC) - timedelta(minutes=1),
         }
         expired_state = pyjwt.encode(
             expired_payload, settings.SECRET_KEY, algorithm=settings.JWT_ALGORITHM

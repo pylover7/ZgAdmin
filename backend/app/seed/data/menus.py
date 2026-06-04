@@ -1,4 +1,5 @@
 """默认菜单数据 — 模板用户在此修改或添加菜单  title 使用 i18n 键名，前端 transformI18n 自动翻译"""
+
 DEFAULT_MENUS = [
     {
         "menuType": 0,
@@ -16,7 +17,7 @@ DEFAULT_MENUS = [
                 "path": "/system/user",
                 "component": "system/user/index",
                 "icon": "ri:admin-line",
-                "rank": 1
+                "rank": 1,
             },
             {
                 "menuType": 0,
@@ -25,7 +26,7 @@ DEFAULT_MENUS = [
                 "path": "/system/role",
                 "component": "system/role/index",
                 "icon": "ri:admin-fill",
-                "rank": 2
+                "rank": 2,
             },
             {
                 "menuType": 0,
@@ -34,7 +35,8 @@ DEFAULT_MENUS = [
                 "path": "/system/dept",
                 "component": "system/dept/index",
                 "icon": "ri:git-branch-line",
-                "rank": 4},
+                "rank": 4,
+            },
             {
                 "menuType": 0,
                 "title": "menus.pureSystemMenu",
@@ -42,7 +44,7 @@ DEFAULT_MENUS = [
                 "path": "/system/menu",
                 "component": "system/menu/index",
                 "icon": "fluent:clover-48-regular",
-                "rank": 3
+                "rank": 3,
             },
             {
                 "menuType": 0,
@@ -52,7 +54,7 @@ DEFAULT_MENUS = [
                 "component": "system/notice/index",
                 "icon": "ri:notification-3-line",
                 "rank": 500,
-            }
+            },
         ],
     },
     {
@@ -71,7 +73,7 @@ DEFAULT_MENUS = [
                 "path": "/monitor/login-log",
                 "component": "monitor/logs/login/index",
                 "icon": "ri:window-line",
-                "rank": 1
+                "rank": 1,
             },
             {
                 "menuType": 0,
@@ -80,7 +82,7 @@ DEFAULT_MENUS = [
                 "path": "/monitor/operation-logs",
                 "component": "monitor/logs/operation/index",
                 "icon": "ri:history-fill",
-                "rank": 2
+                "rank": 2,
             },
             {
                 "menuType": 0,
@@ -89,7 +91,7 @@ DEFAULT_MENUS = [
                 "path": "/monitor/system-logs",
                 "component": "monitor/logs/system/index",
                 "icon": "ri:file-search-line",
-                "rank": 3
+                "rank": 3,
             },
         ],
     },
@@ -109,7 +111,7 @@ DEFAULT_MENUS = [
                 "path": "/settings/general",
                 "component": "settings/general/index",
                 "icon": "ri:code-line",
-                "rank": 1
+                "rank": 1,
             },
             {
                 "menuType": 0,
@@ -118,7 +120,7 @@ DEFAULT_MENUS = [
                 "path": "/settings/login",
                 "component": "settings/login/index",
                 "icon": "ri:settings-2-line",
-                "rank": 2
+                "rank": 2,
             },
             {
                 "menuType": 0,
@@ -127,7 +129,7 @@ DEFAULT_MENUS = [
                 "path": "/settings/security",
                 "component": "settings/security/index",
                 "icon": "ri:shield-check-line",
-                "rank": 3
+                "rank": 3,
             },
         ],
     },
@@ -147,7 +149,7 @@ DEFAULT_MENUS = [
                 "path": "/resource/file",
                 "component": "resource/file/index",
                 "icon": "ri:file-list-3-line",
-                "rank": 1
+                "rank": 1,
             },
         ],
     },

@@ -1,7 +1,15 @@
 from app.core.crud import CRUDBase
-from app.models import LoginLog, LoginLogCreate, LoginLogUpdate
-from app.models import OperationLog, OperationLogCreate, OperationLogUpdate
-from app.models import SystemLog, SystemLogCreate, SystemLogUpdate
+from app.models import (
+    LoginLog,
+    LoginLogCreate,
+    LoginLogUpdate,
+    OperationLog,
+    OperationLogCreate,
+    OperationLogUpdate,
+    SystemLog,
+    SystemLogCreate,
+    SystemLogUpdate,
+)
 
 
 class LoginLogController(CRUDBase[LoginLog, LoginLogCreate, LoginLogUpdate]):

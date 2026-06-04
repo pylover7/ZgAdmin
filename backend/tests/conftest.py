@@ -8,32 +8,44 @@
 - client: TestClient，依赖注入覆盖 get_db / get_redis
 - admin_user / admin_headers: 预创建超级管理员 + JWT
 """
-import pytest
-from datetime import datetime, timedelta, timezone
-from uuid import uuid4
+from datetime import UTC, datetime, timedelta
 
-from sqlalchemy import event
-from sqlmodel import Session, SQLModel, create_engine
+import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
+from sqlalchemy import event
+from sqlmodel import Session, SQLModel, create_engine
+
+from app.core.dependency import get_db
+from app.core.init import register_exceptions, register_routers
+from app.core.redis import MemoryRedis
+from app.core.redis import get_redis as _orig_get_redis
 
 # ─── 确保所有 Model 注册到 SQLModel.metadata ───────────────────────────
 from app.models import (  # noqa: F401
-    User, Role, Menu, Department, Api, File,
-    LoginLog, OperationLog, SystemLog,
-    Notice, NoticeRead,
-    SecurityPolicy, IPRule,
-    SiteConfig, OAuthConfig, EmailConfig,
-    UserRoleLink, RoleMenuLink, RoleApiLink,
+    Api,
+    Department,
+    EmailConfig,
+    File,
+    IPRule,
+    LoginLog,
+    Menu,
+    Notice,
+    NoticeRead,
+    OAuthConfig,
+    OperationLog,
+    Role,
+    RoleApiLink,
+    RoleMenuLink,
+    SecurityPolicy,
+    SiteConfig,
+    SystemLog,
+    User,
+    UserRoleLink,
 )
-from app.models.base import Success, Fail, SuccessExtra, FailAuth
 from app.models.login import JWTPayload
-from app.core.redis import MemoryRedis
-from app.core.dependency import get_db
-from app.core.redis import get_redis as _orig_get_redis
-from app.utils.password import get_password_hash
 from app.utils.jwtt import create_access_token
-from app.core.init import register_exceptions, register_routers
+from app.utils.password import get_password_hash
 
 
 # ─── 测试专用 App 工厂（无 lifespan，不触发 init_data） ────────────────
@@ -120,20 +132,19 @@ def client(db, test_redis):
 
     # 全局替换 Redis 单例 — 因为部分代码直接调用 get_redis() 而非依赖注入
     import app.core.redis as redis_mod
-    original_instance = redis_mod._redis_instance
-    redis_mod._redis_instance = test_redis
+    original_instance = redis_mod.redis_manager._instance
+    redis_mod.redis_manager._instance = test_redis
 
     # Mock getIpAddress — TestClient 的 client.host 为 "testclient"，不是合法 IP
     async def _mock_get_ip_address(ip: str) -> str:
         return "内网IP"
 
     # 必须在 import 位置 patch，而非定义位置
-    with patch("app.controllers.user.getIpAddress", side_effect=_mock_get_ip_address):
-        with TestClient(application) as c:
-            yield c
+    with patch("app.controllers.user.getIpAddress", side_effect=_mock_get_ip_address), TestClient(application) as c:
+        yield c
 
     application.dependency_overrides.clear()
-    redis_mod._redis_instance = original_instance
+    redis_mod.redis_manager._instance = original_instance
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -167,7 +178,7 @@ def admin_headers(admin_user):
         user_id=str(admin_user.id),
         username=admin_user.username,
         is_superuser=True,
-        exp=datetime.now(timezone.utc) + timedelta(hours=2),
+        exp=datetime.now(UTC) + timedelta(hours=2),
     )
     token = create_access_token(data=payload)
     return {"Authorization": f"Bearer {token}"}

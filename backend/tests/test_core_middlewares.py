@@ -1,9 +1,10 @@
 """core/middlewares.py 单元测试 — IP 过滤中间件"""
-import pytest
 import json
-from unittest.mock import Mock, AsyncMock, patch
+from unittest.mock import AsyncMock, Mock, patch
 
-from app.core.middlewares import IPFilterMiddleware, BackGroundTaskMiddleware, SimpleBaseMiddleware
+import pytest
+
+from app.core.middlewares import BackGroundTaskMiddleware, IPFilterMiddleware, SimpleBaseMiddleware
 
 
 class TestIPFilterMiddleware:

@@ -1,17 +1,17 @@
 """运行时可修改的配置表 — 全局单行表模式（与 SecurityPolicy 同模式）"""
+
 from typing import ClassVar
 
 from sqlmodel import Field, SQLModel
 
 from .base import BaseModel, TimestampMixin
 
-
 # ─── 站点配置 ────────────────────────────────────────────────────────────
+
 
 class SiteConfigBase(SQLModel):
     site_name: str = Field(default="ZgAdmin", max_length=100, description="站点名称")
-    site_desc: str = Field(
-        default="一个开源的在线工具箱", max_length=500, description="站点描述")
+    site_desc: str = Field(default="一个开源的在线工具箱", max_length=500, description="站点描述")
     logo: str = Field(default="", max_length=500, description="Logo URL")
     default_lang: str = Field(default="zh-CN", max_length=10, description="默认语言")
     enable_email: bool = Field(default=False, description="启用邮件功能")
@@ -36,6 +36,7 @@ class SiteConfigUpdate(SQLModel):
 
 
 # ─── OAuth 登录配置 ──────────────────────────────────────────────────────
+
 
 class OAuthConfigBase(SQLModel):
     # QQ 登录
@@ -68,6 +69,7 @@ class OAuthConfigUpdate(SQLModel):
 
 
 # ─── 邮件配置 ────────────────────────────────────────────────────────────
+
 
 class EmailConfigBase(SQLModel):
     host: str = Field(default="", max_length=200, description="SMTP 服务器地址")

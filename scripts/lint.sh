@@ -2,8 +2,8 @@
 
 # 后端
 cd /workspace/backend
-uv run autopep8 app
-uv run pylint app
+uv run ruff check app
+uv run ruff format --check app
 
 # 前端
 cd /workspace/frontend

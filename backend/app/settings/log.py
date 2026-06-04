@@ -4,8 +4,8 @@ from loguru import logger as loguru_logger
 from sqlmodel import Session
 
 from app.controllers.logs import loginLoginController, operationLogController, systemLogController
-from app.models.logs import LoginLogCreate, OperationLogCreate, SystemLogCreate
 from app.core import engine
+from app.models.logs import LoginLogCreate, OperationLogCreate, SystemLogCreate
 from app.settings import settings
 
 
@@ -19,7 +19,7 @@ class Logger:
             format="<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | "
             "<level>{level: <8}</level> |"
             " <level>Logger: {extra[name]}</level> | "
-            "<level>{message}</level>"
+            "<level>{message}</level>",
         )
 
         self.sysLogger = self.logger.bind(name="system")
@@ -60,8 +60,7 @@ class Logger:
             return
         with Session(engine) as session:
             await systemLogController.create(
-                session=session,
-                obj_in=SystemLogCreate(module=module, message=msg, level="info")
+                session=session, obj_in=SystemLogCreate(module=module, message=msg, level="info")
             )
 
     async def systemWarning(self, module: str, msg: str):
@@ -70,8 +69,7 @@ class Logger:
             return
         with Session(engine) as session:
             await systemLogController.create(
-                session=session,
-                obj_in=SystemLogCreate(module=module, message=msg, level="warning")
+                session=session, obj_in=SystemLogCreate(module=module, message=msg, level="warning")
             )
 
     async def systemError(self, module: str, msg: str):
@@ -80,8 +78,7 @@ class Logger:
             return
         with Session(engine) as session:
             await systemLogController.create(
-                session=session,
-                obj_in=SystemLogCreate(module=module, message=msg, level="error")
+                session=session, obj_in=SystemLogCreate(module=module, message=msg, level="error")
             )
 
     async def systemDebug(self, module: str, msg: str):
@@ -90,36 +87,47 @@ class Logger:
             return
         with Session(engine) as session:
             await systemLogController.create(
-                session=session,
-                obj_in=SystemLogCreate(module=module, message=msg, level="debug")
+                session=session, obj_in=SystemLogCreate(module=module, message=msg, level="debug")
             )
 
-    async def loginSuccess(self, username: str, ip: str, address: str,
-                           system: str, browser: str, behavior: int):
-        self.loginLogger.success(self.loginType(behavior), user=username,
-                                 ip=ip, address=address, system=system, browser=browser)
+    async def loginSuccess(self, username: str, ip: str, address: str, system: str, browser: str, behavior: int):  # noqa: PLR0913
+        self.loginLogger.success(
+            self.loginType(behavior), user=username, ip=ip, address=address, system=system, browser=browser
+        )
         if not settings.FEATURE_MONITOR_LOG:
             return
         with Session(engine) as session:
             await loginLoginController.create(
                 session=session,
-                obj_in=LoginLogCreate(username=username, ip=ip, address=address,
-                                      system=system, browser=browser,
-                                      behavior=self.loginType(behavior), level="success")
+                obj_in=LoginLogCreate(
+                    username=username,
+                    ip=ip,
+                    address=address,
+                    system=system,
+                    browser=browser,
+                    behavior=self.loginType(behavior),
+                    level="success",
+                ),
             )
 
-    async def loginFail(self, username: str, ip: str, address: str,
-                        system: str, browser: str, behavior: int):
-        self.loginLogger.error(self.loginType(behavior), user=username,
-                               ip=ip, address=address, system=system, browser=browser)
+    async def loginFail(self, username: str, ip: str, address: str, system: str, browser: str, behavior: int):  # noqa: PLR0913
+        self.loginLogger.error(
+            self.loginType(behavior), user=username, ip=ip, address=address, system=system, browser=browser
+        )
         if not settings.FEATURE_MONITOR_LOG:
             return
         with Session(engine) as session:
             await loginLoginController.create(
                 session=session,
-                obj_in=LoginLogCreate(username=username, ip=ip, address=address,
-                                      system=system, browser=browser,
-                                      behavior=self.loginType(behavior), level="fail")
+                obj_in=LoginLogCreate(
+                    username=username,
+                    ip=ip,
+                    address=address,
+                    system=system,
+                    browser=browser,
+                    behavior=self.loginType(behavior),
+                    level="fail",
+                ),
             )
 
     async def operationInfo(self, user: str, msg: str):
@@ -128,8 +136,7 @@ class Logger:
             return
         with Session(engine) as session:
             await operationLogController.create(
-                session=session,
-                obj_in=OperationLogCreate(username=user, message=msg, level="info")
+                session=session, obj_in=OperationLogCreate(username=user, message=msg, level="info")
             )
 
     async def operationWarning(self, user: str, msg: str):
@@ -138,8 +145,7 @@ class Logger:
             return
         with Session(engine) as session:
             await operationLogController.create(
-                session=session,
-                obj_in=OperationLogCreate(username=user, message=msg, level="warning")
+                session=session, obj_in=OperationLogCreate(username=user, message=msg, level="warning")
             )
 
     async def operationError(self, user: str, msg: str):
@@ -148,19 +154,15 @@ class Logger:
             return
         with Session(engine) as session:
             await operationLogController.create(
-                session=session,
-                obj_in=OperationLogCreate(username=user, message=msg, level="error")
+                session=session, obj_in=OperationLogCreate(username=user, message=msg, level="error")
             )
 
 
 logger = Logger()
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import asyncio
-    asyncio.run(logger.loginSuccess(
-        username="dayezi",
-        ip="xxx",
-        address="xxx",
-        system="xxx",
-        browser="xxx",
-        behavior=0))
+
+    asyncio.run(
+        logger.loginSuccess(username="dayezi", ip="xxx", address="xxx", system="xxx", browser="xxx", behavior=0)
+    )

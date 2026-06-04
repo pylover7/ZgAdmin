@@ -1,16 +1,15 @@
 """core/dependency.py 单元测试 — AuthControl / PermissionControl / RateLimiter"""
-import pytest
-from datetime import datetime, timedelta, timezone
-from unittest.mock import Mock, patch
+from datetime import UTC, datetime, timedelta
+from unittest.mock import Mock
 
+import pytest
 from fastapi import HTTPException
 
 from app.core.dependency import AuthControl, PermissionControl, RateLimiter
-from app.models import User, Role, Api
+from app.models import Api
 from app.models.enums import MethodType
 from app.models.login import JWTPayload
 from app.utils.jwtt import create_access_token
-from app.utils.password import get_password_hash
 
 
 class TestAuthControl:
@@ -20,7 +19,7 @@ class TestAuthControl:
             user_id=str(admin_user.id),
             username=admin_user.username,
             is_superuser=True,
-            exp=datetime.now(timezone.utc) + timedelta(hours=1),
+            exp=datetime.now(UTC) + timedelta(hours=1),
         )
         token = create_access_token(data=payload)
         # 模拟 authorization header
@@ -40,7 +39,7 @@ class TestAuthControl:
             user_id="test",
             username="test",
             is_superuser=False,
-            exp=datetime.now(timezone.utc) - timedelta(seconds=1),
+            exp=datetime.now(UTC) - timedelta(seconds=1),
         )
         token = create_access_token(data=payload)
         with pytest.raises(HTTPException) as exc_info:
@@ -53,7 +52,7 @@ class TestAuthControl:
             user_id=str(disabled_user.id),
             username=disabled_user.username,
             is_superuser=False,
-            exp=datetime.now(timezone.utc) + timedelta(hours=1),
+            exp=datetime.now(UTC) + timedelta(hours=1),
         )
         token = create_access_token(data=payload)
         with pytest.raises(HTTPException) as exc_info:
@@ -67,7 +66,7 @@ class TestAuthControl:
             user_id="00000000-0000-0000-0000-000000000000",
             username="ghost",
             is_superuser=False,
-            exp=datetime.now(timezone.utc) + timedelta(hours=1),
+            exp=datetime.now(UTC) + timedelta(hours=1),
         )
         token = create_access_token(data=payload)
         with pytest.raises(HTTPException) as exc_info:

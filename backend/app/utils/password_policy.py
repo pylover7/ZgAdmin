@@ -1,4 +1,5 @@
 """密码复杂度策略 & 历史密码检查"""
+
 import re
 
 from app.models.security import SecurityPolicy
@@ -16,27 +17,22 @@ def validate_password_strength(password: str, policy: SecurityPolicy) -> tuple[b
     if len(password) < policy.min_password_length:
         return False, f"密码长度不能少于 {policy.min_password_length} 个字符"
 
-    if policy.require_uppercase and not re.search(r'[A-Z]', password):
+    if policy.require_uppercase and not re.search(r"[A-Z]", password):
         return False, "密码必须包含至少一个大写字母"
 
-    if policy.require_lowercase and not re.search(r'[a-z]', password):
+    if policy.require_lowercase and not re.search(r"[a-z]", password):
         return False, "密码必须包含至少一个小写字母"
 
-    if policy.require_digit and not re.search(r'\d', password):
+    if policy.require_digit and not re.search(r"\d", password):
         return False, "密码必须包含至少一个数字"
 
-    if policy.require_special and not re.search(
-            r'[!@#$%^&*()_+\-=\[\]{};:\'",.<>?/\\|`~]', password):
+    if policy.require_special and not re.search(r'[!@#$%^&*()_+\-=\[\]{};:\'",.<>?/\\|`~]', password):
         return False, "密码必须包含至少一个特殊字符"
 
     return True, ""
 
 
-def check_password_history(
-    plain_password: str,
-    password_history: list[str] | None,
-    count: int
-) -> bool:
+def check_password_history(plain_password: str, password_history: list[str] | None, count: int) -> bool:
     """
     检查密码是否在历史 N 次中重复
 
@@ -51,18 +47,10 @@ def check_password_history(
     # 只检查最近 N 条
     recent_hashes = password_history[-count:] if count > 0 else password_history
 
-    for old_hash in recent_hashes:
-        if verify_password(plain_password, old_hash):
-            return True
-
-    return False
+    return any(verify_password(plain_password, old_hash) for old_hash in recent_hashes)
 
 
-def update_password_history(
-    current_hash: str,
-    password_history: list[str] | None,
-    max_count: int
-) -> list[str]:
+def update_password_history(current_hash: str, password_history: list[str] | None, max_count: int) -> list[str]:
     """
     更新密码历史列表
 
