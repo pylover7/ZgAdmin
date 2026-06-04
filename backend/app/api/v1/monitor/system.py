@@ -22,7 +22,7 @@ systemMonitorRouter = APIRouter()
 class _RateTracker:
     """速率计算器 — 封装"上次采样"状态，替代 global 语句"""
 
-    def __init__(self, history_max: int = 1200) -> None:
+    def __init__(self, history_max: int = 600) -> None:
         self._prev: dict = {}
         self._prev_time: float = 0
         self._history: dict[str, deque] = {}
