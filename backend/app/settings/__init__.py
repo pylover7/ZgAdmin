@@ -166,7 +166,7 @@ class Settings(BaseSettings):
             "default": {
                 "()": "uvicorn.logging.DefaultFormatter",
                 "fmt": "%(levelprefix)s %(message)s",
-                "use_colors": "",
+                "use_colors": None,
             },
             "access": {
                 "()": "uvicorn.logging.AccessFormatter",
@@ -175,11 +175,11 @@ class Settings(BaseSettings):
         },
         "handlers": {
             "default": {"formatter": "default", "class": "logging.StreamHandler", "stream": "ext://sys.stderr"},
-            "access": {"formatter": "access", "class": "logging.StreamHandler", "stream": "ext://sys.stdout"},
+            "access": {"formatter": "access", "class": "logging.StreamHandler", "stream": "ext://sys.stderr"},
         },
         "loggers": {
-            "uvicorn": {"handlers": ["default"], "level": "INFO"},
-            "uvicorn.error": {"level": "INFO"},
+            "uvicorn": {"handlers": ["default"], "level": "INFO", "propagate": False},
+            "uvicorn.error": {"handlers": ["default"], "level": "INFO"},
             "uvicorn.access": {"handlers": ["access"], "level": "INFO", "propagate": False},
         },
     }

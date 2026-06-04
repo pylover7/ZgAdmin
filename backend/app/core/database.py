@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import logging.config
+
 from alembic import command
 from alembic.config import Config
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -128,4 +130,8 @@ async def init_data(app: FastAPI) -> None:
     # 同步 alembic 版本标记，确保 create_all 建表后 alembic 不会重复跑迁移
     alembic_cfg = Config(str(Path(__file__).resolve().parent.parent.parent / "alembic.ini"))
     command.stamp(alembic_cfg, "head")
+    # alembic 内部会调用 logging.basicConfig()，给 root logger 添加 handler，
+    # 这会破坏 uvicorn 的 logging 层级关系，导致 access log 不输出，
+    # 重新应用 APP_LOG_CONFIG 修复此问题
+    logging.config.dictConfig(settings.APP_LOG_CONFIG)
     logger.info("Alembic 版本已标记为 head")
