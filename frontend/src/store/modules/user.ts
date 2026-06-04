@@ -122,6 +122,8 @@ export const useUserStore = defineStore("pure-user", {
             if (data) {
               setToken(data.data);
               resolve(data);
+            } else {
+              reject(new Error("刷新令牌响应数据为空"));
             }
           })
           .catch(error => {
