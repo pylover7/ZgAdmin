@@ -54,7 +54,7 @@ echo "[ENTRYPOINT] nginx 已就绪"
 # ── 启动后端 ───────────────────────────────────────────────────────────────────
 echo "[ENTRYPOINT] 启动后端..."
 cd /backend
-uv run python main.py &
+uv run main.py &
 BACKEND_PID=$!
 
 # 等待后端就绪

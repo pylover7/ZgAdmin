@@ -36,30 +36,12 @@ COPY nginx.conf /etc/nginx/nginx.conf
 # 暴露前端端口
 EXPOSE 80
 
-# 后端阶段
-FROM python:3.13-slim AS backend
-
-# 设置工作目录
-WORKDIR /app
-
-# 安装uv包管理器
-RUN pip install uv
-
-# 复制后端依赖文件
-COPY backend/pyproject.toml backend/.python-version backend/uv.lock ./
-
-# 安装后端依赖
-RUN uv sync --frozen --no-dev
-
-# 复制后端源代码
-COPY backend/ ./
-
 # 最终阶段 - 组合前后端
 FROM python:3.13-slim
 
-# 安装nginx和其他必要工具和后端依赖
+# 安装nginx和其他必要工具
 RUN apt-get update && \
-  apt-get install -y nginx && \
+  apt-get install -y nginx sqlite3 libmagic1 file jq && \
   pip install uv && \
   rm -rf /var/lib/apt/lists/*
 
@@ -70,13 +52,18 @@ WORKDIR /app
 COPY --from=frontend /etc/nginx/nginx.conf /etc/nginx/nginx.conf
 COPY --from=frontend /usr/share/nginx/html /usr/share/nginx/html
 
-# 从后端阶段复制后端应用（.venv 已包含在内，无需再次 uv sync）
-COPY --from=backend /app /backend
+# 复制后端依赖声明（先于源码，利用 Docker 层缓存）
+COPY backend/pyproject.toml backend/.python-version backend/uv.lock /backend/
+
+# 在最终阶段用系统 Python 安装依赖（避免跨阶段 .venv 符号链接断裂）
 WORKDIR /backend
+RUN uv sync --frozen --no-dev
+# 复制后端源代码
+COPY backend/ /backend/
 
 # 复制启动脚本
-COPY scripts/docker-entrypoint.sh /start.sh
-RUN chmod +x /start.sh
+COPY scripts/docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
 
 # 仅暴露 Nginx 端口（后端通过 Nginx 反代访问，不直接对外）
 EXPOSE 80
@@ -86,4 +73,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD python3 -c "import urllib.request; urllib.request.urlopen('http://localhost/api/v1/base/health')" || exit 1
 
 # 启动命令
-CMD ["/start.sh"]
+CMD ["/docker-entrypoint.sh"]

@@ -9,20 +9,19 @@ services:
       - ENVIRONMENT=production
       # CORS 允许的域名（生产环境必须配置，不可为 *）
       - BACKEND_CORS_ORIGINS=https://your-domain.com,https://admin.your-domain.com
-      # 数据库：默认 SQLite（零配置启动），取消注释切换 PostgreSQL
-      - DB_SCHEME=sqlite
-      # - DB_SCHEME=postgresql
-      # - DB_SERVER=postgres
-      # - DB_PORT=5432
-      # - DB_PATH=zgadmin
-      # - DB_USER=zgadmin
-      # - DB_PASSWORD=changethis
+      - SECRET_KEY=changethisxxxxxx
+      - DB_SCHEME=postgresql
+      - DB_SERVER=postgres
+      - DB_PORT=5432
+      - DB_PATH=zgadmin
+      - DB_USER=zgadmin
+      - DB_PASSWORD=changethisxxxxxx
     volumes:
       - zgadmin_data:/backend/static
     depends_on:
       postgres:
         condition: service_healthy
-        required: false
+        required: true
     healthcheck:
       test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost/api/v1/base/health')"]
       interval: 30s
@@ -36,7 +35,7 @@ services:
     restart: unless-stopped
     environment:
       - POSTGRES_USER=zgadmin
-      - POSTGRES_PASSWORD=changethis
+      - POSTGRES_PASSWORD=changethisxxxxxx
       - POSTGRES_DB=zgadmin
     volumes:
       - pgdata:/var/lib/postgresql/data
@@ -45,9 +44,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    # PostgreSQL 默认不启动，取消下行注释以启用
-    profiles:
-      - postgres
 
   redis:
     image: redis:7-alpine
@@ -61,9 +57,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    # Redis 默认不启动，取消下行注释以启用
-    profiles:
-      - postgres
 
 volumes:
   zgadmin_data:
