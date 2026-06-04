@@ -76,7 +76,8 @@ class PureHttp {
           "/refreshToken",
           "/accessToken",
           "/base/init",
-          "/base/captcha"
+          "/base/captcha",
+          "/logout"
         ];
         // 使用路径后缀匹配，避免误判（如 /settings/login 会被 /login 误匹配）
         const isWhitelistUrl = whiteList.some(url => config.url.endsWith(url));
@@ -155,8 +156,12 @@ class PureHttp {
               message("无权访问！", { type: "warning" });
             });
           } else if (error.response.status === 401) {
-            useUserStoreHook().logOut();
-            message("请重新登录！", { type: "warning" });
+            // 防止 logOut() 触发的请求再次 401 导致死循环
+            const isLogoutRequest = error.config?.url?.endsWith("/logout");
+            if (!isLogoutRequest) {
+              useUserStoreHook().logOut();
+              message("请重新登录！", { type: "warning" });
+            }
           }
         }
         return Promise.reject($error);

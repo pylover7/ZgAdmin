@@ -101,15 +101,15 @@ export const useUserStore = defineStore("pure-user", {
     /** 登出（调用后端接口将Token加入黑名单） */
     async logOut() {
       const tokenData = getToken();
+      removeToken();
       try {
         await logoutApi(tokenData?.refreshToken);
       } catch {
-        // 即使后端调用失败，仍然清除本地状态
+        // 后端调用失败不影响本地清理
       }
       this.username = "";
       this.roles = [];
       this.permissions = [];
-      removeToken();
       useMultiTagsStoreHook().handleTags("equal", [...routerArrays]);
       resetRouter();
       router.push("/login");
