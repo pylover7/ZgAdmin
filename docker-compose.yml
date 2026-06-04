@@ -1,5 +1,6 @@
 services:
   zgadmin:
+    build: .
     image: docker.cnb.cool/pylover/tools/zgadmin
     container_name: zgadmin-app
     ports:
