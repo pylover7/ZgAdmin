@@ -129,7 +129,7 @@ class Settings(BaseSettings):
                 raise ValueError(message)
 
     def _resolve_secret_key(self) -> str:
-        """生成持久化的 SECRET_KEY，重启后保持不变。"""
+        """生成持久化的 SECRET_KEY，重启后保持不变。仅用于本地开发环境。"""
         secret_key_file = Path(__file__).parent.parent.parent / ".secret_key"
         key = ""
 
@@ -141,17 +141,17 @@ class Settings(BaseSettings):
         if not key:
             key = secrets.token_urlsafe(32)
             secret_key_file.write_text(key)
-            if self.ENVIRONMENT != "local":
-                warnings.warn(
-                    "SECRET_KEY 未设置，已自动生成并持久化。生产环境请在 .env 中手动设置 SECRET_KEY。",
-                    stacklevel=1,
-                )
 
         return key
 
     @model_validator(mode="after")
     def _enforce_non_default_secrets(self) -> Self:
         if not self.SECRET_KEY or self.SECRET_KEY == "changethis":
+            if self.ENVIRONMENT in ("production", "staging"):
+                raise ValueError(
+                    "生产/预发布环境必须显式设置 SECRET_KEY（通过 .env 或环境变量），"
+                    "不可依赖自动生成的密钥。"
+                )
             self.SECRET_KEY = self._resolve_secret_key()
         # 生产环境检查 CORS 不为 *
         if self.ENVIRONMENT == "production":

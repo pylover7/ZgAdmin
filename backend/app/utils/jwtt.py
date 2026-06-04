@@ -239,7 +239,7 @@ async def find_or_create_qq_user(session, qq_userinfo: QQUserInfo) -> User:
         new_user = User(
             username=f"qq_{qq_userinfo.openid[:8]}_{timestamp}",
             email=f"qq_{qq_userinfo.openid}@qq.local",  # 临时邮箱
-            password=get_password_hash("qq_default_password"),  # 默认密码
+            password=get_password_hash(secrets.token_urlsafe(16)),  # 随机密码
             nickname=qq_userinfo.nickname or f"QQ用户_{qq_userinfo.openid[:8]}",
             qq_openid=qq_userinfo.openid,
             qq_nickname=qq_userinfo.nickname,

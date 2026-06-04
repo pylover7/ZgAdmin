@@ -22,8 +22,10 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# 从项目 settings 动态获取数据库 URL
-config.set_main_option("sqlalchemy.url", settings.SQLALCHEMY_DATABASE_URI)
+# 从项目 settings 动态获取数据库 URL，支持通过 ALEMBIC_DB_URL 环境变量覆盖
+import os
+_db_url = os.environ.get("ALEMBIC_DB_URL", settings.SQLALCHEMY_DATABASE_URI)
+config.set_main_option("sqlalchemy.url", _db_url)
 
 target_metadata = SQLModel.metadata
 
