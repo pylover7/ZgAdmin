@@ -17,6 +17,7 @@ dependencies = [
     "psycopg[binary]>=3.3.4",
     "pydantic-settings>=2.14.1",
     "pyjwt>=2.13.0",
+    "packaging>=25.0",
     "psutil>=7.2.2",
     "python-magic>=0.4.27",
     "python-multipart>=0.0.30",

@@ -9,6 +9,7 @@ from fastapi import APIRouter
 from app.models import Success
 from app.settings import settings
 from app.settings.log import logger
+from app.utils.version import check_for_update
 
 versionRouter = APIRouter()
 
@@ -38,4 +39,11 @@ async def get_version_info():
         "python_version": python_version,
     }
     logger.debug(f"版本信息: {data}")
+    return Success(data=data)
+
+
+@versionRouter.get("/check-update", summary="检查系统更新")
+async def check_update():
+    """对比本地版本与远程仓库最新版本"""
+    data = await check_for_update()
     return Success(data=data)
