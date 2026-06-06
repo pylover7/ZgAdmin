@@ -13,10 +13,9 @@ RUN npm install -g bun
 # 安装前端依赖
 RUN bun install --frozen-lockfile
 
-# 复制项目版本文件和环境变量（构建时 vite 读取 projectRoot/VERSION 和 projectRoot/.env.*）
+# 复制项目版本文件（构建时 vite 读取 projectRoot/VERSION）
 WORKDIR /app
 COPY VERSION .
-COPY .env.production .
 WORKDIR /app/frontend
 
 # 复制前端源代码

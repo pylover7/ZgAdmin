@@ -128,7 +128,6 @@ const getPackageSize = options => {
 
 export {
   root,
-  projectRoot,
   PROJECT_VERSION,
   pathResolve,
   alias,
