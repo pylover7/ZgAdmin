@@ -716,6 +716,8 @@ system:
     docLink: 文档链接
     previewAddress: 预览地址
     previewLink: 预览链接
+    viewChangelog: 查看变更日志
+    updateCommand: 更新命令
   notice:
     title: 通知标题
     type: 通知类型

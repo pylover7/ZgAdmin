@@ -1,39 +1,56 @@
 """版本工具"""
 
-from pathlib import Path
+import re
 
 import httpx
 from packaging.version import Version
 
+from app.settings import settings
 from app.settings.log import logger
 
-REMOTE_VERSION_URL = "https://cnb.cool/pylove1/ZgAdmin/-/git/raw/dev/VERSION"
+RELEASE_LATEST_URL = "https://cnb.cool/pylover/Tools/ZgAdmin/-/releases/latest"
+RELEASE_BASE_URL = "https://cnb.cool/pylover/Tools/ZgAdmin/-/releases"
 
 
-def get_local_version() -> str:
-    """获取本地版本号"""
-    version_file = Path(__file__).parent.parent.parent.parent / "VERSION"
-    return version_file.read_text().strip()
+def _strip_v(version: str) -> str:
+    """去掉版本号 v 前缀，用于语义化版本比较"""
+    return version.lstrip("v")
 
 
 async def check_for_update() -> dict:
     """
-    对比本地版本与远程仓库最新版本
-    返回: {"current_version", "latest_version", "update_available"}
+    对比本地版本与远程仓库最新版本（方案 C：HEAD 请求 + 307 重定向提取版本号）
+    返回: {"current_version", "latest_version", "has_update", "release_url"}
     """
-    current = get_local_version()
+    current = settings.VERSION
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
-            res = await client.get(REMOTE_VERSION_URL)
-            res.raise_for_status()
-            latest = res.text.strip()
-        update_available = Version(latest) > Version(current)
+            res = await client.head(RELEASE_LATEST_URL, follow_redirects=False)
+
+        if res.status_code == 307:
+            location = res.headers.get("location", "")
+            match = re.search(r"/releases/tag/(v[\d.]+)", location)
+            if match:
+                latest = match.group(1)
+                release_url = f"{RELEASE_BASE_URL}/tag/{match.group(1)}"
+            else:
+                latest = "unknown"
+                release_url = ""
+        else:
+            # 404 或其他状态码 = 无 Release
+            latest = "unknown"
+            release_url = ""
+
+        has_update = latest != "unknown" and Version(_strip_v(latest)) > Version(_strip_v(current))
     except Exception as e:
         logger.debug(f"检查更新失败: {e}")
         latest = "unknown"
-        update_available = False
+        release_url = ""
+        has_update = False
+
     return {
         "current_version": current,
         "latest_version": latest,
-        "update_available": update_available,
+        "has_update": has_update,
+        "release_url": release_url,
     }

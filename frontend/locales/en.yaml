@@ -716,6 +716,8 @@ system:
     docLink: Documentation Link
     previewAddress: Preview
     previewLink: Preview Link
+    viewChangelog: View Changelog
+    updateCommand: Update Command
   notice:
     title: Notice Title
     type: Notice Type
