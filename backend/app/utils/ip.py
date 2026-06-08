@@ -1,9 +1,9 @@
-import re
 import ipaddress
-from pydantic import BaseModel
+import re
 
 import httpx
 from fastapi import Request
+from pydantic import BaseModel
 
 from app.settings.log import logger
 
@@ -45,5 +45,6 @@ async def getReqSysBro(request: Request) -> SysBro:
         browser = "未知浏览器"
     return SysBro(system=system, browser=browser)
 
-if __name__ == '__main__':
-    print(getIpAddress("127.0.0.1"))
+
+if __name__ == "__main__":
+    pass

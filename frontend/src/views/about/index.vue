@@ -17,7 +17,7 @@ const { dependencies, devDependencies } = pkg;
 const schema: schemaItem[] = [];
 const devSchema: schemaItem[] = [];
 
-const { columns, appColums } = useColumns();
+const { columns, appColums, checking, handleCheckUpdate } = useColumns();
 
 const words = [
   "@pureadmin/descriptions",
@@ -69,8 +69,16 @@ Object.keys(devDependencies).forEach(key => {
 
     <el-card class="m-4 box-card" shadow="never">
       <template #header>
-        <div class="card-header">
-          <span class="font-medium">平台信息</span>
+        <div class="card-header flex-bc">
+          <span class="font-medium">{{ $t("system.about.platformInfo") }}</span>
+          <el-button
+            size="small"
+            type="primary"
+            :loading="checking"
+            @click="handleCheckUpdate"
+          >
+            {{ $t("system.about.checkUpdate") }}
+          </el-button>
         </div>
       </template>
       <el-scrollbar>
@@ -81,7 +89,7 @@ Object.keys(devDependencies).forEach(key => {
     <el-card class="m-4 box-card" shadow="never">
       <template #header>
         <div class="card-header">
-          <span class="font-medium">前端模板信息</span>
+          <span class="font-medium">{{ $t("system.about.frontendInfo") }}</span>
         </div>
       </template>
       <el-scrollbar>

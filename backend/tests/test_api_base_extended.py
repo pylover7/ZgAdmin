@@ -1,14 +1,10 @@
 """API 集成测试 — base 路由补充（用户菜单/API/偏好/QQ/文件）"""
-import pytest
-from datetime import datetime, timedelta, timezone
-from unittest.mock import patch, AsyncMock
+from datetime import UTC, datetime, timedelta
 
-from app.models import Menu, Role, Api
+from app.models import Api, Menu
 from app.models.enums import MethodType
 from app.models.login import JWTPayload
 from app.utils.jwtt import create_access_token
-from app.utils.password import get_password_hash
-
 
 # ═══════════════════════════════════════════════════════════════════════
 # 用户菜单
@@ -50,7 +46,7 @@ class TestUserMenu:
             user_id=str(normal_user.id),
             username=normal_user.username,
             is_superuser=False,
-            exp=datetime.now(timezone.utc) + timedelta(hours=1),
+            exp=datetime.now(UTC) + timedelta(hours=1),
         )
         token = create_access_token(data=payload)
         headers = {"Authorization": f"Bearer {token}"}
@@ -182,7 +178,7 @@ class TestUpdatePasswordAdvanced:
             user_id=str(admin_user.id),
             username=admin_user.username,
             is_superuser=True,
-            exp=datetime.now(timezone.utc) + timedelta(hours=1),
+            exp=datetime.now(UTC) + timedelta(hours=1),
         )
         new_token = create_access_token(data=payload)
         new_headers = {"Authorization": f"Bearer {new_token}"}

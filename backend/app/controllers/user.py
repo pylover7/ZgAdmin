@@ -1,19 +1,19 @@
-from typing import Optional
+from datetime import UTC, datetime, timedelta
 from uuid import UUID
-from datetime import datetime, timedelta
-from sqlmodel import Session, select
-from fastapi.exceptions import HTTPException
-from fastapi import Request
 
-from app.settings.log import logger
-from app.utils.ip import getIpAddress, getReqSysBro
-from app.utils.password import get_password_hash, verify_password
-from app.utils.password_policy import validate_password_strength
+from fastapi import Request
+from fastapi.exceptions import HTTPException
+from sqlmodel import Session, select
+
+from app.core.crud import CRUDBase
 from app.models import User, UserCreate, UserUpdate
 from app.models.login import CredentialsSchema
 from app.models.security import SecurityPolicy
+from app.settings.log import logger
 from app.utils import now
-from app.core.crud import CRUDBase
+from app.utils.ip import getIpAddress, getReqSysBro
+from app.utils.password import get_password_hash, verify_password
+from app.utils.password_policy import validate_password_strength
 
 
 class UserController(CRUDBase[User, UserCreate, UserUpdate]):
@@ -45,8 +45,7 @@ class UserController(CRUDBase[User, UserCreate, UserUpdate]):
         session.refresh(db_obj)
         return db_obj
 
-    async def update(self, session: Session, pk: UUID,
-                     obj_in: UserUpdate) -> User | None:
+    async def update(self, session: Session, pk: UUID, obj_in: UserUpdate) -> User | None:
         db_user = session.get(User, pk)
         if db_user is None:
             return None
@@ -61,13 +60,12 @@ class UserController(CRUDBase[User, UserCreate, UserUpdate]):
         session.refresh(db_user)
         return db_user
 
-    async def get_user_by_email(
-            self, session: Session, email: str) -> User | None:
+    async def get_user_by_email(self, session: Session, email: str) -> User | None:
         statement = select(User).where(User.email == email)
         session_user = session.exec(statement).first()
         return session_user
 
-    async def get_user_by_name(self, session: Session, username: str) -> Optional[User]:
+    async def get_user_by_name(self, session: Session, username: str) -> User | None:
         """
         通过用户名获取用户
 
@@ -79,15 +77,8 @@ class UserController(CRUDBase[User, UserCreate, UserUpdate]):
         user = session.exec(statement).first()
         return user
 
-    async def authenticate(
-        self, session: Session,
-        credentials: CredentialsSchema,
-        request: Request
-    ) -> User:
-        user: User | None = await self.get_user_by_name(
-            session=session,
-            username=credentials.username
-        )
+    async def authenticate(self, session: Session, credentials: CredentialsSchema, request: Request) -> User:
+        user: User | None = await self.get_user_by_name(session=session, username=credentials.username)
         sysBro = await getReqSysBro(request=request)
         ip = request.client.host if request.client else "unknown"
         ip_area = await getIpAddress(ip)
@@ -97,12 +88,9 @@ class UserController(CRUDBase[User, UserCreate, UserUpdate]):
 
         # 检查账号锁定（超级管理员不受锁定限制）
         if not user.is_superuser and user.locked_until:
-            if datetime.now() < user.locked_until:
-                remaining = int((user.locked_until - datetime.now()).total_seconds() / 60)
-                raise HTTPException(
-                    status_code=400,
-                    detail=f"账号已锁定，请 {remaining} 分钟后重试"
-                )
+            if datetime.now(UTC) < user.locked_until:
+                remaining = int((user.locked_until - datetime.now(UTC)).total_seconds() / 60)
+                raise HTTPException(status_code=400, detail=f"账号已锁定，请 {remaining} 分钟后重试")
             # 锁定已过期，重置
             user.failed_login_count = 0
             user.locked_until = None
@@ -119,34 +107,37 @@ class UserController(CRUDBase[User, UserCreate, UserUpdate]):
                 user.failed_login_count = (user.failed_login_count or 0) + 1
 
                 if user.failed_login_count >= max_attempts:
-                    user.locked_until = datetime.now() + timedelta(minutes=lockout_minutes)
+                    user.locked_until = datetime.now(UTC) + timedelta(minutes=lockout_minutes)
                     user.failed_login_count = 0
                     await logger.loginFail(
-                        username=user.username, ip=ip, address=ip_area,
-                        system=sysBro.system, browser=sysBro.browser, behavior=0
+                        username=user.username,
+                        ip=ip,
+                        address=ip_area,
+                        system=sysBro.system,
+                        browser=sysBro.browser,
+                        behavior=0,
                     )
                     session.add(user)
                     session.commit()
                     raise HTTPException(
-                        status_code=400,
-                        detail=f"连续登录失败 {max_attempts} 次，账号已锁定 {lockout_minutes} 分钟"
+                        status_code=400, detail=f"连续登录失败 {max_attempts} 次，账号已锁定 {lockout_minutes} 分钟"
                     )
 
                 await logger.loginFail(
-                    username=user.username, ip=ip, address=ip_area,
-                    system=sysBro.system, browser=sysBro.browser, behavior=0
+                    username=user.username,
+                    ip=ip,
+                    address=ip_area,
+                    system=sysBro.system,
+                    browser=sysBro.browser,
+                    behavior=0,
                 )
                 session.add(user)
                 session.commit()
                 remaining_attempts = max_attempts - user.failed_login_count
-                raise HTTPException(
-                    status_code=400,
-                    detail=f"用户名或密码错误，还可尝试 {remaining_attempts} 次"
-                )
+                raise HTTPException(status_code=400, detail=f"用户名或密码错误，还可尝试 {remaining_attempts} 次")
 
             await logger.loginFail(
-                username=user.username, ip=ip, address=ip_area,
-                system=sysBro.system, browser=sysBro.browser, behavior=0
+                username=user.username, ip=ip, address=ip_area, system=sysBro.system, browser=sysBro.browser, behavior=0
             )
             raise HTTPException(status_code=400, detail="用户名或密码错误")
 
@@ -156,8 +147,7 @@ class UserController(CRUDBase[User, UserCreate, UserUpdate]):
 
         if user.is_superuser:
             await logger.loginSuccess(
-                username=user.username, ip=ip, address=ip_area,
-                system=sysBro.system, browser=sysBro.browser, behavior=0
+                username=user.username, ip=ip, address=ip_area, system=sysBro.system, browser=sysBro.browser, behavior=0
             )
             session.add(user)
             session.commit()
@@ -170,8 +160,7 @@ class UserController(CRUDBase[User, UserCreate, UserUpdate]):
                 raise HTTPException(status_code=400, detail="用户已被禁用")
 
         await logger.loginSuccess(
-            username=user.username, ip=ip, address=ip_area,
-            system=sysBro.system, browser=sysBro.browser, behavior=0
+            username=user.username, ip=ip, address=ip_area, system=sysBro.system, browser=sysBro.browser, behavior=0
         )
         session.add(user)
         session.commit()

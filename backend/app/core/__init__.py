@@ -1,8 +1,6 @@
-
 from sqlmodel import Session, create_engine
 
 from app.settings import settings
-
 
 engine = create_engine(settings.SQLALCHEMY_DATABASE_URI)
 

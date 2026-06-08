@@ -1,12 +1,11 @@
 """utils/file_upload.py 单元测试 — 文件校验/分类/格式化"""
-import pytest
 from app.utils.file_upload import (
-    validate_extension,
-    classify_file,
-    generate_storage_path,
-    format_file_size,
-    ALLOWED_EXTENSIONS,
     ALL_ALLOWED,
+    ALLOWED_EXTENSIONS,
+    classify_file,
+    format_file_size,
+    generate_storage_path,
+    validate_extension,
 )
 
 
@@ -34,7 +33,7 @@ class TestValidateExtension:
         assert "无扩展名" in err
 
     def test_empty_filename(self):
-        ext, err = validate_extension("")
+        ext, _err = validate_extension("")
         assert ext is None
 
     def test_case_insensitive(self):
@@ -98,7 +97,7 @@ class TestGenerateStoragePath:
         p1 = generate_storage_path("jpg")
         p2 = generate_storage_path("jpg")
         # 极低概率相同（UUID 碰撞）
-        assert p1 != p2 or True  # 不做严格断言，UUID 碰撞概率极低
+        assert p1 != p2  # UUID 碰撞概率极低，若断言失败说明 RNG 有问题
 
 
 class TestFormatFileSize:

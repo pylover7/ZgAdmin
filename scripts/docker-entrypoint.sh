@@ -54,7 +54,7 @@ echo "[ENTRYPOINT] nginx 已就绪"
 # ── 启动后端 ───────────────────────────────────────────────────────────────────
 echo "[ENTRYPOINT] 启动后端..."
 cd /backend
-uv run python main.py &
+uv run main.py &
 BACKEND_PID=$!
 
 # 等待后端就绪
@@ -77,17 +77,12 @@ echo "[ENTRYPOINT] 后端: http://localhost:7001"
 echo "[ENTRYPOINT] =============================="
 
 # ── 进程监控 ───────────────────────────────────────────────────────────────────
-# 任意子进程退出则关闭所有服务
-while true; do
-    if ! kill -0 "$NGINX_PID" 2>/dev/null; then
-        echo "[ENTRYPOINT] nginx 意外退出"
-        shutdown
-        exit 1
-    fi
-    if ! kill -0 "$BACKEND_PID" 2>/dev/null; then
-        echo "[ENTRYPOINT] 后端意外退出"
-        shutdown
-        exit 1
-    fi
-    sleep 5
-done
+# 事件驱动：任一子进程退出立即感知，区分退出进程
+wait -n "$NGINX_PID" "$BACKEND_PID" 2>/dev/null
+if ! kill -0 "$NGINX_PID" 2>/dev/null; then
+    echo "[ENTRYPOINT] nginx 意外退出"
+elif ! kill -0 "$BACKEND_PID" 2>/dev/null; then
+    echo "[ENTRYPOINT] 后端意外退出"
+fi
+shutdown
+exit 1

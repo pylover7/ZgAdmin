@@ -1,9 +1,8 @@
-from typing import Any, Generic, NewType, Type, TypeVar, Optional
+from typing import Any, NewType, TypeVar
 from uuid import UUID
 
 from sqlalchemy import ColumnElement, UnaryExpression
-from sqlmodel import Session, SQLModel, select, col, func
-
+from sqlmodel import Session, SQLModel, col, func, select
 
 Total = NewType("Total", int)
 ModelType = TypeVar("ModelType", bound=SQLModel)
@@ -11,12 +10,11 @@ CreateSchemaType = TypeVar("CreateSchemaType", bound=SQLModel)
 UpdateSchemaType = TypeVar("UpdateSchemaType", bound=SQLModel)
 
 
-class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
-    def __init__(self, model: Type[ModelType]):
+class CRUDBase[ModelType: SQLModel, CreateSchemaType: SQLModel, UpdateSchemaType: SQLModel]:
+    def __init__(self, model: type[ModelType]):
         self.model = model
 
-    async def create(self, session: Session,
-                     obj_in: CreateSchemaType) -> ModelType:
+    async def create(self, session: Session, obj_in: CreateSchemaType) -> ModelType:
         db_obj = self.model.model_validate(obj_in)
         session.add(db_obj)
         session.commit()
@@ -39,9 +37,8 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         session.commit()
         return len(result)
 
-    async def update(self, session: Session, pk: UUID,
-                     obj_in: UpdateSchemaType) -> Optional[ModelType]:
-        db_obj: Optional[ModelType] = session.get(self.model, pk)
+    async def update(self, session: Session, pk: UUID, obj_in: UpdateSchemaType) -> ModelType | None:
+        db_obj: ModelType | None = session.get(self.model, pk)
         if db_obj is None:
             return None
         # Update fields manually
@@ -63,14 +60,14 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     async def all(self, session: Session) -> list[ModelType]:
         return list(session.exec(select(self.model)).all())
 
-    async def list(
-            self,
-            session: Session,
-            currentPage: int = 1,
-            pageSize: int = 15,
-            where: ColumnElement[bool] | None = None,
-            order: UnaryExpression | str = "created_at",
-            options: list[Any] | None = None,
+    async def list(  # noqa: PLR0913
+        self,
+        session: Session,
+        currentPage: int = 1,
+        pageSize: int = 15,
+        where: ColumnElement[bool] | None = None,
+        order: UnaryExpression | str = "created_at",
+        options: list[Any] | None = None,
     ) -> tuple[Total, list[ModelType]]:
         id_column = getattr(self.model, "id", None)
         if id_column is None:
@@ -82,8 +79,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         statement = select(self.model)
         if options:
             statement = statement.options(*options)
-        statement = statement.order_by(order).offset(
-            (currentPage - 1) * pageSize).limit(pageSize)
+        statement = statement.order_by(order).offset((currentPage - 1) * pageSize).limit(pageSize)
         if where is not None:
             statement = statement.where(where)
         result = session.exec(statement).all()

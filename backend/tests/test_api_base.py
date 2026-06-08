@@ -1,14 +1,10 @@
 """API 集成测试 — base 路由（核心路径 100%）"""
-import pytest
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
-from sqlmodel import select
-
-from app.models import User, SecurityPolicy
+from app.models import SecurityPolicy
 from app.models.login import JWTPayload
-from app.utils.password import get_password_hash
-from app.utils.jwtt import create_access_token
 from app.utils.captcha import CAPTCHA_KEY_PREFIX
+from app.utils.jwtt import create_access_token
 
 
 def _get_captcha_code_sync(test_redis, captcha_key: str) -> str | None:
@@ -141,7 +137,7 @@ class TestRefreshToken:
             user_id=str(admin_user.id),
             username=admin_user.username,
             is_superuser=True,
-            exp=datetime.now(timezone.utc) + timedelta(days=1),
+            exp=datetime.now(UTC) + timedelta(days=1),
         )
         refresh_token = create_access_token(data=refresh_payload)
 
@@ -159,7 +155,7 @@ class TestRefreshToken:
             user_id=str(admin_user.id),
             username=admin_user.username,
             is_superuser=True,
-            exp=datetime.now(timezone.utc) - timedelta(seconds=1),
+            exp=datetime.now(UTC) - timedelta(seconds=1),
         )
         expired_token = create_access_token(data=expired_payload)
 

@@ -240,3 +240,8 @@ export const clearSystemLogs = () => {
 export const getSystemVersion = () => {
   return http.request<Result>("get", systemUrl("/version"));
 };
+
+/** 检查系统更新 */
+export const checkUpdate = () => {
+  return http.request<Result>("get", systemUrl("/version/check-update"));
+};

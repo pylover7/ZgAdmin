@@ -10,7 +10,13 @@ import {
 import type { UserResult, RefreshTokenResult } from "@/types/user";
 import { getLogin, refreshTokenApi, qqLogin, logoutApi } from "@/api/user";
 import { useMultiTagsStoreHook } from "./multiTags";
-import { type DataInfo, setToken, removeToken, userKey } from "@/utils/auth";
+import {
+  type DataInfo,
+  setToken,
+  removeToken,
+  userKey,
+  getToken
+} from "@/utils/auth";
 
 export const useUserStore = defineStore("pure-user", {
   state: (): userType => ({
@@ -94,20 +100,19 @@ export const useUserStore = defineStore("pure-user", {
     },
     /** 登出（调用后端接口将Token加入黑名单） */
     async logOut() {
+      const tokenData = getToken();
+      removeToken();
       try {
-        await logoutApi();
+        await logoutApi(tokenData?.refreshToken);
       } catch {
-        // 即使后端调用失败，仍然清除本地状态
+        // 后端调用失败不影响本地清理
       }
-      await logoutApi().finally(() => {
-        this.username = "";
-        this.roles = [];
-        this.permissions = [];
-        removeToken();
-        useMultiTagsStoreHook().handleTags("equal", [...routerArrays]);
-        resetRouter();
-        router.push("/login");
-      });
+      this.username = "";
+      this.roles = [];
+      this.permissions = [];
+      useMultiTagsStoreHook().handleTags("equal", [...routerArrays]);
+      resetRouter();
+      router.push("/login");
     },
     /** 刷新`token` */
     async handRefreshToken(data) {
@@ -117,6 +122,8 @@ export const useUserStore = defineStore("pure-user", {
             if (data) {
               setToken(data.data);
               resolve(data);
+            } else {
+              reject(new Error("刷新令牌响应数据为空"));
             }
           })
           .catch(error => {

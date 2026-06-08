@@ -1,6 +1,4 @@
 """core/redis.py MemoryRedis 单元测试 — 所有 Protocol 方法"""
-import asyncio
-import time
 
 import pytest
 

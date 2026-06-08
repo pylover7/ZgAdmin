@@ -16,6 +16,8 @@ from typing import Any, Protocol, runtime_checkable
 from app.settings import settings
 from app.settings.log import logger
 
+_SET_CMD_MIN_LEN = 3
+
 
 @runtime_checkable
 class RedisClient(Protocol):
@@ -40,7 +42,7 @@ class MemoryRedis:
 
     def __init__(self):
         self._data: dict[str, tuple[str, float | None]] = {}  # key -> (value, expire_at)
-        self._sorted_sets: dict[str, dict[str, float]] = {}   # key -> {member: score}
+        self._sorted_sets: dict[str, dict[str, float]] = {}  # key -> {member: score}
         self._lock = asyncio.Lock()
 
     def _is_expired(self, key: str) -> bool:
@@ -122,10 +124,7 @@ class MemoryRedis:
         async with self._lock:
             if key not in self._sorted_sets:
                 return 0
-            to_remove = [
-                member for member, score in self._sorted_sets[key].items()
-                if min_score <= score <= max_score
-            ]
+            to_remove = [member for member, score in self._sorted_sets[key].items() if min_score <= score <= max_score]
             for member in to_remove:
                 del self._sorted_sets[key][member]
             return len(to_remove)
@@ -152,7 +151,7 @@ class MemoryRedis:
             elif op == "get":
                 results.append(await self.get(cmd[1]))
             elif op == "set":
-                await self.set(cmd[1], cmd[2], cmd[3] if len(cmd) > 3 else None)
+                await self.set(cmd[1], cmd[2], cmd[3] if len(cmd) > _SET_CMD_MIN_LEN else None)
                 results.append(None)
             elif op == "delete":
                 results.append(await self.delete(cmd[1]))
@@ -172,11 +171,9 @@ class RealRedis:
 
     def __init__(self, url: str):
         try:
-            import redis.asyncio as aioredis  # pylint: disable=import-outside-toplevel
+            import redis.asyncio as aioredis
         except ImportError as exc:
-            raise ImportError(
-                "生产环境需要 redis 包，请运行: uv add redis"
-            ) from exc
+            raise ImportError("生产环境需要 redis 包，请运行: uv add redis") from exc
         self._pool = aioredis.ConnectionPool.from_url(url, decode_responses=True)
         self._redis = aioredis.Redis(connection_pool=self._pool)
 
@@ -227,7 +224,7 @@ class RealRedis:
             elif op == "get":
                 pipe.get(cmd[1])
             elif op == "set":
-                pipe.set(cmd[1], cmd[2], ex=cmd[3] if len(cmd) > 3 else None)
+                pipe.set(cmd[1], cmd[2], ex=cmd[3] if len(cmd) > _SET_CMD_MIN_LEN else None)
             elif op == "delete":
                 pipe.delete(cmd[1])
             elif op == "exists":
@@ -239,9 +236,7 @@ class RealRedis:
         await self._pool.disconnect()
 
 
-# ─── 全局单例 ──────────────────────────────────────────────────────────
-
-_redis_instance: RedisClient | None = None
+# ─── Redis 单例管理器 ────────────────────────────────────────────────────
 
 
 def _create_redis() -> RedisClient:
@@ -257,42 +252,57 @@ def _create_redis() -> RedisClient:
         return MemoryRedis()
 
     # 非本地环境没有 REDIS_URL 时，降级到内存模式并警告
-    logger.warning(
-        "⚠ 生产环境未配置 REDIS_URL，降级使用内存适配器（多进程不可用）"
-    )
+    logger.warning("⚠ 生产环境未配置 REDIS_URL，降级使用内存适配器（多进程不可用）")
     return MemoryRedis()
+
+
+class _RedisManager:
+    """Redis 连接管理器 — 封装单例状态，替代 global 语句"""
+
+    def __init__(self) -> None:
+        self._instance: RedisClient | None = None
+
+    def get(self) -> RedisClient:
+        if self._instance is None:
+            self._instance = _create_redis()
+        return self._instance
+
+    async def init(self) -> None:
+        self._instance = _create_redis()
+
+        # 测试连接
+        if isinstance(self._instance, RealRedis):
+            try:
+                await self._instance.set("redis:ping", "pong", ex=10)
+                pong = await self._instance.get("redis:ping")
+                if pong != "pong":
+                    raise ConnectionError("Redis ping 失败")
+                logger.info("Redis 连接测试成功")
+            except Exception as e:
+                logger.error(f"Redis 连接失败: {e}")
+                raise
+
+    async def close(self) -> None:
+        if self._instance is not None:
+            await self._instance.close()
+            self._instance = None
+            logger.info("Redis 连接已关闭")
+
+
+# 模块级单例 — 全局唯一，替代 global 语句
+redis_manager = _RedisManager()
 
 
 def get_redis() -> RedisClient:
     """获取 Redis 全局单例"""
-    global _redis_instance  # pylint: disable=global-statement
-    if _redis_instance is None:
-        _redis_instance = _create_redis()
-    return _redis_instance
+    return redis_manager.get()
 
 
 async def init_redis() -> None:
     """应用启动时调用 — 初始化 Redis 连接"""
-    global _redis_instance  # pylint: disable=global-statement
-    _redis_instance = _create_redis()
-
-    # 测试连接
-    if isinstance(_redis_instance, RealRedis):
-        try:
-            await _redis_instance.set("redis:ping", "pong", ex=10)
-            pong = await _redis_instance.get("redis:ping")
-            if pong != "pong":
-                raise ConnectionError("Redis ping 失败")
-            logger.info("Redis 连接测试成功")
-        except Exception as e:
-            logger.error(f"Redis 连接失败: {e}")
-            raise
+    await redis_manager.init()
 
 
 async def close_redis() -> None:
     """应用关闭时调用 — 关闭 Redis 连接"""
-    global _redis_instance  # pylint: disable=global-statement
-    if _redis_instance is not None:
-        await _redis_instance.close()
-        _redis_instance = None
-        logger.info("Redis 连接已关闭")
+    await redis_manager.close()

@@ -13,8 +13,7 @@ class SimpleBaseMiddleware:
     def __init__(self, app: ASGIApp) -> None:
         self.app = app
 
-    async def __call__(self, scope: Scope, receive: Receive,
-                       send: Send) -> None:
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         if scope["type"] != "http":
             await self.app(scope, receive, send)
             return
@@ -60,7 +59,7 @@ class IPFilterMiddleware(SimpleBaseMiddleware):
     def _ip_matches_cidr(self, ip: str, cidr: str) -> bool:
         """检查 IP 是否匹配 CIDR 规则"""
         try:
-            if '/' in cidr:
+            if "/" in cidr:
                 return ipaddress.ip_address(ip) in ipaddress.ip_network(cidr, strict=False)
             return ip == cidr
         except (ValueError, TypeError):
@@ -78,20 +77,21 @@ class IPFilterMiddleware(SimpleBaseMiddleware):
                 pass
 
         # 从数据库加载
-        from sqlmodel import Session, select  # pylint: disable=import-outside-toplevel
-        from app.models.security import IPRule  # pylint: disable=import-outside-toplevel
-        from app.core import engine  # pylint: disable=import-outside-toplevel
+        from sqlmodel import Session, select
+
+        from app.core import engine
+        from app.models.security import IPRule
 
         rules = []
         with Session(engine) as session:
-            db_rules = session.exec(
-                select(IPRule).where(IPRule.is_active.is_(True))  # noqa: E712
-            ).all()
+            db_rules = session.exec(select(IPRule).where(IPRule.is_active.is_(True))).all()
             for rule in db_rules:
-                rules.append({
-                    "ip_cidr": rule.ip_cidr,
-                    "rule_type": rule.rule_type,
-                })
+                rules.append(
+                    {
+                        "ip_cidr": rule.ip_cidr,
+                        "rule_type": rule.rule_type,
+                    }
+                )
 
         # 缓存到 Redis
         await redis.set(self.CACHE_KEY, json.dumps(rules), ex=self.CACHE_TTL)
@@ -102,8 +102,7 @@ class IPFilterMiddleware(SimpleBaseMiddleware):
 
         # 白名单路径放行（健康检查、验证码等）
         path = request.url.path
-        if path.startswith(
-                "/api/v1/base/health") or path == "/openapi.json" or path.startswith("/docs"):
+        if path.startswith(("/api/v1/base/health", "/docs")) or path == "/openapi.json":
             return self.app
 
         try:
@@ -120,22 +119,13 @@ class IPFilterMiddleware(SimpleBaseMiddleware):
 
         # 白名单优先：如果存在白名单规则，则 IP 必须匹配白名单才放行
         if whitelist_rules:
-            matched = any(
-                self._ip_matches_cidr(client_ip, r["ip_cidr"])
-                for r in whitelist_rules
-            )
+            matched = any(self._ip_matches_cidr(client_ip, r["ip_cidr"]) for r in whitelist_rules)
             if not matched:
-                return JSONResponse(
-                    status_code=403,
-                    content={"code": 403, "msg": "访问被拒绝"}
-                )
+                return JSONResponse(status_code=403, content={"code": 403, "msg": "访问被拒绝"})
 
         # 黑名单检查
         for rule in blacklist_rules:
             if self._ip_matches_cidr(client_ip, rule["ip_cidr"]):
-                return JSONResponse(
-                    status_code=403,
-                    content={"code": 403, "msg": "IP 已被封禁"}
-                )
+                return JSONResponse(status_code=403, content={"code": 403, "msg": "IP 已被封禁"})
 
         return self.app

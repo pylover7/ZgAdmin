@@ -2,15 +2,14 @@
 import pytest
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError, ResponseValidationError
-from fastapi.testclient import TestClient
 from sqlalchemy.exc import IntegrityError
 
 from app.core.exceptions import (
-    SettingNotFound,
-    IntegrityHandle,
     HttpExcHandle,
+    IntegrityHandle,
     RequestValidationHandle,
     ResponseValidationHandle,
+    SettingNotFound,
 )
 from app.core.init import register_exceptions
 
@@ -35,7 +34,7 @@ class TestExceptionHandlers:
 
     @pytest.mark.asyncio
     async def test_http_exc_handle_500(self, exc_app):
-        from fastapi import Request, HTTPException
+        from fastapi import HTTPException, Request
         from starlette.responses import JSONResponse
 
         mock_request = Request({"type": "http", "headers": []})
@@ -46,8 +45,7 @@ class TestExceptionHandlers:
 
     @pytest.mark.asyncio
     async def test_http_exc_handle_404(self, exc_app):
-        from fastapi import Request, HTTPException
-        from starlette.responses import JSONResponse
+        from fastapi import HTTPException, Request
 
         mock_request = Request({"type": "http", "headers": []})
         exc = HTTPException(status_code=404, detail="Not Found")

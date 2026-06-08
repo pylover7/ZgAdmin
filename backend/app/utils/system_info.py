@@ -3,32 +3,36 @@ from collections import namedtuple
 
 import psutil
 
+_BYTE_UNIT = 1024
+_MHZ_PER_GHZ = 1000
+_LOAD_NORMAL = 0.7
+
 
 def _fmt_bytes(b: float) -> str:
     for unit in ("B", "KB", "MB", "GB", "TB"):
-        if b < 1024:
+        if b < _BYTE_UNIT:
             return f"{b:.1f}{unit}"
-        b /= 1024
+        b /= _BYTE_UNIT
     return f"{b:.1f}PB"
 
 
 def _fmt_rate(b: float) -> str:
     for unit in ("B/s", "KB/s", "MB/s", "GB/s"):
-        if b < 1024:
+        if b < _BYTE_UNIT:
             return f"{b:.1f}{unit}"
-        b /= 1024
+        b /= _BYTE_UNIT
     return f"{b:.1f}TB/s"
 
 
 def _fmt_freq(mhz: float) -> str:
-    if mhz >= 1000:
-        return f"{mhz / 1000:.2f}GHz"
+    if mhz >= _MHZ_PER_GHZ:
+        return f"{mhz / _MHZ_PER_GHZ:.2f}GHz"
     return f"{mhz:.0f}MHz"
 
 
 def _load_status(load1: float, cores: int) -> str:
     ratio = load1 / cores if cores else 0
-    if ratio < 0.7:
+    if ratio < _LOAD_NORMAL:
         return "正常"
     if ratio < 1.0:
         return "偏高"
@@ -69,11 +73,11 @@ def _get_host_cpu_count() -> int:
             content = f.read().strip()
             max_id = 0
             for part in content.split(","):
-                part = part.strip()
-                if "-" in part:
-                    max_id = max(max_id, int(part.split("-")[1]))
-                elif part.isdigit():
-                    max_id = max(max_id, int(part))
+                p = part.strip()
+                if "-" in p:
+                    max_id = max(max_id, int(p.split("-")[1]))
+                elif p.isdigit():
+                    max_id = max(max_id, int(p))
             counts.append(max_id + 1)
     except (FileNotFoundError, OSError, ValueError):
         pass
@@ -128,9 +132,14 @@ def get_load_info(cpu_percent: float | None = None) -> LoadInfo:
         percent = min(round(load1 / cores * 100, 1), 100) if cores else 0
 
     status = _load_status(load1, cores)
-    return LoadInfo(load1=round(load1, 2), load5=round(load5, 2),
-                    load15=round(load15, 2), status=status, cores=cores,
-                    percent=percent)
+    return LoadInfo(
+        load1=round(load1, 2),
+        load5=round(load5, 2),
+        load15=round(load15, 2),
+        status=status,
+        cores=cores,
+        percent=percent,
+    )
 
 
 def get_cpu_info() -> CpuInfo:
@@ -141,8 +150,11 @@ def get_cpu_info() -> CpuInfo:
     physical = psutil.cpu_count(logical=False) or 0
     logical = psutil.cpu_count(logical=True) or 0
     return CpuInfo(
-        percent=percent, freq=freq_str, per_cpu=per_cpu,
-        physical_cores=physical, logical_cores=logical,
+        percent=percent,
+        freq=freq_str,
+        per_cpu=per_cpu,
+        physical_cores=physical,
+        logical_cores=logical,
     )
 
 
@@ -198,7 +210,7 @@ def get_disk_io():
         return {}
     result = {}
     for name, c in counters.items():
-        if name.startswith("loop") or name.startswith("dm-"):
+        if name.startswith(("loop", "dm-")):
             continue
         result[name] = {
             "read_bytes": c.read_bytes,
@@ -214,12 +226,14 @@ def get_top_processes(n: int = 5) -> list[ProcessItem]:
     for p in psutil.process_iter(["pid", "name", "cpu_percent", "memory_percent"]):
         try:
             info = p.info
-            procs.append(ProcessItem(
-                pid=info["pid"],
-                name=info["name"] or "",
-                cpu_percent=info["cpu_percent"] or 0,
-                memory_percent=round(info["memory_percent"] or 0, 1),
-            ))
+            procs.append(
+                ProcessItem(
+                    pid=info["pid"],
+                    name=info["name"] or "",
+                    cpu_percent=info["cpu_percent"] or 0,
+                    memory_percent=round(info["memory_percent"] or 0, 1),
+                )
+            )
         except (psutil.NoSuchProcess, psutil.AccessDenied):
             continue
     procs.sort(key=lambda x: x.cpu_percent, reverse=True)

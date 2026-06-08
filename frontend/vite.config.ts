@@ -7,22 +7,18 @@ import {
   wrapperEnv,
   pathResolve,
   __APP_INFO__,
-  BACKEND_URL,
-  projectRoot,
-  PROJECT_VERSION
+  BACKEND_URL
 } from "./build/utils";
 
 export default async ({ mode }: ConfigEnv): Promise<UserConfigExport> => {
   const { VITE_CDN, VITE_PORT, VITE_COMPRESSION, VITE_PUBLIC_PATH } =
-    wrapperEnv(loadEnv(mode, projectRoot));
+    wrapperEnv(loadEnv(mode, process.cwd()));
   return {
     base: VITE_PUBLIC_PATH,
     root,
     resolve: {
       alias
     },
-    // 环境变量读取项目根目录
-    envDir: projectRoot,
     // 服务端渲染
     server: {
       // 端口号
@@ -40,7 +36,7 @@ export default async ({ mode }: ConfigEnv): Promise<UserConfigExport> => {
       warmup: {
         clientFiles: ["./index.html", "./src/{views,components}/*"]
       },
-      allowedHosts: [".cnb.space"]
+      allowedHosts: [".cnb.space", ".cnb.run"]
     },
     plugins: await getPluginsList(VITE_CDN, VITE_COMPRESSION),
     // https://cn.vitejs.dev/config/dep-optimization-options.html#dep-optimization-options
@@ -69,7 +65,7 @@ export default async ({ mode }: ConfigEnv): Promise<UserConfigExport> => {
     },
     define: {
       __INTLIFY_PROD_DEVTOOLS__: false,
-      __APP_INFO__: JSON.stringify({ ...__APP_INFO__, PROJECT_VERSION })
+      __APP_INFO__: JSON.stringify(__APP_INFO__)
     }
   };
 };

@@ -20,7 +20,6 @@ declare global {
       devDependencies: Recordable;
     };
     lastBuildTime: string;
-    projectVersion: string;
   };
 
   /**

@@ -119,29 +119,98 @@ detect_backend_updates() {
 }
 
 # ==============================================================================
-# 2. 前端依赖检测（只读）
+# 2. 前端依赖检测（对比上游 vue-pure-admin 最新 release）
 # ==============================================================================
+UPSTREAM_REPO="pure-admin/vue-pure-admin"
+
 detect_frontend_updates() {
-    if ! command -v bun &>/dev/null; then
-        log_warn "bun 未安装，跳过前端检测"
+    local pkg_version
+    pkg_version=$(jq -r '.version' "${FRONTEND_DIR}/package.json" 2>/dev/null || echo "")
+
+    if [[ -z "${pkg_version}" ]]; then
+        log_warn "无法读取 frontend/package.json 中的 version"
         echo ""
         return 0
     fi
 
-    cd "${FRONTEND_DIR}"
+    log_info "前端当前版本: v${pkg_version}，检测上游 ${UPSTREAM_REPO} 最新 release..."
 
-    # bun outdated 返回非 0 表示有更新，需要 || true
-    local outdated_raw
-    outdated_raw=$(bun outdated 2>&1 || true)
+    # 从 GitHub API 获取最新 release（非 prerelease、非 draft）
+    local release_json
+    release_json=$(curl -sf "https://api.github.com/repos/${UPSTREAM_REPO}/releases?per_page=10" 2>/dev/null || echo "[]")
 
-    if [[ -z "${outdated_raw}" || "${outdated_raw}" == *"0 outdated"* ]]; then
-        log_info "前端：无依赖更新"
+    if [[ "${release_json}" == "[]" ]]; then
+        log_warn "无法获取上游 release 信息（API 限流或网络问题）"
         echo ""
         return 0
     fi
 
-    log_info "前端：检测到依赖更新"
-    echo "${outdated_raw}"
+    # 找到最新的非 prerelease、非 draft 的 release
+    local latest_tag latest_name latest_published latest_url latest_body
+    latest_tag=$(echo "${release_json}" \
+        | jq -r '[.[] | select(.prerelease == false and .draft == false)][0].tag_name // empty' 2>/dev/null)
+
+    if [[ -z "${latest_tag}" ]]; then
+        log_warn "上游无正式 release"
+        echo ""
+        return 0
+    fi
+
+    latest_name=$(echo "${release_json}" | jq -r '[.[] | select(.prerelease == false and .draft == false)][0].name // empty')
+    latest_published=$(echo "${release_json}" | jq -r '[.[] | select(.prerelease == false and .draft == false)][0].published_at // empty')
+    latest_url=$(echo "${release_json}" | jq -r '[.[] | select(.prerelease == false and .draft == false)][0].html_url // empty')
+    latest_body=$(echo "${release_json}" | jq -r '[.[] | select(.prerelease == false and .draft == false)][0].body // empty')
+
+    # 去掉 tag 前缀 v 做版本比较
+    local latest_version="${latest_tag#v}"
+
+    if [[ "${latest_version}" == "${pkg_version}" ]]; then
+        log_info "前端：已是最新版本 v${pkg_version}"
+        echo ""
+        return 0
+    fi
+
+    # 判断是否为升级（latest > current），而非降级
+    local is_upgrade=false
+    local pkg_major pkg_minor pkg_patch latest_major latest_minor latest_patch
+    IFS='.' read -r pkg_major pkg_minor pkg_patch <<< "${pkg_version}"
+    IFS='.' read -r latest_major latest_minor latest_patch <<< "${latest_version}"
+
+    pkg_major="${pkg_major:-0}"; pkg_minor="${pkg_minor:-0}"; pkg_patch="${pkg_patch:-0}"
+    latest_major="${latest_major:-0}"; latest_minor="${latest_minor:-0}"; latest_patch="${latest_patch:-0}"
+
+    if [[ "${latest_major}" -gt "${pkg_major}" ]] \
+        || { [[ "${latest_major}" -eq "${pkg_major}" ]] && [[ "${latest_minor}" -gt "${pkg_minor}" ]]; } \
+        || { [[ "${latest_major}" -eq "${pkg_major}" ]] && [[ "${latest_minor}" -eq "${pkg_minor}" ]] && [[ "${latest_patch}" -gt "${pkg_patch}" ]]; }; then
+        is_upgrade=true
+    fi
+
+    if [[ "${is_upgrade}" == false ]]; then
+        log_info "前端：当前版本 v${pkg_version} 不低于上游最新 v${latest_version}，无需更新"
+        echo ""
+        return 0
+    fi
+
+    # 收集当前版本和最新版本之间的所有 release
+    local all_releases
+    all_releases=$(echo "${release_json}" \
+        | jq -r --arg cur "v${pkg_version}" \
+            '[.[] | select(.prerelease == false and .draft == false and (.tag_name | .[1:] | split(".") | map(tonumber? // 0)) > ($cur | .[1:] | split(".") | map(tonumber? // 0)))] | sort_by(.published_at) | reverse | .[] | "\(.tag_name)|\(.name)|\(.published_at)|\(.html_url)|\(.body)"' 2>/dev/null || true)
+
+    # 输出格式：第一行为当前版本信息，后续每行一个 release
+    # 格式: CURRENT|pkg_version|latest_version|latest_published|latest_url
+    # 后续: RELEASE|tag|name|published_at|html_url|body
+    echo "CURRENT|${pkg_version}|${latest_version}|${latest_published}|${latest_url}"
+
+    if [[ -n "${all_releases}" ]]; then
+        while IFS= read -r line; do
+            [[ -z "${line}" ]] && continue
+            echo "RELEASE|${line}"
+        done <<< "${all_releases}"
+    else
+        # fallback: 至少输出最新 release 的 body
+        echo "RELEASE|${latest_tag}|${latest_name}|${latest_published}|${latest_url}|${latest_body}"
+    fi
 }
 
 # ==============================================================================
@@ -195,12 +264,44 @@ generate_report() {
 
     # ---- 前端部分 ----
     if [[ -n "${frontend_updates}" ]]; then
-        report+="### 前端 (Node.js)\n\n"
-        report+="\`\`\`\n"
-        report+="${frontend_updates}\n"
-        report+="\`\`\`\n\n"
+        # 解析前端更新数据
+        local current_line=""
+        local release_lines=""
+        while IFS= read -r line; do
+            [[ -z "${line}" ]] && continue
+            if [[ "${line}" == CURRENT* ]]; then
+                current_line="${line}"
+            elif [[ "${line}" == RELEASE* ]]; then
+                release_lines+="${line}"$'\n'
+            fi
+        done <<< "${frontend_updates}"
+
+        if [[ -n "${current_line}" ]]; then
+            local cur_ver latest_ver latest_pub latest_link
+            IFS='|' read -r _ cur_ver latest_ver latest_pub latest_link <<< "${current_line}"
+            local level
+            level=$(semver_level "${cur_ver}" "${latest_ver}")
+            report+="### 前端（vue-pure-admin 上游）\n\n"
+            report+="| 项目 | 当前版本 | 上游最新 | 变更级别 |\n"
+            report+="|------|---------|---------|--------|\n"
+            report+="| \`vue-pure-admin\` | \`v${cur_ver}\` | [\`v${latest_ver}\`](${latest_link}) | ${level} |\n\n"
+        fi
+
+        if [[ -n "${release_lines}" ]]; then
+            report+="<details><summary>📋 上游 Release Notes</summary>\n\n"
+            while IFS= read -r rline; do
+                [[ -z "${rline}" ]] && continue
+                # RELEASE|tag|name|published_at|html_url|body
+                local r_tag r_name r_pub r_url r_body
+                IFS='|' read -r _ r_tag r_name r_pub r_url r_body <<< "${rline}"
+                local pub_date="${r_pub%%T*}"
+                report+="### [${r_tag}](${r_url}) (${pub_date})\n\n"
+                report+="${r_body}\n\n---\n\n"
+            done <<< "${release_lines}"
+            report+="</details>\n\n"
+        fi
     else
-        report+="### 前端 (Node.js)\n\n所有依赖均为最新版本。\n\n"
+        report+="### 前端（vue-pure-admin 上游）\n\n已是最新版本，无需更新。\n\n"
     fi
 
     echo -e "${report}"
@@ -251,10 +352,12 @@ ai_analysis() {
 
 项目技术栈：
 - 后端：FastAPI + SQLModel + Uvicorn + Redis + APScheduler
-- 前端：Vue 3 + Element Plus + Pinia + Vite + Tailwind CSS
+- 前端：基于 vue-pure-admin（上游仓库 pure-admin/vue-pure-admin），Vue 3 + Element Plus + Pinia + Vite + Tailwind CSS
+- 前端版本升级指上游 vue-pure-admin 发布了新版本，需评估是否需要同步升级
 
 注意：
-- 仅分析有版本变化的依赖
+- 后端依赖仅分析有版本变化的包
+- 前端如果检测到上游有新版本，分析其 Release Notes 中是否有破坏性变更、新特性值得跟进、或需要适配的地方
 - 如有安全更新，需特别标注
 - 如无破坏性变更，明确说明"无需适配"
 PROMPT_EOF

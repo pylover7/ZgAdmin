@@ -1,9 +1,9 @@
 from uuid import UUID
 
-from sqlmodel import Session, select, func, col
+from sqlmodel import Session, col, func, select
 
 from app.core.crud import CRUDBase
-from app.models.notice import Notice, NoticeCreate, NoticeUpdate, NoticeRead
+from app.models.notice import Notice, NoticeCreate, NoticeRead, NoticeUpdate
 
 
 class NoticeController(CRUDBase[Notice, NoticeCreate, NoticeUpdate]):
@@ -13,25 +13,16 @@ class NoticeController(CRUDBase[Notice, NoticeCreate, NoticeUpdate]):
     async def get_unread_count(self, session: Session, user_id: UUID) -> int:
         """获取用户未读通知数量"""
         # 已读通知 ID 集合
-        read_ids = select(NoticeRead.notice_id).where(
-            NoticeRead.user_id == user_id
-        )
+        read_ids = select(NoticeRead.notice_id).where(NoticeRead.user_id == user_id)
         # 已发布通知中未读的数量
         count_stmt = (
-            select(func.count())
-            .select_from(Notice)
-            .where(Notice.status == 1)
-            .where(col(Notice.id).not_in(read_ids))
+            select(func.count()).select_from(Notice).where(Notice.status == 1).where(col(Notice.id).not_in(read_ids))
         )
         return session.exec(count_stmt).one()
 
-    async def get_unread_list(
-        self, session: Session, user_id: UUID, limit: int = 10
-    ) -> list[Notice]:
+    async def get_unread_list(self, session: Session, user_id: UUID, limit: int = 10) -> list[Notice]:
         """获取用户未读通知列表"""
-        read_ids = select(NoticeRead.notice_id).where(
-            NoticeRead.user_id == user_id
-        )
+        read_ids = select(NoticeRead.notice_id).where(NoticeRead.user_id == user_id)
         stmt = (
             select(Notice)
             .where(Notice.status == 1)
@@ -41,9 +32,7 @@ class NoticeController(CRUDBase[Notice, NoticeCreate, NoticeUpdate]):
         )
         return list(session.exec(stmt).all())
 
-    async def mark_as_read(
-        self, session: Session, notice_id: UUID, user_id: UUID
-    ) -> bool:
+    async def mark_as_read(self, session: Session, notice_id: UUID, user_id: UUID) -> bool:
         """标记单条已读"""
         existing = session.exec(
             select(NoticeRead).where(
@@ -60,14 +49,8 @@ class NoticeController(CRUDBase[Notice, NoticeCreate, NoticeUpdate]):
 
     async def mark_all_as_read(self, session: Session, user_id: UUID) -> int:
         """标记全部已读，返回标记数量"""
-        read_ids = select(NoticeRead.notice_id).where(
-            NoticeRead.user_id == user_id
-        )
-        unread_stmt = (
-            select(Notice.id)
-            .where(Notice.status == 1)
-            .where(col(Notice.id).not_in(read_ids))
-        )
+        read_ids = select(NoticeRead.notice_id).where(NoticeRead.user_id == user_id)
+        unread_stmt = select(Notice.id).where(Notice.status == 1).where(col(Notice.id).not_in(read_ids))
         unread_ids = list(session.exec(unread_stmt).all())
         count = 0
         for nid in unread_ids:

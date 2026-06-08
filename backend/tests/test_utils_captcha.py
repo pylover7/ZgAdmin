@@ -1,15 +1,15 @@
 """utils/captcha.py 单元测试 — 验证码生成/校验"""
-import pytest
-import base64
 
+import pytest
+
+from app.core.redis import MemoryRedis
 from app.utils.captcha import (
-    _generate_code,
+    CAPTCHA_KEY_PREFIX,
     _create_captcha_image,
+    _generate_code,
     generate_captcha,
     verify_captcha,
-    CAPTCHA_KEY_PREFIX,
 )
-from app.core.redis import MemoryRedis
 
 
 class TestGenerateCode:

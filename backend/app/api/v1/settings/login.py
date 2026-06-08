@@ -1,8 +1,8 @@
 from fastapi import APIRouter
 
-from app.core.dependency import DependUser, SessionDep
-from app.models import Success, Fail
 from app.controllers.config import oauthConfigController
+from app.core.dependency import DependUser, SessionDep
+from app.models import Fail, Success
 from app.models.config import OAuthConfigUpdate
 from app.settings.log import logger
 
@@ -21,8 +21,7 @@ async def get_login_config(session: SessionDep):
 
 
 @loginProtectedRouter.post("", summary="更新登录配置")
-async def update_login_config(
-        session: SessionDep, current_user: DependUser, data: OAuthConfigUpdate):
+async def update_login_config(session: SessionDep, current_user: DependUser, data: OAuthConfigUpdate):
     """更新QQ和微信登录配置"""
     config = oauthConfigController.update(session, data)
     if not config:

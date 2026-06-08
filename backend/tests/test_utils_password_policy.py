@@ -1,13 +1,13 @@
 """utils/password_policy.py 单元测试 — 密码复杂度 + 历史检查"""
 import pytest
+
+from app.models.security import SecurityPolicy
 from app.utils.password import get_password_hash
 from app.utils.password_policy import (
-    validate_password_strength,
     check_password_history,
     update_password_history,
+    validate_password_strength,
 )
-from app.models.security import SecurityPolicy
-
 
 # ═══════════════════════════════════════════════════════════════════════
 # validate_password_strength
@@ -67,19 +67,19 @@ class TestValidatePasswordStrength:
         assert "特殊字符" in msg
 
     def test_lenient_policy_simple(self, lenient_policy):
-        ok, msg = validate_password_strength("abcdef", lenient_policy)
+        ok, _msg = validate_password_strength("abcdef", lenient_policy)
         assert ok is True
 
     def test_lenient_policy_too_short(self, lenient_policy):
-        ok, msg = validate_password_strength("abc", lenient_policy)
+        ok, _msg = validate_password_strength("abc", lenient_policy)
         assert ok is False
 
     def test_exact_min_length(self, strict_policy):
-        ok, msg = validate_password_strength("Aa!12345", strict_policy)
+        ok, _msg = validate_password_strength("Aa!12345", strict_policy)
         assert ok is True
 
     def test_empty_password(self, strict_policy):
-        ok, msg = validate_password_strength("", strict_policy)
+        ok, _msg = validate_password_strength("", strict_policy)
         assert ok is False
 
 
