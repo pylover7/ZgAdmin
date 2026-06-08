@@ -18,6 +18,8 @@ import LoginQQ from "./components/LoginQQ.vue";
 import { useUserStoreHook } from "@/store/modules/user";
 import { initRouter, getTopMenu } from "@/router/utils";
 import { bg, avatar, illustration } from "./utils/static";
+import { checkUpdate } from "@/api/system";
+import { ElNotification } from "element-plus";
 import { ref, toRaw, reactive, watch, computed, onMounted } from "vue";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 import { useTranslationLang } from "@/layout/hooks/useTranslationLang";
@@ -124,6 +126,17 @@ const onLogin = async (formEl: FormInstance | undefined) => {
           if (res.success) {
             return initRouter().then(() => {
               disabled.value = true;
+              // 登录成功后检查版本更新（静默，不阻塞跳转）
+              checkUpdate().then(res => {
+                if (res.data?.update_available) {
+                  ElNotification({
+                    title: t("system.about.newVersionFound"),
+                    message: `${t("system.about.currentVersion")} ${res.data.current_version}，${t("system.about.latestVersion")} ${res.data.latest_version}`,
+                    type: "warning",
+                    duration: 0
+                  });
+                }
+              });
               router
                 .push(getTopMenu(true).path)
                 .then(() => {

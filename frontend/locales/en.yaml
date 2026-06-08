@@ -694,6 +694,12 @@ system:
     lastMonth: Last Month
     thisYear: This Year
   about:
+    platformInfo: Platform Info
+    frontendInfo: Frontend Template Info
+    checkUpdate: Check Update
+    newVersionFound: New Version Available
+    latestVersion: Latest Version
+    alreadyLatest: Already up to date
     currentVersion: Current Version
     pythonVersion: Python Version
     uvVersion: uv Version

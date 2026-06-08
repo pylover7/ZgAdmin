@@ -1,9 +1,10 @@
-import { getSystemVersion } from "@/api/system";
+import { getSystemVersion, checkUpdate } from "@/api/system";
 import { onMounted, ref } from "vue";
 import { transformI18n } from "@/plugins/i18n";
+import { ElMessage, ElNotification } from "element-plus";
 
 export function useColumns() {
-  const { pkg, lastBuildTime, projectVersion } = __APP_INFO__;
+  const { pkg, lastBuildTime } = __APP_INFO__;
   const { version, engines } = pkg;
 
   interface VersionInfo {
@@ -26,6 +27,24 @@ export function useColumns() {
     release_time: ""
   });
 
+  const checking = ref(false);
+
+  const handleCheckUpdate = async () => {
+    checking.value = true;
+    const res = await checkUpdate();
+    checking.value = false;
+    if (res.data?.update_available) {
+      ElNotification({
+        title: transformI18n("system.about.newVersionFound"),
+        message: `${transformI18n("system.about.currentVersion")} ${res.data.current_version}，${transformI18n("system.about.latestVersion")} ${res.data.latest_version}`,
+        type: "warning",
+        duration: 0
+      });
+    } else {
+      ElMessage.success(transformI18n("system.about.alreadyLatest"));
+    }
+  };
+
   const appColums = [
     {
       label: transformI18n("system.about.currentVersion"),
@@ -33,7 +52,7 @@ export function useColumns() {
       cellRenderer: () => {
         return (
           <el-tag size="large" class="text-base!">
-            {projectVersion}
+            {versionInfo.value.version || "-"}
           </el-tag>
         );
       }
@@ -206,6 +225,8 @@ export function useColumns() {
 
   return {
     columns,
-    appColums
+    appColums,
+    checking,
+    handleCheckUpdate
   };
 }
