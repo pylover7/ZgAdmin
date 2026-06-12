@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from pydantic import EmailStr
+from pydantic import ConfigDict, EmailStr
 from sqlalchemy import JSON, Column, DateTime
 from sqlmodel import Field, Relationship, SQLModel
 
@@ -82,6 +82,8 @@ class UserBase(BaseModel):
 
 
 class User(UserBase, TimestampMixin, table=True):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
     last_login: datetime = Field(
         default=None,
         sa_column=Column(DateTime(timezone=True), nullable=True),

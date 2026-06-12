@@ -41,7 +41,6 @@ defineOptions({
   name: "Login"
 });
 
-const imgCode = ref("");
 const captchaKey = ref("");
 const captchaImage = ref("");
 const loginDay = ref(7);
@@ -221,7 +220,7 @@ onMounted(async () => {
                 class="check-zh"
                 :icon="Check"
               />
-              {{ $t("system.simplifiedChinese") }}
+              {{ t("system.simplifiedChinese") }}
             </el-dropdown-item>
             <el-dropdown-item
               :style="getDropdownItemStyle(locale, 'en')"

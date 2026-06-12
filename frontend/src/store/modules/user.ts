@@ -101,11 +101,12 @@ export const useUserStore = defineStore("pure-user", {
     /** 登出（调用后端接口将Token加入黑名单） */
     async logOut() {
       const tokenData = getToken();
-      removeToken();
       try {
         await logoutApi(tokenData?.refreshToken);
       } catch {
         // 后端调用失败不影响本地清理
+      } finally {
+        removeToken();
       }
       this.username = "";
       this.roles = [];
