@@ -45,6 +45,8 @@ export type UserResult = {
     refreshToken: string;
     /** `accessToken`的过期时间（毫秒时间戳） */
     expires: number;
+    /** `refreshToken`的过期时间（毫秒时间戳） */
+    refreshExpires: number;
   };
 };
 
@@ -62,5 +64,7 @@ export type RefreshTokenResult = {
     refreshToken: string;
     /** `accessToken`的过期时间（毫秒时间戳） */
     expires: number;
+    /** `refreshToken`的过期时间（毫秒时间戳） */
+    refreshExpires: number;
   };
 };

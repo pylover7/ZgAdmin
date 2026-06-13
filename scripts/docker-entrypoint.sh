@@ -51,6 +51,12 @@ while ! python3 -c "import urllib.request; urllib.request.urlopen('http://localh
 done
 echo "[ENTRYPOINT] nginx 已就绪"
 
+# ── 数据库迁移 ──────────────────────────────────────────────────────────────
+echo "[ENTRYPOINT] 执行数据库迁移..."
+cd /backend
+uv run alembic upgrade head
+echo "[ENTRYPOINT] 数据库迁移完成"
+
 # ── 启动后端 ───────────────────────────────────────────────────────────────────
 echo "[ENTRYPOINT] 启动后端..."
 cd /backend

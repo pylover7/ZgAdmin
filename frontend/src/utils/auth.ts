@@ -7,6 +7,8 @@ export interface DataInfo<T> {
   accessToken: string;
   /** `accessToken`的过期时间（时间戳） */
   expires: T;
+  /** `refreshToken`的过期时间（时间戳） */
+  refreshExpires: T;
   /** 用于调用刷新accessToken的接口时所需的token */
   refreshToken: string;
   /** 用户名 */
@@ -39,31 +41,40 @@ export function getToken(): DataInfo<number> {
 
 /**
  * @description 设置`token`以及一些必要信息并采用无感刷新`token`方案
- * 无感刷新：后端返回`accessToken`（访问接口使用的`token`）、`refreshToken`（用于调用刷新`accessToken`的接口时所需的`token`，`refreshToken`的过期时间（比如30天）应大于`accessToken`的过期时间（比如2小时））、`expires`（`accessToken`的过期时间）
- * 将`accessToken`、`expires`、`refreshToken`这三条信息放在key值为authorized-token的cookie里（过期自动销毁）
- * 将`avatar`、`username`、`nickname`、`roles`、`permissions`、`refreshToken`、`expires`这七条信息放在key值为`user-info`的localStorage里（利用`multipleTabsKey`当浏览器完全关闭后自动销毁）
+ *
+ * 核心逻辑：
+ * - `TokenKey` Cookie：存储 accessToken/refreshToken/expires/refreshExpires
+ *   - 不勾选"记住我"：过期时间=accessToken过期时间（浏览器关闭前有效，短期）
+ *   - 勾选"记住我"：过期时间=refreshToken过期时间（跨浏览器会话，长期）
+ * - `multipleTabsKey` Cookie：用于路由守卫判断是否已登录
+ *   - 不勾选"记住我"：无 expires（浏览器关闭即清除）
+ *   - 勾选"记住我"：过期时间=refreshToken过期时间
+ * - `user-info` localStorage：存储用户信息 + refreshToken + expires + refreshExpires
  */
 export function setToken(data: DataInfo<number>) {
-  let expires = 0;
-  const { accessToken, refreshToken } = data;
-  const { isRemembered, loginDay } = useUserStoreHook();
-  expires = data.expires;
-  const cookieString = JSON.stringify({ accessToken, expires, refreshToken });
+  const { accessToken, refreshToken, expires, refreshExpires } = data;
+  const { isRemembered } = useUserStoreHook();
+  const cookieString = JSON.stringify({
+    accessToken,
+    expires,
+    refreshExpires,
+    refreshToken
+  });
 
-  expires > 0
-    ? Cookies.set(TokenKey, cookieString, {
-        expires: (expires - Date.now()) / 86400000
-      })
+  // TokenKey Cookie：勾选"记住我"时用 refreshToken 过期时间，否则用 accessToken 过期时间
+  const cookieExpires = isRemembered
+    ? (refreshExpires - Date.now()) / 86400000
+    : (expires - Date.now()) / 86400000;
+
+  cookieExpires > 0
+    ? Cookies.set(TokenKey, cookieString, { expires: cookieExpires })
     : Cookies.set(TokenKey, cookieString);
 
+  // multipleTabsKey Cookie：勾选"记住我"时设置过期时间，否则浏览器关闭即清除
   Cookies.set(
     multipleTabsKey,
     "true",
-    isRemembered
-      ? {
-          expires: loginDay
-        }
-      : {}
+    isRemembered ? { expires: (refreshExpires - Date.now()) / 86400000 } : {}
   );
 
   function setUserKey({ username, nickname, roles, permissions }) {
@@ -74,6 +85,7 @@ export function setToken(data: DataInfo<number>) {
     storageLocal().setItem(userKey, {
       refreshToken,
       expires,
+      refreshExpires,
       username,
       nickname,
       roles,

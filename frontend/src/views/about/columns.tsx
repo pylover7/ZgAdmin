@@ -33,10 +33,17 @@ export function useColumns() {
     checking.value = true;
     const res = await checkUpdate();
     checking.value = false;
-    if (res.data?.update_available) {
+    if (res.data?.has_update) {
       ElNotification({
         title: transformI18n("system.about.newVersionFound"),
-        message: `${transformI18n("system.about.currentVersion")} ${res.data.current_version}，${transformI18n("system.about.latestVersion")} ${res.data.latest_version}`,
+        dangerouslyUseHTMLString: true,
+        message: `
+          <div>
+            <p>${transformI18n("system.about.currentVersion")} ${res.data.current_version} → ${transformI18n("system.about.latestVersion")} ${res.data.latest_version}</p>
+            ${res.data.release_url ? `<p style="margin-top: 8px;"><a href="${res.data.release_url}" target="_blank" style="color: var(--el-color-primary)">${transformI18n("system.about.viewChangelog")}</a></p>` : ""}
+            <p style="margin-top: 8px; color: var(--el-text-color-secondary); font-size: 13px;">${transformI18n("system.about.updateCommand")}：<code>bash scripts/update.sh</code></p>
+          </div>
+        `,
         type: "warning",
         duration: 0
       });

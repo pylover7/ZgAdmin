@@ -16,21 +16,9 @@ PROJECT_NAME=我的系统
 
 方式二：替换 `frontend/public/` 下的图标文件，或修改 `frontend/src/layout/components/` 中的引用。
 
-## 改管理员密码
+## 管理员密码
 
-编辑 `.env`：
-
-```bash
-FIRST_SUPERUSER=admin
-FIRST_SUPERUSER_PASSWORD=my-new-password
-```
-
-删除数据库后重启生效：
-
-```bash
-rm backend/static/zgadmin.sqlite
-./scripts/start.sh
-```
+首次启动时，系统会自动生成随机管理员密码并打印到控制台。请妥善保存，关闭后将无法再次查看。
 
 > 已运行系统中修改密码，请使用「账户设置 → 账户安全 → 修改密码」。
 

@@ -8,15 +8,14 @@ services:
     restart: unless-stopped
     environment:
       - ENVIRONMENT=production
-      # CORS 允许的域名（生产环境必须配置，不可为 *）
       - BACKEND_CORS_ORIGINS=https://your-domain.com,https://admin.your-domain.com
-      - SECRET_KEY=changethisxxxxxx
+      - SECRET_KEY=changethisxxx
       - DB_SCHEME=postgresql
       - DB_SERVER=postgres
       - DB_PORT=5432
       - DB_PATH=zgadmin
       - DB_USER=zgadmin
-      - DB_PASSWORD=changethisxxxxxx
+      - DB_PASSWORD=changethisxxx
     volumes:
       - zgadmin_data:/backend/static
     depends_on:
@@ -36,7 +35,7 @@ services:
     restart: unless-stopped
     environment:
       - POSTGRES_USER=zgadmin
-      - POSTGRES_PASSWORD=changethisxxxxxx
+      - POSTGRES_PASSWORD=changethisxxx
       - POSTGRES_DB=zgadmin
     volumes:
       - pgdata:/var/lib/postgresql/data

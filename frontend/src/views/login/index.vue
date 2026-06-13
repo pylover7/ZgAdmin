@@ -12,7 +12,6 @@ import type { FormInstance } from "element-plus";
 import { $t, transformI18n } from "@/plugins/i18n";
 import { operates } from "./utils/enums";
 import { useLayout } from "@/layout/hooks/useLayout";
-import LoginUpdate from "./components/LoginUpdate.vue";
 import LoginWeChat from "./components/LoginWeChat.vue";
 import LoginQQ from "./components/LoginQQ.vue";
 import { useUserStoreHook } from "@/store/modules/user";
@@ -34,17 +33,14 @@ import globalization from "@/assets/svg/globalization.svg?component";
 import Lock from "~icons/ri/lock-fill";
 import Check from "~icons/ep/check";
 import User from "~icons/ri/user-3-fill";
-import Info from "~icons/ri/information-line";
 import Keyhole from "~icons/ri/shield-keyhole-line";
 
 defineOptions({
   name: "Login"
 });
 
-const imgCode = ref("");
 const captchaKey = ref("");
 const captchaImage = ref("");
-const loginDay = ref(7);
 const router = useRouter();
 const route = useRoute();
 const loading = ref(false);
@@ -91,8 +87,8 @@ const { title, getDropdownItemStyle, getDropdownItemClass } = useNav();
 const { locale, translationCh, translationEn } = useTranslationLang();
 
 const ruleForm = reactive({
-  username: "admin",
-  password: "admin123456",
+  username: "",
+  password: "",
   verifyCode: ""
 });
 
@@ -177,9 +173,6 @@ useEventListener(document, "keydown", ({ code }) => {
 watch(checked, bool => {
   useUserStoreHook().SET_ISREMEMBERED(bool);
 });
-watch(loginDay, value => {
-  useUserStoreHook().SET_LOGINDAY(value);
-});
 
 // 获取验证码
 onMounted(async () => {
@@ -221,7 +214,7 @@ onMounted(async () => {
                 class="check-zh"
                 :icon="Check"
               />
-              {{ $t("system.simplifiedChinese") }}
+              {{ t("system.simplifiedChinese") }}
             </el-dropdown-item>
             <el-dropdown-item
               :style="getDropdownItemStyle(locale, 'en')"
@@ -320,36 +313,14 @@ onMounted(async () => {
               <el-form-item>
                 <div class="w-full h-5 flex-bc">
                   <el-checkbox v-model="checked">
-                    <span class="flex">
-                      <select
-                        v-model="loginDay"
-                        :style="{
-                          width: loginDay < 10 ? '10px' : '16px',
-                          outline: 'none',
-                          background: 'none',
-                          appearance: 'none',
-                          border: 'none'
-                        }"
-                      >
-                        <option value="1">1</option>
-                        <option value="7">7</option>
-                        <option value="30">30</option>
-                      </select>
-                      {{ t("login.pureRemember") }}
-                      <IconifyIconOffline
-                        v-tippy="{
-                          content: t('login.pureRememberInfo'),
-                          placement: 'top'
-                        }"
-                        :icon="Info"
-                        class="ml-1"
-                      />
-                    </span>
+                    {{ t("login.pureRemember") }}
                   </el-checkbox>
                   <el-button
                     link
                     type="primary"
-                    @click="useUserStoreHook().SET_CURRENTPAGE(4)"
+                    @click="
+                      message(t('login.pureContactAdmin'), { type: 'warning' })
+                    "
                   >
                     {{ t("login.pureForget") }}
                   </el-button>
@@ -389,8 +360,6 @@ onMounted(async () => {
           <LoginQQ v-if="currentPage === 1" />
           <!-- 微信登录 -->
           <LoginWeChat v-if="currentPage === 2" />
-          <!-- 忘记密码 -->
-          <LoginUpdate v-if="currentPage === 3" />
         </div>
       </div>
     </div>

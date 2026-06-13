@@ -70,11 +70,25 @@ async def init_data(app: FastAPI) -> None:
         ).first()
         if not admin:
             logger.info("创建管理员账户...")
+            # 随机生成强密码（满足默认密码策略：大小写+数字+特殊字符，16位）
+            import secrets
+            import string
+
+            alphabet = string.ascii_letters + string.digits + "!@#$%^&*"
+            while True:
+                admin_password = "".join(secrets.choice(alphabet) for _ in range(16))
+                if (
+                    any(c.isupper() for c in admin_password)
+                    and any(c.islower() for c in admin_password)
+                    and any(c.isdigit() for c in admin_password)
+                    and any(c in "!@#$%^&*" for c in admin_password)
+                ):
+                    break
             user_in = UserCreate(
                 username=settings.FIRST_SUPERUSER,
                 nickname="管理员",
                 email=settings.EMAIL_TEST_USER,
-                password=settings.FIRST_SUPERUSER_PASSWORD,
+                password=admin_password,
                 status=1,
                 is_superuser=True,
                 phone="13800138000",
@@ -82,6 +96,13 @@ async def init_data(app: FastAPI) -> None:
             )
             admin = await userController.create(session=session, obj_in=user_in)
             logger.info(f"管理员创建成功: {admin.username}")
+            # 醒目打印管理员凭据
+            logger.warning("=" * 60)
+            logger.warning("  首次启动 — 已自动生成管理员密码")
+            logger.warning(f"  用户名: {settings.FIRST_SUPERUSER}")
+            logger.warning(f"  密码:   {admin_password}")
+            logger.warning("  请妥善保存此密码，关闭后将无法再次查看！")
+            logger.warning("=" * 60)
             if dept is not None:
                 dept.users.append(admin)
                 session.add(dept)

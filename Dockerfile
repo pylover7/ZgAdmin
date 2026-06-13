@@ -58,6 +58,9 @@ COPY backend/pyproject.toml backend/.python-version backend/uv.lock /backend/
 # 在最终阶段用系统 Python 安装依赖（避免跨阶段 .venv 符号链接断裂）
 WORKDIR /backend
 RUN uv sync --frozen --no-dev
+# 复制版本文件（后端 settings.VERSION 依赖）
+COPY VERSION /VERSION
+
 # 复制后端源代码
 COPY backend/ /backend/
 
