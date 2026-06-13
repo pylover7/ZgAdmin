@@ -76,13 +76,13 @@
     },
     "构建开发环境": {
       "path": "/bin/zsh",
-      "args": ["-c", "zsh /workspace/scripts/build-env.sh"],
+      "args": ["-c", "zsh /workspace/scripts/build-env.sh && zsh"],
       "name": "Start build env image",
       "description": "Terminal profile that runs a command on startup"
     },
     "构建项目镜像": {
       "path": "/bin/zsh",
-      "args": ["-c", "zsh /workspace/scripts/build.sh"],
+      "args": ["-c", "zsh /workspace/scripts/build.sh && zsh"],
       "name": "Start build image",
       "description": "Terminal profile that runs a command on startup"
     },
@@ -97,7 +97,7 @@
     },
     "启动 ZgAdmin": {
       "path": "/bin/zsh",
-      "args": ["-c", "bash /workspace/scripts/start.sh dev"],
+      "args": ["-c", "bash /workspace/scripts/start.sh"],
       "name": "Start ZgAdmin",
       "description": "Terminal profile that runs start.sh to launch ZgAdmin"
     },
