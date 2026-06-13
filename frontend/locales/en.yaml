@@ -213,6 +213,7 @@ login:
   pureRememberInfo: Stay logged in for the period configured by the administrator
   pureSure: Confirm Password
   pureForget: Forgot Password?
+  pureContactAdmin: Please contact the administrator to reset your password
   pureLogin: Login
   pureThirdLogin: Third-party Login
   purePhoneLogin: Phone Login

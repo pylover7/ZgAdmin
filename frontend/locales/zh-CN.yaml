@@ -213,6 +213,7 @@ login:
   pureRememberInfo: 勾选后，在管理员设定的期限内无需重新登录
   pureSure: 确认密码
   pureForget: 忘记密码?
+  pureContactAdmin: 忘记密码请联系管理员重置
   pureLogin: 登录
   pureThirdLogin: 第三方登录
   purePhoneLogin: 手机登录

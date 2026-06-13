@@ -12,7 +12,6 @@ import type { FormInstance } from "element-plus";
 import { $t, transformI18n } from "@/plugins/i18n";
 import { operates } from "./utils/enums";
 import { useLayout } from "@/layout/hooks/useLayout";
-import LoginUpdate from "./components/LoginUpdate.vue";
 import LoginWeChat from "./components/LoginWeChat.vue";
 import LoginQQ from "./components/LoginQQ.vue";
 import { useUserStoreHook } from "@/store/modules/user";
@@ -319,7 +318,9 @@ onMounted(async () => {
                   <el-button
                     link
                     type="primary"
-                    @click="useUserStoreHook().SET_CURRENTPAGE(4)"
+                    @click="
+                      message(t('login.pureContactAdmin'), { type: 'warning' })
+                    "
                   >
                     {{ t("login.pureForget") }}
                   </el-button>
@@ -359,8 +360,6 @@ onMounted(async () => {
           <LoginQQ v-if="currentPage === 1" />
           <!-- 微信登录 -->
           <LoginWeChat v-if="currentPage === 2" />
-          <!-- 忘记密码 -->
-          <LoginUpdate v-if="currentPage === 3" />
         </div>
       </div>
     </div>
