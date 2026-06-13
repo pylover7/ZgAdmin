@@ -35,8 +35,8 @@ bun dev                       # 监听 http://localhost:7000
 **一键启动**（推荐）：
 
 ```bash
-./scripts/start.sh dev    # 开发模式：SQLite + 内存 Redis
-./scripts/start.sh prod   # 生产模式：PostgreSQL + 真实 Redis
+./scripts/start.sh           # 开发模式：SQLite + Redis 自动检测
+# 生产部署请使用: docker compose up -d
 ```
 
 ## 数据库
@@ -69,7 +69,7 @@ docker compose up -d
 
 - 前端：`http://localhost:80`（Nginx 服务）
 - 后端 API：`http://localhost:7001`
-- PostgreSQL 和 Redis 默认不启动（需取消 `profiles` 注释或使用 `--profile postgres`）
+- PostgreSQL 和 Redis 随主服务自动启动（`depends_on` + healthcheck）
 
 ### Docker 多阶段构建
 
@@ -101,7 +101,7 @@ docker compose up -d
 | `DB_USER` | — | 数据库用户 |
 | `DB_PASSWORD` | — | 数据库密码 |
 | `DB_PATH` | `zgadmin.sqlite` | 数据库名/文件路径 |
-| `REDIS_URL` | 空 | Redis URL（空=dev 用内存） |
+| `REDIS_URL` | `redis://localhost:6379/0` | Redis 连接地址；docker-compose 中为 `redis://redis:6379/0`；开发环境连接失败自动降级为内存适配器 |
 | `FRONTEND_HOST` | `http://localhost:7000` | 前端地址 |
 | `FIRST_SUPERUSER` | `admin` | 初始管理员用户名 |
 | `FEATURE_QQ_LOGIN` | `False` | QQ 登录功能开关 |
