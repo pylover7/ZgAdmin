@@ -80,7 +80,7 @@ class Settings(BaseSettings):
     DB_USER: str = "postgres"
     DB_PASSWORD: str = "test"  # noqa: S105
     DB_PATH: str = "zgadmin.sqlite"
-    REDIS_URL: str = ""  # 空=自动（dev用内存，prod需配置redis://host:port/db）
+    REDIS_URL: str = "redis://localhost:6379/0"  # 裸机默认；docker-compose 中覆盖为 redis://redis:6379/0
 
     @computed_field
     @property
