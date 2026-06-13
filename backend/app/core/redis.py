@@ -240,20 +240,25 @@ class RealRedis:
 
 
 def _create_redis() -> RedisClient:
-    """根据配置创建 Redis 实例"""
+    """根据配置创建 Redis 实例
+
+    - local 模式：尝试连接真实 Redis，失败则降级到内存适配器
+    - 生产/预发布：必须连接真实 Redis，失败直接报错
+    """
     redis_url = getattr(settings, "REDIS_URL", "") or ""
 
-    if redis_url:
-        logger.info(f"Redis: 使用真实连接 ({redis_url.split('@')[-1]})")
-        return RealRedis(redis_url)
-
     if settings.ENVIRONMENT == "local":
-        logger.info("Redis: 使用内存适配器（开发模式）")
+        if redis_url:
+            logger.info(f"Redis: 尝试连接 ({redis_url.split('@')[-1]})")
+            return RealRedis(redis_url)
+        logger.info("Redis: 未配置 REDIS_URL，使用内存适配器（开发模式）")
         return MemoryRedis()
 
-    # 非本地环境没有 REDIS_URL 时，降级到内存模式并警告
-    logger.warning("⚠ 生产环境未配置 REDIS_URL，降级使用内存适配器（多进程不可用）")
-    return MemoryRedis()
+    # 生产/预发布：使用 REDIS_URL 连接真实 Redis
+    if not redis_url:
+        raise ValueError("生产环境必须配置 REDIS_URL")
+    logger.info(f"Redis: 使用真实连接 ({redis_url.split('@')[-1]})")
+    return RealRedis(redis_url)
 
 
 class _RedisManager:
@@ -279,8 +284,13 @@ class _RedisManager:
                     raise ConnectionError("Redis ping 失败")
                 logger.info("Redis 连接测试成功")
             except Exception as e:
-                logger.error(f"Redis 连接失败: {e}")
-                raise
+                if settings.ENVIRONMENT == "local":
+                    logger.warning(f"Redis 连接失败，降级使用内存适配器: {e}")
+                    await self._instance.close()
+                    self._instance = MemoryRedis()
+                else:
+                    logger.error(f"Redis 连接失败: {e}")
+                    raise
 
     async def close(self) -> None:
         if self._instance is not None:

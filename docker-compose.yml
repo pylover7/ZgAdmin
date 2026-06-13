@@ -16,10 +16,14 @@ services:
       - DB_PATH=zgadmin
       - DB_USER=zgadmin
       - DB_PASSWORD=changethisxxx
+      - REDIS_URL=redis://redis:6379/0
     volumes:
       - zgadmin_data:/backend/static
     depends_on:
       postgres:
+        condition: service_healthy
+        required: true
+      redis:
         condition: service_healthy
         required: true
     healthcheck:
