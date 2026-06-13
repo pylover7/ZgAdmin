@@ -111,7 +111,6 @@ class Settings(BaseSettings):
 
     EMAIL_TEST_USER: str = "test@example.com"
     FIRST_SUPERUSER: str = "admin"
-    FIRST_SUPERUSER_PASSWORD: str = "admin123456"  # noqa: S105
 
     # QQ登录配置
     QQ_APP_ID: str = ""

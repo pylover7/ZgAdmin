@@ -105,21 +105,14 @@ check_prod_env() {
         fi
     fi
 
-    # 4. 检查 FIRST_SUPERUSER_PASSWORD
-    if [ -z "${FIRST_SUPERUSER_PASSWORD+x}" ] || [ "$FIRST_SUPERUSER_PASSWORD" = "admin123456" ]; then
-        if grep -q "^FIRST_SUPERUSER_PASSWORD=admin123456" "$ENV_FILE" 2>/dev/null; then
-            log_warn "⚠ FIRST_SUPERUSER_PASSWORD 仍为默认值 admin123456，强烈建议修改！"
-        fi
-    fi
-
-    # 5. 检查 DB_PASSWORD
+    # 4. 检查 DB_PASSWORD
     if [ -z "${DB_PASSWORD+x}" ] || [ "$DB_PASSWORD" = "changethis" ]; then
         if grep -q "^DB_PASSWORD=changethis" "$ENV_FILE" 2>/dev/null; then
             log_warn "⚠ DB_PASSWORD 仍为默认值 changethis，请修改为安全密码！"
         fi
     fi
 
-    # 6. 检查 ENVIRONMENT — 环境变量优先
+    # 5. 检查 ENVIRONMENT — 环境变量优先
     if [ -z "${ENVIRONMENT+x}" ] || [ "$ENVIRONMENT" = "local" ]; then
         if grep -q "^ENVIRONMENT=local" "$ENV_FILE" 2>/dev/null; then
             sed -i "s|^ENVIRONMENT=local|ENVIRONMENT=production|" "$ENV_FILE"
@@ -347,7 +340,7 @@ main() {
             echo -e "  API:  ${GREEN}http://localhost:${BACKEND_PORT}/api/v1/docs${NC}"
             echo ""
             echo -e "  数据库: SQLite | Redis: 内存模拟"
-            echo -e "  默认管理员: admin / admin123456"
+            echo -e "  管理员密码: 首次启动自动生成并打印到后端控制台"
             echo -e "  按 ${YELLOW}Ctrl+C${NC} 停止"
             echo ""
             $FIRST_RUN && log_info "首次运行？编辑 .env 配置数据库等选项后重新启动"

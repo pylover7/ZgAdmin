@@ -87,8 +87,8 @@ const { title, getDropdownItemStyle, getDropdownItemClass } = useNav();
 const { locale, translationCh, translationEn } = useTranslationLang();
 
 const ruleForm = reactive({
-  username: "admin",
-  password: "admin123456",
+  username: "",
+  password: "",
   verifyCode: ""
 });
 

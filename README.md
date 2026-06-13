@@ -157,7 +157,7 @@ services:
       # 可选配置（未列出的默认值见下方说明）
       # - REDIS_URL=redis://zgadmin-redis:6379/0  # Redis 连接地址
       # - FIRST_SUPERUSER=admin                    # 初始管理员用户名
-      # - FIRST_SUPERUSER_PASSWORD=admin123456     # 初始管理员密码
+      # - 管理员初始密码由系统随机生成，首次启动时打印到控制台
       # - QQ_APP_ID=                               # QQ 登录 AppID，留空则隐藏入口
       # - QQ_APP_KEY=                              # QQ 登录 AppKey
       # - QQ_REDIRECT_URI=http://localhost:7000/login/qq/callback
