@@ -80,7 +80,6 @@ describe("store/modules/user", () => {
       expect(store.verifyCode).toBe("");
       expect(store.currentPage).toBe(0);
       expect(store.isRemembered).toBe(false);
-      expect(store.loginDay).toBe(7);
     });
   });
 
@@ -125,18 +124,6 @@ describe("store/modules/user", () => {
       const store = useUserStore();
       store.SET_ISREMEMBERED(true);
       expect(store.isRemembered).toBe(true);
-    });
-
-    it("SET_LOGINDAY sets login day", () => {
-      const store = useUserStore();
-      store.SET_LOGINDAY(30);
-      expect(store.loginDay).toBe(30);
-    });
-
-    it("SET_LOGINDAY converts string to number", () => {
-      const store = useUserStore();
-      store.SET_LOGINDAY("14");
-      expect(store.loginDay).toBe(14);
     });
   });
 

@@ -5,7 +5,6 @@ import { storageLocal } from "@pureadmin/utils";
 // Mock useUserStoreHook before importing auth
 const mockStore = {
   isRemembered: false,
-  loginDay: 7,
   username: "",
   nickname: "",
   roles: [] as string[],
@@ -35,7 +34,6 @@ describe("auth utils", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockStore.isRemembered = false;
-    mockStore.loginDay = 7;
     mockStore.permissions = [];
   });
 
@@ -54,6 +52,7 @@ describe("auth utils", () => {
       const tokenData = {
         accessToken: "test",
         expires: 123,
+        refreshExpires: 456,
         refreshToken: "refresh"
       };
       (Cookies.get as ReturnType<typeof vi.fn>).mockReturnValue(
@@ -68,6 +67,7 @@ describe("auth utils", () => {
       const localData = {
         accessToken: "local",
         expires: 456,
+        refreshExpires: 789,
         refreshToken: "r2"
       };
       (storageLocal as ReturnType<typeof vi.fn>).mockReturnValue({
@@ -81,10 +81,12 @@ describe("auth utils", () => {
   describe("setToken", () => {
     it("sets cookie with future expiry and calls store SET methods when username+roles provided", () => {
       const futureDate = Date.now() + 86400000;
+      const refreshFutureDate = Date.now() + 7 * 86400000;
       const data = {
         accessToken: "at",
         refreshToken: "rt",
         expires: futureDate,
+        refreshExpires: refreshFutureDate,
         username: "admin",
         roles: ["admin"],
         permissions: ["*:*:*"]
@@ -116,7 +118,8 @@ describe("auth utils", () => {
       const data = {
         accessToken: "at",
         refreshToken: "rt",
-        expires: 0
+        expires: 0,
+        refreshExpires: 0
       };
 
       (storageLocal as ReturnType<typeof vi.fn>).mockReturnValue({
@@ -133,14 +136,15 @@ describe("auth utils", () => {
       expect(Cookies.set).toHaveBeenCalledWith(TokenKey, expect.any(String));
     });
 
-    it("sets cookie with isRemembered and loginDay", () => {
+    it("sets cookie with isRemembered using refreshExpires", () => {
       mockStore.isRemembered = true;
-      mockStore.loginDay = 30;
+      const refreshFutureDate = Date.now() + 30 * 86400000;
 
       const data = {
         accessToken: "at",
         refreshToken: "rt",
         expires: Date.now() + 86400000,
+        refreshExpires: refreshFutureDate,
         username: "admin",
         roles: ["admin"]
       };
@@ -151,8 +155,9 @@ describe("auth utils", () => {
       });
 
       setToken(data);
+      // multipleTabsKey 应使用 refreshExpires 计算天数
       expect(Cookies.set).toHaveBeenCalledWith(multipleTabsKey, "true", {
-        expires: 30
+        expires: expect.closeTo(30, 1)
       });
     });
   });

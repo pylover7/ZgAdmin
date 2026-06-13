@@ -28,6 +28,7 @@ class JWTReOut(SQLModel):
         description="刷新令牌", schema_extra={"examples": ["eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."]}
     )
     expires: int = Field(description="accessToken过期时间（毫秒时间戳）", schema_extra={"examples": [1748275200000]})
+    refreshExpires: int = Field(description="refreshToken过期时间（毫秒时间戳）", schema_extra={"examples": [1748880000000]})
 
 
 class JWTOut(SQLModel):
@@ -42,6 +43,7 @@ class JWTOut(SQLModel):
         description="刷新令牌", schema_extra={"examples": ["eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."]}
     )
     expires: int = Field(description="accessToken过期时间（毫秒时间戳）", schema_extra={"examples": [1748275200000]})
+    refreshExpires: int = Field(description="refreshToken过期时间（毫秒时间戳）", schema_extra={"examples": [1748880000000]})
 
 
 class JWTPayload(SQLModel):

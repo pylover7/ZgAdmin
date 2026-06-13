@@ -50,6 +50,7 @@ async def create_token_pair(user_id: str, username: str, is_superuser: bool) -> 
             data=JWTPayload(user_id=user_id, username=username, is_superuser=is_superuser, exp=expire_refresh)
         ),
         expires=int(expire.timestamp() * 1000),
+        refreshExpires=int(expire_refresh.timestamp() * 1000),
     )
 
 

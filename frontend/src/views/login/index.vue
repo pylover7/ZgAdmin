@@ -34,7 +34,6 @@ import globalization from "@/assets/svg/globalization.svg?component";
 import Lock from "~icons/ri/lock-fill";
 import Check from "~icons/ep/check";
 import User from "~icons/ri/user-3-fill";
-import Info from "~icons/ri/information-line";
 import Keyhole from "~icons/ri/shield-keyhole-line";
 
 defineOptions({
@@ -43,7 +42,6 @@ defineOptions({
 
 const captchaKey = ref("");
 const captchaImage = ref("");
-const loginDay = ref(7);
 const router = useRouter();
 const route = useRoute();
 const loading = ref(false);
@@ -175,9 +173,6 @@ useEventListener(document, "keydown", ({ code }) => {
 
 watch(checked, bool => {
   useUserStoreHook().SET_ISREMEMBERED(bool);
-});
-watch(loginDay, value => {
-  useUserStoreHook().SET_LOGINDAY(value);
 });
 
 // 获取验证码
@@ -319,31 +314,7 @@ onMounted(async () => {
               <el-form-item>
                 <div class="w-full h-5 flex-bc">
                   <el-checkbox v-model="checked">
-                    <span class="flex">
-                      <select
-                        v-model="loginDay"
-                        :style="{
-                          width: loginDay < 10 ? '10px' : '16px',
-                          outline: 'none',
-                          background: 'none',
-                          appearance: 'none',
-                          border: 'none'
-                        }"
-                      >
-                        <option value="1">1</option>
-                        <option value="7">7</option>
-                        <option value="30">30</option>
-                      </select>
-                      {{ t("login.pureRemember") }}
-                      <IconifyIconOffline
-                        v-tippy="{
-                          content: t('login.pureRememberInfo'),
-                          placement: 'top'
-                        }"
-                        :icon="Info"
-                        class="ml-1"
-                      />
-                    </span>
+                    {{ t("login.pureRemember") }}
                   </el-checkbox>
                   <el-button
                     link
