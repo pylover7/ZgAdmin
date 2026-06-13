@@ -209,10 +209,11 @@ login:
   pureUsername: 账号
   purePassword: 密码
   pureVerifyCode: 验证码
-  pureRemember: 天内免登录
-  pureRememberInfo: 勾选并登录后，规定天数内无需输入用户名和密码会自动登入系统
+  pureRemember: 记住我
+  pureRememberInfo: 勾选后，在管理员设定的期限内无需重新登录
   pureSure: 确认密码
   pureForget: 忘记密码?
+  pureContactAdmin: 忘记密码请联系管理员重置
   pureLogin: 登录
   pureThirdLogin: 第三方登录
   purePhoneLogin: 手机登录
@@ -716,6 +717,8 @@ system:
     docLink: 文档链接
     previewAddress: 预览地址
     previewLink: 预览链接
+    viewChangelog: 查看变更日志
+    updateCommand: 更新命令
   notice:
     title: 通知标题
     type: 通知类型

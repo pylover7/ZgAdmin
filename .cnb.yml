@@ -76,6 +76,13 @@ $:
         - name: deploy docs
           script: bash scripts/deploy-docs.sh
 
+    # 构建 Docker 镜像并推送
+    - services:
+        - docker
+      stages:
+        - name: build and push docker image
+          script: bash scripts/build.sh
+
 main:
   # ===== 每周周一 9:00 依赖版本检测 =====
   "crontab: 0 9 * * 1":

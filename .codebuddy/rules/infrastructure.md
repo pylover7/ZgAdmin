@@ -104,7 +104,6 @@ docker compose up -d
 | `REDIS_URL` | 空 | Redis URL（空=dev 用内存） |
 | `FRONTEND_HOST` | `http://localhost:7000` | 前端地址 |
 | `FIRST_SUPERUSER` | `admin` | 初始管理员用户名 |
-| `FIRST_SUPERUSER_PASSWORD` | `admin123456` | 初始管理员密码 |
 | `FEATURE_QQ_LOGIN` | `False` | QQ 登录功能开关 |
 | `FEATURE_WECHAT_LOGIN` | `False` | 微信登录功能开关 |
 | `FEATURE_EMAIL` | `False` | 邮件功能开关 |
