@@ -9,13 +9,13 @@ services:
     environment:
       - ENVIRONMENT=production
       - BACKEND_CORS_ORIGINS=https://your-domain.com,https://admin.your-domain.com
-      - SECRET_KEY=changethisxxx
+      - SECRET_KEY=changethis
       - DB_SCHEME=postgresql
       - DB_SERVER=postgres
       - DB_PORT=5432
       - DB_PATH=zgadmin
       - DB_USER=zgadmin
-      - DB_PASSWORD=changethisxxx
+      - DB_PASSWORD=changethis
       - REDIS_URL=redis://redis:6379/0
     volumes:
       - zgadmin_data:/backend/static
@@ -39,7 +39,7 @@ services:
     restart: unless-stopped
     environment:
       - POSTGRES_USER=zgadmin
-      - POSTGRES_PASSWORD=changethisxxx
+      - POSTGRES_PASSWORD=changethis
       - POSTGRES_DB=zgadmin
     volumes:
       - pgdata:/var/lib/postgresql/data
