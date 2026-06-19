@@ -1,6 +1,5 @@
-from pathlib import Path
-
 import logging.config
+from pathlib import Path
 
 from alembic import command
 from alembic.config import Config
@@ -50,6 +49,79 @@ def _sync_api_routes(app: FastAPI, session: Session):
     session.commit()
 
 
+async def _ensure_admin(session: Session, dept: object | None) -> None:
+    """创建默认管理员（如果不存在）。在安全策略之前执行，避免密码复杂度校验阻止种子用户创建。"""
+    import secrets
+    import string
+
+    admin = session.exec(
+        select(User).where(
+            (User.email == settings.EMAIL_TEST_USER) | (User.username == settings.FIRST_SUPERUSER) | (User.is_superuser)
+        )
+    ).first()
+    if not admin:
+        logger.info("创建管理员账户...")
+        # 随机生成强密码（满足默认密码策略：大小写+数字+特殊字符，16位）
+        alphabet = string.ascii_letters + string.digits + "!@#$%^&*"
+        while True:
+            admin_password = "".join(secrets.choice(alphabet) for _ in range(16))
+            if (
+                any(c.isupper() for c in admin_password)
+                and any(c.islower() for c in admin_password)
+                and any(c.isdigit() for c in admin_password)
+                and any(c in "!@#$%^&*" for c in admin_password)
+            ):
+                break
+        user_in = UserCreate(
+            username=settings.FIRST_SUPERUSER,
+            nickname="管理员",
+            email=settings.EMAIL_TEST_USER,
+            password=admin_password,
+            status=1,
+            is_superuser=True,
+            phone="13800138000",
+            remark="这是管理员",
+        )
+        admin = await userController.create(session=session, obj_in=user_in)
+        logger.info(f"管理员创建成功: {admin.username}")
+        # 醒目打印管理员凭据
+        logger.warning("=" * 60)
+        logger.warning("  首次启动 — 已自动生成管理员密码")
+        logger.warning(f"  用户名: {settings.FIRST_SUPERUSER}")
+        logger.warning(f"  密码:   {admin_password}")
+        logger.warning("  请妥善保存此密码，关闭后将无法再次查看！")
+        logger.warning("=" * 60)
+        if dept is not None:
+            dept.users.append(admin)
+            session.add(dept)
+            session.commit()
+    else:
+        logger.info("管理员账户已存在，跳过创建")
+
+
+def _ensure_configs(session: Session) -> None:
+    """确保所有配置单行表存在默认记录"""
+    if not session.exec(select(SecurityPolicy)).first():
+        logger.info("创建默认安全策略...")
+        session.add(SecurityPolicy())
+        session.commit()
+
+    if not session.exec(select(SiteConfig)).first():
+        logger.info("创建默认站点配置...")
+        session.add(SiteConfig())
+        session.commit()
+
+    if not session.exec(select(OAuthConfig)).first():
+        logger.info("创建默认OAuth配置...")
+        session.add(OAuthConfig())
+        session.commit()
+
+    if not session.exec(select(EmailConfig)).first():
+        logger.info("创建默认邮件配置...")
+        session.add(EmailConfig())
+        session.commit()
+
+
 async def init_data(app: FastAPI) -> None:
     logger.info("初始化数据库...")
     SQLModel.metadata.create_all(engine)
@@ -57,93 +129,13 @@ async def init_data(app: FastAPI) -> None:
     check_dir_exists([settings.STATIC_PATH])
 
     with DatabaseSession() as session:
-        # 种子数据：部门、菜单
         dept = seed_all(session)
+        await _ensure_admin(session, dept)
+        _ensure_configs(session)
 
-        # 创建默认管理员（在安全策略之前，避免密码复杂度校验阻止种子用户创建）
-        admin = session.exec(
-            select(User).where(
-                (User.email == settings.EMAIL_TEST_USER)
-                | (User.username == settings.FIRST_SUPERUSER)
-                | (User.is_superuser)
-            )
-        ).first()
-        if not admin:
-            logger.info("创建管理员账户...")
-            # 随机生成强密码（满足默认密码策略：大小写+数字+特殊字符，16位）
-            import secrets
-            import string
-
-            alphabet = string.ascii_letters + string.digits + "!@#$%^&*"
-            while True:
-                admin_password = "".join(secrets.choice(alphabet) for _ in range(16))
-                if (
-                    any(c.isupper() for c in admin_password)
-                    and any(c.islower() for c in admin_password)
-                    and any(c.isdigit() for c in admin_password)
-                    and any(c in "!@#$%^&*" for c in admin_password)
-                ):
-                    break
-            user_in = UserCreate(
-                username=settings.FIRST_SUPERUSER,
-                nickname="管理员",
-                email=settings.EMAIL_TEST_USER,
-                password=admin_password,
-                status=1,
-                is_superuser=True,
-                phone="13800138000",
-                remark="这是管理员",
-            )
-            admin = await userController.create(session=session, obj_in=user_in)
-            logger.info(f"管理员创建成功: {admin.username}")
-            # 醒目打印管理员凭据
-            logger.warning("=" * 60)
-            logger.warning("  首次启动 — 已自动生成管理员密码")
-            logger.warning(f"  用户名: {settings.FIRST_SUPERUSER}")
-            logger.warning(f"  密码:   {admin_password}")
-            logger.warning("  请妥善保存此密码，关闭后将无法再次查看！")
-            logger.warning("=" * 60)
-            if dept is not None:
-                dept.users.append(admin)
-                session.add(dept)
-                session.commit()
-        else:
-            logger.info("管理员账户已存在，跳过创建")
-
-        # 确保安全策略配置存在（单行表，只有一条记录）
-        security_policy = session.exec(select(SecurityPolicy)).first()
-        if not security_policy:
-            logger.info("创建默认安全策略...")
-            security_policy = SecurityPolicy()
-            session.add(security_policy)
-            session.commit()
-
-        # 确保站点配置存在
-        site_config = session.exec(select(SiteConfig)).first()
-        if not site_config:
-            logger.info("创建默认站点配置...")
-            session.add(SiteConfig())
-            session.commit()
-
-        # 确保 OAuth 配置存在
-        oauth_config = session.exec(select(OAuthConfig)).first()
-        if not oauth_config:
-            logger.info("创建默认OAuth配置...")
-            session.add(OAuthConfig())
-            session.commit()
-
-        # 确保邮件配置存在
-        email_config = session.exec(select(EmailConfig)).first()
-        if not email_config:
-            logger.info("创建默认邮件配置...")
-            session.add(EmailConfig())
-            session.commit()
-
-        # 同步 API 路由到数据库
         logger.info("同步API路由...")
         _sync_api_routes(app, session)
 
-        # 定时任务
         logger.info("启动定时任务...")
         scheduler.add_job(update_expired_orders, "interval", seconds=120)
         scheduler.start()

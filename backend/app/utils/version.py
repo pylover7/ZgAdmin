@@ -10,6 +10,7 @@ from app.settings.log import logger
 
 RELEASE_LATEST_URL = "https://cnb.cool/pylover/Tools/ZgAdmin/-/releases/latest"
 RELEASE_BASE_URL = "https://cnb.cool/pylover/Tools/ZgAdmin/-/releases"
+HTTP_TEMPORARY_REDIRECT = 307
 
 
 def _strip_v(version: str) -> str:
@@ -27,7 +28,7 @@ async def check_for_update() -> dict:
         async with httpx.AsyncClient(timeout=10.0) as client:
             res = await client.head(RELEASE_LATEST_URL, follow_redirects=False)
 
-        if res.status_code == 307:
+        if res.status_code == HTTP_TEMPORARY_REDIRECT:
             location = res.headers.get("location", "")
             match = re.search(r"/releases/tag/(v[\d.]+)", location)
             if match:

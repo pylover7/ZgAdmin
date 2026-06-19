@@ -145,11 +145,10 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def _enforce_non_default_secrets(self) -> Self:
-        if not self.SECRET_KEY or self.SECRET_KEY == "changethis":
+        if not self.SECRET_KEY or self.SECRET_KEY == "changethis":  # noqa: S105
             if self.ENVIRONMENT in ("production", "staging"):
                 raise ValueError(
-                    "生产/预发布环境必须显式设置 SECRET_KEY（通过 .env 或环境变量），"
-                    "不可依赖自动生成的密钥。"
+                    "生产/预发布环境必须显式设置 SECRET_KEY（通过 .env 或环境变量），不可依赖自动生成的密钥。"
                 )
             self.SECRET_KEY = self._resolve_secret_key()
         # 生产环境检查 CORS 不为 *
