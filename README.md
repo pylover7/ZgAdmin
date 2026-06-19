@@ -1,4 +1,15 @@
-# ZgAdmin
+<h1 align="center">ZgAdmin</h1>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.13%2B-blue?logo=python&logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/FastAPI-0.136.3%2B-009688?logo=fastapi&logoColor=white" alt="FastAPI">
+  <img src="https://img.shields.io/badge/Vue-3.5.31-42b883?logo=vuedotjs&logoColor=white" alt="Vue">
+  <img src="https://img.shields.io/badge/TypeScript-6.0.2-3178c6?logo=typescript&logoColor=white" alt="TypeScript">
+  <img src="https://img.shields.io/badge/Vite-8.0.3-646cff?logo=vite&logoColor=white" alt="Vite">
+  <img src="https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white" alt="Tailwind CSS">
+  <img src="https://img.shields.io/badge/Docker-✓-2496ed?logo=docker&logoColor=white" alt="Docker">
+  <img src="https://img.shields.io/badge/License-MIT-yellow" alt="License">
+</p>
 
 管理平台模板 — Python/FastAPI 后端 + Vue 3/TypeScript 前端，Docker 一键部署。
 
