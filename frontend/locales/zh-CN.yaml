@@ -549,6 +549,7 @@ system:
     whitelist: 白名单
     blacklist: 黑名单
     description: 备注
+    status: 状态
     enabled: 启用
     disabled: 禁用
     createdAt: 创建时间
