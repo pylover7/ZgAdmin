@@ -1,4 +1,15 @@
-# ZgAdmin
+<h1 align="center">ZgAdmin</h1>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.13%2B-blue?logo=python&logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/FastAPI-0.136.3%2B-009688?logo=fastapi&logoColor=white" alt="FastAPI">
+  <img src="https://img.shields.io/badge/Vue-3.5.31-42b883?logo=vuedotjs&logoColor=white" alt="Vue">
+  <img src="https://img.shields.io/badge/TypeScript-6.0.2-3178c6?logo=typescript&logoColor=white" alt="TypeScript">
+  <img src="https://img.shields.io/badge/Vite-8.0.3-646cff?logo=vite&logoColor=white" alt="Vite">
+  <img src="https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white" alt="Tailwind CSS">
+  <img src="https://img.shields.io/badge/Docker-✓-2496ed?logo=docker&logoColor=white" alt="Docker">
+  <img src="https://img.shields.io/badge/License-MIT-yellow" alt="License">
+</p>
 
 管理平台模板 — Python/FastAPI 后端 + Vue 3/TypeScript 前端，Docker 一键部署。
 
@@ -9,6 +20,89 @@
 - 🐳 **一键部署** — Docker 多阶段构建，SQLite 零配置即用
 - 🔄 **版本更新检测** — 自动检测新版本，查看变更日志，一键更新
 
+## 部署
+
+### Docker Compose（推荐）
+
+```bash
+docker compose up -d
+```
+
+访问：
+
+- 前端：<http://localhost:7000>
+- 后端 API：<http://localhost:7001>
+
+```bash
+docker compose down          # 停止
+docker compose logs -f       # 查看日志
+```
+
+> 容器启动时会自动执行 `alembic upgrade head`，无需手动迁移数据库。
+
+### 更新
+
+```bash
+docker compose pull zgadmin && docker compose up -d zgadmin
+```
+
+> 也可保存为脚本方便重复使用：
+
+```bash
+cat > update.sh << 'EOF'
+#!/usr/bin/env bash
+set -eo pipefail
+cd "$(dirname "$0")"
+echo "正在拉取最新镜像..."
+docker compose pull zgadmin
+echo "正在重启服务..."
+docker compose up -d zgadmin
+echo "✓ 更新完成！"
+EOF
+chmod +x update.sh
+./update.sh
+```
+
+## 预览
+
+### 登录页
+
+![登录页](resources/login.png)
+
+### 首页
+
+![首页](resources/welcome.png)
+
+### 账户管理
+
+![账户管理](resources/account.png)
+
+### 菜单管理
+
+![菜单管理](resources/menu.png)
+
+### 文件管理
+
+![文件管理](resources/file.png)
+
+### 日志监控
+
+![日志监控](resources/log.png)
+
+### 系统设置
+
+![系统设置](resources/settings.png)
+
+### 关于
+
+![关于](resources/about.png)
+
+### 403 无权限
+
+![403 无权限](resources/403.png)
+
+## 开发
+
 ## 技术栈
 
 | 层 | 技术 |
@@ -17,15 +111,6 @@
 | 前端 | Vue 3 + TypeScript + Vite + Element Plus + Tailwind CSS 4 |
 | 部署 | Docker 多阶段构建 + nginx 反向代理 |
 
-## 功能
-
-- **用户管理** — 用户/角色/菜单/部门 CRUD，权限控制
-- **登录认证** — 账号密码登录、QQ 登录、微信登录，JWT 鉴权
-- **系统监控** — 登录日志、操作日志、系统日志，支持条件筛选与批量删除
-- **系统设置** — 登录方式配置（QQ/微信 AppID 等）
-- **版本更新** — 自动检测新版本，查看变更日志，一键更新
-- **国际化** — 中文 / English 切换
-
 ## 本地开发
 
 ### 环境要求
@@ -33,24 +118,11 @@
 - Python ≥ 3.13 + [uv](https://docs.astral.sh/uv/)
 - Node ≥ 20.19 + [bun](https://bun.sh/)
 
-### 启动后端
+### 启动
 
 ```bash
-cd backend
-cp ../.env.example ../.env    # 编辑 .env 配置数据库等
-uv sync
-uv run python main.py         # 监听 http://localhost:7001
+bash scripts/start.sh
 ```
-
-### 启动前端
-
-```bash
-cd frontend
-bun install
-bun dev                       # 监听 http://localhost:7000
-```
-
-开发模式下前端 `/api` 请求自动代理到后端。
 
 ### 常用命令
 
@@ -87,48 +159,6 @@ uv run alembic history
 
 # 生成 SQL 而不执行（离线模式）
 uv run alembic upgrade head --sql
-```
-
-## Docker 部署
-
-### Docker Compose（推荐）
-
-```bash
-docker compose up -d
-```
-
-访问：
-- 前端：http://localhost:7000
-- 后端 API：http://localhost:7001
-
-```bash
-docker compose down          # 停止
-docker compose logs -f       # 查看日志
-```
-
-> 容器启动时会自动执行 `alembic upgrade head`，无需手动迁移数据库。
-
-### 更新
-
-```bash
-docker compose pull zgadmin && docker compose up -d zgadmin
-```
-
-> 也可保存为脚本方便重复使用：
-
-```bash
-cat > update.sh << 'EOF'
-#!/usr/bin/env bash
-set -eo pipefail
-cd "$(dirname "$0")"
-echo "正在拉取最新镜像..."
-docker compose pull zgadmin
-echo "正在重启服务..."
-docker compose up -d zgadmin
-echo "✓ 更新完成！"
-EOF
-chmod +x update.sh
-./update.sh
 ```
 
 ## 配置

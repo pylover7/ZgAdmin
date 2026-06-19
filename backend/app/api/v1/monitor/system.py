@@ -22,11 +22,16 @@ systemMonitorRouter = APIRouter()
 class _RateTracker:
     """速率计算器 — 封装"上次采样"状态，替代 global 语句"""
 
-    def __init__(self, history_max: int = 600) -> None:
+    def __init__(
+        self,
+        history_max: int = 600,
+        history_window_ms: int = 30 * 60 * 1000,
+    ) -> None:
         self._prev: dict = {}
         self._prev_time: float = 0
         self._history: dict[str, deque] = {}
-        self._history_max = history_max
+        self._history_max = history_max  # 点数硬上限，防止极端情况内存膨胀
+        self._history_window_ms = history_window_ms  # 时间窗口（毫秒），默认 30 分钟
 
     def compute(
         self,
@@ -44,6 +49,8 @@ class _RateTracker:
             {name: {原始字段, *_speed, *_speed_raw, history}}
         """
         now = time.time()
+        now_ms = round(now * 1000)
+        cutoff_ms = now_ms - self._history_window_ms
         result: dict[str, dict] = {}
 
         for name, counters in current.items():
@@ -59,16 +66,21 @@ class _RateTracker:
 
             self._history[name].append(
                 {
-                    "time": round(now * 1000),
+                    "time": now_ms,
                     **{f"{k}_speed": round(v, 1) for k, v in rates.items()},
                 }
             )
+
+            # 时间窗口裁剪：丢弃超过 history_window_ms 的旧数据
+            hist = self._history[name]
+            while hist and hist[0]["time"] < cutoff_ms:
+                hist.popleft()
 
             result[name] = {
                 **counters,
                 **{f"{k}_speed_raw": round(v, 1) for k, v in rates.items()},
                 **{f"{k}_speed": _fmt_rate(v) for k, v in rates.items()},
-                "history": list(self._history[name]),
+                "history": list(hist),
             }
 
         self._prev = current

@@ -549,6 +549,7 @@ system:
     whitelist: Whitelist
     blacklist: Blacklist
     description: Description
+    status: Status
     enabled: Enabled
     disabled: Disabled
     createdAt: Created At

@@ -108,13 +108,26 @@ detect_backend_updates() {
             fi
         done)
 
+    # 过滤：只保留 pyproject.toml 中显式声明的包
+    local declared_packages
+    declared_packages=$(grep -E '^\s+"[a-z]' "${BACKEND_DIR}/pyproject.toml" \
+        | sed -E 's/^\s+"([a-zA-Z0-9_-]+).*/\1/' \
+        | sort -u)
+
+    updates=$(echo "${updates}" | while IFS='|' read -r pkg old_ver new_ver; do
+        [[ -z "${pkg}" ]] && continue
+        if echo "${declared_packages}" | grep -qx "${pkg}"; then
+            echo "${pkg}|${old_ver}|${new_ver}"
+        fi
+    done)
+
     if [[ -z "${updates}" ]]; then
-        log_info "后端：解析后无实际版本变化"
+        log_info "后端：显式依赖无版本变化（传递依赖可能有更新，但已过滤）"
         echo ""
         return 0
     fi
 
-    log_info "后端：检测到 $(echo "${updates}" | wc -l) 个依赖有更新"
+    log_info "后端：检测到 $(echo "${updates}" | wc -l) 个显式依赖有更新"
     echo "${updates}"
 }
 

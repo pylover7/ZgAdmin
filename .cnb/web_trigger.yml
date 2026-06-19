@@ -1,8 +1,5 @@
 branch:
   - buttons:
-      - name: 项目演示
-        description: 项目演示
-        event: web_trigger_preview
       - name: 构建 ZgAdmin 环境镜像
         description: 重新构建 ZgAdmin 环境镜像
         event: web_trigger_one
