@@ -7,22 +7,10 @@ from app.models import Success
 apiRouter = APIRouter()
 
 
-@apiRouter.post("/add", summary="添加接口")
-async def add_api(session: SessionDep, data: dict):
-    await apiController.create(session, data)
-    return Success(msg="接口添加成功！")
-
-
 @apiRouter.post("/delete", summary="删除接口")
 async def delete_api(session: SessionDep, data: list[str]):
     await apiController.delete(session, data)
     return Success(msg="接口删除成功！")
-
-
-@apiRouter.post("/update", summary="修改接口信息")
-async def update_api(session: SessionDep, data: dict):
-    await apiController.update(session, data["id"], data)
-    return Success(msg="接口信息修改成功！")
 
 
 @apiRouter.get("/all", summary="获取所有接口")

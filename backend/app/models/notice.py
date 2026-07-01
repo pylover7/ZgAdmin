@@ -25,6 +25,7 @@ class NoticeCreate(SQLModel):
 
 # ─── 更新 ───
 class NoticeUpdate(BaseModel):
+    id: UUID = Field(description="通知ID", schema_extra={"examples": ["550e8400-e29b-41d4-a716-446655440000"]})
     title: str | None = Field(
         default=None, max_length=200, description="通知标题", schema_extra={"examples": ["系统维护通知（已更新）"]}
     )
@@ -50,6 +51,11 @@ class NoticeFilter(SQLModel):
         default=None, description="通知级别：info/warning/important", schema_extra={"examples": ["info"]}
     )
     status: int | None = Field(default=None, description="状态：0-草稿, 1-已发布", schema_extra={"examples": [1]})
+
+
+# ─── 已读标记请求 ───
+class NoticeReadRequest(SQLModel):
+    notice_id: UUID = Field(description="通知ID", schema_extra={"examples": ["550e8400-e29b-41d4-a716-446655440000"]})
 
 
 # ─── 通知主表 ───

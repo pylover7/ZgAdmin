@@ -6,7 +6,7 @@ from sqlmodel import and_, col
 from app.controllers.notice import noticeController
 from app.core.dependency import DependUser, SessionDep
 from app.models import Fail, Success, SuccessExtra
-from app.models.notice import Notice, NoticeCreate, NoticeFilter, NoticeUpdate
+from app.models.notice import Notice, NoticeCreate, NoticeFilter, NoticeReadRequest, NoticeUpdate
 from app.settings.log import logger
 
 noticeRouter = APIRouter()
@@ -78,11 +78,8 @@ async def get_unread_notices(session: SessionDep, current_user: DependUser):
 
 
 @noticeRouter.post("/read", summary="标记单条已读")
-async def mark_notice_read(session: SessionDep, current_user: DependUser, data: dict):
-    notice_id = data.get("notice_id")
-    if not notice_id:
-        return Fail(msg="缺少 notice_id")
-    await noticeController.mark_as_read(session, UUID(notice_id), current_user.id)
+async def mark_notice_read(session: SessionDep, current_user: DependUser, data: NoticeReadRequest):
+    await noticeController.mark_as_read(session, data.notice_id, current_user.id)
     return Success(msg="标记已读成功")
 
 
