@@ -6,9 +6,8 @@ RUN apt-get update && \
     apt-get -y autoremove && \
     rm -rf /var/lib/apt/lists/*
 
-# 安装 code-server 和 vscode 常用插件
-RUN curl -fsSL https://code-server.dev/install.sh | sh \
-    && code-server --install-extension christian-kohler.path-intellisense \
+# 安装 vscode 常用插件
+RUN code-server --install-extension christian-kohler.path-intellisense \
     && code-server --install-extension vscode-icons-team.vscode-icons \
     && code-server --install-extension davidanson.vscode-markdownlint \
     && code-server --install-extension stylelint.vscode-stylelint \
