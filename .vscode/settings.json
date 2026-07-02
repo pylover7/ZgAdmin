@@ -122,7 +122,7 @@
   "python.analysis.autoImportCompletions": true,
   "python.linting.enabled": true,
   "python.linting.lintOnSave": true,
-  "python.languageServer": "Pylance",
+  "python.languageServer": "Jedi",
   "python.defaultInterpreterPath": "/workspace/backend/.venv/bin/python",
   "workbench.iconTheme": "vscode-icons",
   "codingcopilot.welcomeMessage": "never",

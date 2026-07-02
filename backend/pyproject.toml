@@ -44,6 +44,9 @@ dev = [
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-v --tb=short"
+filterwarnings = [
+    'ignore:Using `httpx` with `starlette.testclient` is deprecated:UserWarning',
+]
 markers = [
     "slow: marks tests as slow",
 ]
