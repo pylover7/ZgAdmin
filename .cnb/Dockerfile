@@ -40,4 +40,5 @@ RUN code-server --install-extension christian-kohler.path-intellisense \
     && code-server --install-extension redjue.git-commit-plugin \
     && code-server --install-extension aaron-bond.better-comments \
     && code-server --install-extension cweijan.vscode-database-client2 \
+    && code-server --install-extension ms-python.python \
     && echo done
