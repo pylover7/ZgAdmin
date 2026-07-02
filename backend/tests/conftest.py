@@ -3,11 +3,21 @@
 
 核心设计:
 - test_engine: Session 级 SQLite 内存引擎，所有表只创建一次
-- test_redis: Session 级 MemoryRedis 实例
+- test_redis: Session 级 MemoryRedis 实例，自动替换全局 Redis 单例
 - db: Function 级 Session，使用嵌套事务(savepoint)隔离，测试结束自动回滚
 - client: TestClient，依赖注入覆盖 get_db / get_redis
 - admin_user / admin_headers: 预创建超级管理员 + JWT
+
+注意:
+- 关闭数据库日志写入 (FEATURE_MONITOR_LOG=false) 防止 log.py
+  使用全局 engine 写入不存在的日志表
+- MemoryRedis 替换全局 Redis 单例，确保 get_redis() 返回内存适配器
 """
+import os
+
+# 测试环境下关闭数据库日志写入，避免全局 engine 产生 no such table 错误
+os.environ["FEATURE_MONITOR_LOG"] = "false"
+
 from datetime import UTC, datetime, timedelta
 
 import pytest
@@ -76,11 +86,20 @@ def test_engine():
     _engine.dispose()
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="session", autouse=True)
 def test_redis():
-    """Session 级 MemoryRedis 实例"""
+    """Session 级 MemoryRedis 实例，自动替换全局 Redis 单例
+
+    替换后，所有直接/间接调用 get_redis() 的代码（包括依赖注入之外的
+    validate_token_and_get_user、RateLimiter 等）都能获取到 MemoryRedis。
+    """
+    import app.core.redis as redis_mod
+
+    original_instance = redis_mod.redis_manager._instance
     redis = MemoryRedis()
+    redis_mod.redis_manager._instance = redis
     yield redis
+    redis_mod.redis_manager._instance = original_instance
 
 
 # ═══════════════════════════════════════════════════════════════════════
