@@ -78,7 +78,6 @@ inject_dev_env() {
 check_deps() {
     local missing=()
 
-    command -v python3 &>/dev/null || missing+=("python3 (>=3.13)")
     command -v uv       &>/dev/null || missing+=("uv       — pip install uv 或 https://docs.astral.sh/uv/")
     command -v node     &>/dev/null || missing+=("node (>=20)")
     command -v bun      &>/dev/null || missing+=("bun      — curl -fsSL https://bun.sh/install | bash")
