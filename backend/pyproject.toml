@@ -23,10 +23,10 @@ dependencies = [
     "python-multipart>=0.0.32",
     "pymysql>=1.2.0",
     "redis>=8.0.1",
-    "sentry-sdk>=2.64.0",
-    "setuptools>=83.0.0",
+    "sentry-sdk>=2.66.1",
+    "setuptools>=84.0.0",
     "sqlmodel>=0.0.38",
-    "uvicorn>=0.50.0",
+    "uvicorn>=0.52.1",
 ]
 
 [[tool.uv.index]]
