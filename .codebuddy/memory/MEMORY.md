@@ -140,13 +140,19 @@
 
 ## 4.1 数据库与迁移
 
-- **`create_all` + `stamp` 模式：已存在表升级后不自动加列**：`create_all` 只建不存在的表，`stamp` 只标版本号不跑迁移 → 已有数据的环境升级新字段不会自动加。**判据：加字段后必须用 `PRAGMA table_info` 校验列是否真加上，不要只看版本号。**
-- 本项目 `init_data` 当前即处于该模式（`app/core/database.py:127` + `:145`），**但迁移链本身已实测完整可用**：空库 4 步跑通、往返对称、老库带数据升级后 19 表与模型零列差异。**之前「很可能与参考项目一样缺建表语句」的推断已被实测推翻。**
-- **当前真实缺口不是链断裂，而是缺回归护栏**：以上验证是一次性手工执行，无 `tests/test_alembic_migration_roundtrip.py`——代码改动后无人能自动发现链断裂。
+- **`init_data` 已改造为「版本检测 → alembic 执行」**：读 `alembic_version` 取版本（无表返回 `None`）→ `get_heads()` 取 head（多头显式抛错）→ 不一致才 `upgrade`，并执行脏库自愈 `_repair_dirty_tables`。原来的 `create_all` + `stamp` 已移除。
+- **自愈的边界**：只补**缺表**与**缺列**（`ALTER TABLE ADD COLUMN`）；**不处理列类型变更 / 列删除 / 约束变更**。它本身会掩盖「忘记生成迁移脚本」的错误，属兜底而非替代。
+- **回归护栏**：`backend/tests/test_alembic_migration_roundtrip.py`（9 场景：单头 / 空库 / 往返 / 老库升级 / 老库带数据保真 / 自愈三类）。**改迁移链、`init_data`、自愈逻辑后必须跑**。测试用 `subprocess` 跑 alembic，避免同进程内 `app.core.engine` 与 `env.py` 引擎指向不同库导致的错配假绿。
+- **`init_data` 会把 `ALEMBIC_DB_URL` 设为 `settings.SQLALCHEMY_DATABASE_URI`**（统一权威引擎，避免「检测一个库、升级另一个库」）。
+- **SQLite 上「结构跨版本升级」是空转**：链上结构变更实际只有 `582670eaa9ea`（建全部表）；`f9c9610dbf51` 是纯数据迁移（`UPDATE systemlog`）；`30bcfbeddb70` 在 `dialect.name == "sqlite"` 时直接 `return`。因此 **downgrade 到任何非 base 版本结构都不变**，真正的结构跨版本升级只能在 PostgreSQL 上验证。**SQLite 上有效的老库场景是「模型加了字段但库上缺列」→ 自愈**。
+- **`1e99a7fcad44` 是历史遗留的空迁移**（`upgrade`/`downgrade` 均 `pass`，原操作已并入基线）——**是既有事实不是缺陷**，但它是 `alembic downgrade -1` 无操作的原因。**新迁移不得为空**；历史空迁移不得为「补内容」而改其语义。
+- **迁移链只能追加，不得修改历史脚本的 `revision` / `down_revision` / `upgrade()` 语义**：已落过 `stamp` 版本的库会形成「同版本号、不同内容」的并存风险。
+- **`create_all` + `stamp` 的老问题（已消除）**：`create_all` 只建不存在的表、`stamp` 只标版本号不跑迁移 → 老库升级不会加新列。**判据：加字段后必须用 `PRAGMA table_info` 校验列是否真加上，不要只看版本号。**（历史记录：该模式曾被用于本项目，迁移链本身经实测完整可用，之前的「链缺建表语句」推断已被推翻。）
 - **迁移验证可用 `ALEMBIC_DB_URL` 环境变量指向临时库**（`alembic/env.py:27` 支持覆盖），无需改动 `.env`。
-- **`backend/.venv` 权限异常**：该目录可能无写权限（`uv run` 报 `Permission denied (os error 13)`），绕过方式为 `UV_PROJECT_ENVIRONMENT=/tmp/<name> uv run ...`，无需动原目录。
-- **构造测试数据前必须先查真实 schema**：`user` 表密码列名是 `password`（不是 `hashed_password`），且有多个 NOT NULL 无默认列（`sex` / `failed_status_count` 等）。**凭字段名推测会连续失败**。
-- SQLite 不支持 `DROP COLUMN`，需 `batch_alter_table(...)` 重建表；加 `NOT NULL` 列需 `server_default`。
+- **`sqlite` 分支的库路径硬编码**（`app/settings/database.py:23`），指向 `backend/static/zgadmin.sqlite`，**`DB_PATH` 对该分支不生效**。
+- **「开发库不存在」的结论极易失效**：`create_app()` 会 `mkdir`，`init_data` 会建库，**跑一次 `pytest` 就可能把 `static/zgadmin.sqlite` 建出来**。**凡断言「某物不存在」，在跑过任何写盘命令后必须重新验证。**
+- **构造测试数据前必须先查真实 schema**：`user` 表密码列名是 `password`（不是 `hashed_password`），计数字段是 `failed_login_count`（不是 `failed_status_count`），且有多个 NOT NULL 无默认列（`created_at` / `sex` / `failed_login_count` / `status` / `is_superuser`）。**凭字段名推测会连续失败**（本项目已因此踩坑三次）。
+- SQLite 不支持 `DROP COLUMN`，需 `batch_alter_table(...)` 重建表；加 `NOT NULL` 列需 `server_default`。**注意 Python 3.13 的实际 SQLite 版本可能已支持 `DROP COLUMN`**，但迁移脚本仍应按最小能力写。
 - `alembic history` 的输出折行会产生「多头」假象，**判断分支数必须用 `alembic heads`**。
 - 降级时若表结构不一致，手动改 `alembic_version` 回退版本号再 upgrade（**仅限临时库，开发库走重建流程**）。
 

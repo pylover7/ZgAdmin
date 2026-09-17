@@ -107,13 +107,13 @@ uv run alembic downgrade -1
 2. 在 `app/controllers/` 创建 Controller（继承 `CRUDBase`）
 3. 在 `app/api/v1/` 创建路由文件
 4. 在 `app/api/v1/__init__.py` 注册路由到 `v1_router`
-5. **生成迁移脚本 → 打开确认 `upgrade()` 非空 → 手动执行验证 → 跑往返测试**（四步缺一不可）
+5. **`alembic revision --autogenerate -m "描述"` → 打开确认 `upgrade()` 非空 → 手动执行验证 → 跑 `tests/test_alembic_migration_roundtrip.py`**（四步缺一不可）
 6. 启动后 `_sync_api_routes` 自动将新路由同步到数据库
 
-> **改任何数据模型字段都必须走第 5 步**。完整铁律与「步骤 0 前置校验」见 `.codebuddy/rules/backend-architecture.md`「数据模型变更铁律」。
+> **改任何数据模型字段都必须走第 5 步**。完整铁律（10 条 + 自愈说明 + 空迁移说明）与「步骤 0 前置校验」见 `.codebuddy/rules/backend-architecture.md`「数据模型变更铁律」。
 >
-> ⚠️ **本项目 `init_data` 当前使用 `create_all` + `stamp(head)`**，这意味着**新字段在老库上不会被自动添加，且没有任何自愈兜底**。
-> 迁移链本身**已实测完整可用**（空库升级 / 往返 / 老库带数据升级，均与模型零列差异），但**缺回归测试护栏**。详见上述规则文件的「现状与待办」。
+> **`init_data` 已改造为「版本检测 → alembic 执行」**（`app/core/database.py`），移除 `create_all` 全库建表与 `stamp` 兜底，另加脏库自愈 `_repair_dirty_tables`（补缺表/缺列，**不补列类型变更**）。
+> 回归护栏为 `backend/tests/test_alembic_migration_roundtrip.py`（9 场景），**改迁移链 / `init_data` / 自愈逻辑后必须跑**。
 
 ### 添加新前端页面
 
