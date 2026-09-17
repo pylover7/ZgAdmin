@@ -2,11 +2,6 @@ $:
   vscode:
     - docker:
         image: docker.cnb.cool/pylover/tools/zgadmin:env
-        volumes:
-          - ./backend/.venv:rw
-          - ./backend/static:rw
-          - ./frontend/node_modules:rw
-          - ./docs/node_modules:rw
       runner:
         cpus: 8
       services:
@@ -68,9 +63,6 @@ main:
     - name: dependency-check
       docker:
         image: docker.cnb.cool/pylover/tools/zgadmin:env
-        volumes:
-          - ./backend/.venv:rw
-          - ./frontend/node_modules:rw
       imports:
         - https://cnb.cool/pylover/key/-/blob/main/deepseek.yml
       services:
@@ -92,11 +84,6 @@ main:
   vscode:
     - docker:
         image: docker.cnb.cool/pylover/tools/zgadmin:env
-        volumes:
-          - ./backend/.venv:r
-          - ./backend/static:r
-          - ./frontend/node_modules:r
-          - ./docs/node_modules:r
       runner:
         cpus: 8
       services:
