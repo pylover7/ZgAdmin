@@ -5,6 +5,27 @@
 
 ---
 
+## 规则总章索引
+
+**分层原则**：个人规则跨项目通用 / 项目技术规则归项目目录 / 项目事实与教训归记忆。
+
+| 层 | 位置 | 内容 |
+|----|------|------|
+| 个人规则（跨项目） | `~/.codebuddy/CODEBUDDY.md` | 核心思维与输出规范、Skill 加载机制、最高优先级铁律、AI 编程协作规则（角色 / 优先级 / 工作流程 / 禁止事项 / 自主级别） |
+| 项目技术规则 | `.codebuddy/rules/*.md` | `collaboration.md`（工程标准：快速交付 / 代码标准 / 测试标准 / 安全权限 / Git / 沟通输出）、`backend-architecture.md`（含**数据模型变更铁律**）、`frontend-architecture.md`、`project-structure.md`、`security.md`、`infrastructure.md`、`pureadmin-utils-quickref.md` |
+| 项目事实与教训 | `.codebuddy/memory/` | `MEMORY.md`（长期：工程方法论 / 技术教训）、`YYYY-MM-DD.md`（日志） |
+| 项目 Skill | `.codebuddy/skills/` | 项目级 Skill 包 |
+
+**协商机制摘要**（完整定义见全局个人规则）：
+
+- 定位：AI = 资深软件工程师 + 结对程序员 + 代码审查者；用户 = 关键决策者、验收者、最终责任人
+- 自主级别：默认 **L2**（先给计划、等确认）；触碰关键决策清单（架构 / schema / 公共 API / 鉴权 / 支付 / 依赖引入 / 大重构 / 部署配置）强制降 **L1**
+- 小任务客观判据（须全满足，否则降级大任务）：① 文件数 ≤ 2；② 不触碰 `app/models/` 字段定义、不修改已注册路由函数签名；③ 属关键决策清单之外；④ 验证命令 < 3 分钟且无需人工构造测试数据
+- **必须落实**：验证命令必跑（lint / typecheck / test / build）；交付五项（变更摘要 / 文件列表 / 验证命令及结果 / 未验证部分与风险 / 下一步或待确认）
+- **项目记忆优先**：分析任务前先阅读 `.codebuddy/memory/` 下记忆，理解此前工作与经验教训
+
+---
+
 ## 常用命令
 
 ### 启动
@@ -82,12 +103,17 @@ uv run alembic downgrade -1
 
 ### 添加新后端 API 模块
 
-1. 在 `app/models/` 创建数据模型
+1. 在 `app/models/` 创建数据模型（**每个字段必须有消费方**——自问「这个字段谁写？谁读？」；纯预留字段须在 `description` 标注「预留」+ 预期场景）
 2. 在 `app/controllers/` 创建 Controller（继承 `CRUDBase`）
 3. 在 `app/api/v1/` 创建路由文件
 4. 在 `app/api/v1/__init__.py` 注册路由到 `v1_router`
-5. 运行 `alembic revision --autogenerate` + `alembic upgrade head`
+5. **生成迁移脚本 → 打开确认 `upgrade()` 非空 → 手动执行验证 → 跑往返测试**（四步缺一不可）
 6. 启动后 `_sync_api_routes` 自动将新路由同步到数据库
+
+> **改任何数据模型字段都必须走第 5 步**。完整铁律与「步骤 0 前置校验」见 `.codebuddy/rules/backend-architecture.md`「数据模型变更铁律」。
+>
+> ⚠️ **本项目 `init_data` 当前使用 `create_all` + `stamp(head)`**，这意味着**新字段在老库上不会被自动添加，且没有任何自愈兜底**。
+> 迁移链本身**已实测完整可用**（空库升级 / 往返 / 老库带数据升级，均与模型零列差异），但**缺回归测试护栏**。详见上述规则文件的「现状与待办」。
 
 ### 添加新前端页面
 
