@@ -29,11 +29,14 @@
 5. **按下方「数据模型变更铁律」处理迁移**
 6. 启动后 `_sync_api_routes` 自动将新路由同步到数据库
 
-## 数据模型变更铁律（⚠️ 本项目当前为**违规状态**，见下方「现状与待办」）
+## 数据模型变更铁律
 
 > **背景**：本项目 `init_data()` 当前使用 `SQLModel.metadata.create_all(engine)` 建表，随后 `command.stamp(cfg, "head")` 把版本号直接标记为 head。
-> 该机制意味着：**迁移脚本从未在空库上被验证过**——它只被写入过，但从未真正执行过。
-> 参考项目 MineAdmin 曾因同一机制导致迁移链「从未在空库跑通」（缺 8 张表建表语句 + 5 个 `upgrade()` 为空的空迁移），本项目存在同样风险。
+> 该机制的风险是「迁移链可能从未在空库上被真正跑过」。参考项目 MineAdmin 曾因同一机制导致迁移链缺 8 张表建表语句 + 5 个空迁移。
+>
+> **本项目已实测确认该风险不成立**（四场景全绿）：空库 upgrade / 往返 / 老库带数据升级，均与 `SQLModel.metadata` **19 表零列差异**。详见 `.codebuddy/memory/MEMORY.md`。
+>
+> **但 `create_all` + `stamp` 本身的隐患仍然存在**（老库不自动加列），改造待办见下方。
 
 1. **改数据模型必须生成迁移脚本**：修改 `app/models/` 下任何字段定义（增/删/改列、改类型、改约束）后，**必须**执行 `alembic revision --autogenerate -m "描述"`，不得只改模型了事。
 2. **必须打开文件确认 `upgrade()` 非空**：若当前库的表是「非迁移方式」（即 `create_all`）建出的，autogenerate 会因看不到差异而生成**空迁移**——这正是下述「现状」的直接后果。生成后必须打开文件确认。
@@ -51,18 +54,36 @@
 7. **`alembic history` 的折行会产生「多头」假象**：判断分支数**必须用 `alembic heads`**，不要用 `history` 的视觉输出。
 8. **SQLite 注意点**：不支持 `DROP COLUMN`，需 `batch_alter_table(...)` 重建表；加 `NOT NULL` 列需 `server_default`；`ADD COLUMN ... NOT NULL`（无 DEFAULT）**只在表已有数据时失败**（空表会成功）——写测试时表里必须先插数据才能复现。
 
-### 现状与待办（截至本文档编写时，**未验证项已标注**）
+### 现状与待办
 
 | 项 | 现状 |
 |----|------|
 | `init_data` 建表方式 | `create_all(engine)` + `command.stamp(cfg, "head")`（`app/core/database.py:127` 与 `:145`） |
-| `alembic/versions/` 脚本数 | 4 个 |
-| 迁移往返测试 | **不存在**（无 `test_alembic_migration_roundtrip.py`） |
+| 迁移链结构 | **单头线性链**，4 步：`582670eaa9ea` → `1e99a7fcad44` → `f9c9610dbf51` → `30bcfbeddb70` |
+| 空库升级 | ✅ **已验证通过**（4 步跑通，19 表、与模型零列差异） |
+| 往返（downgrade base → upgrade head） | ✅ **已验证通过**（降级后 0 表，回升后 19 表零列差异） |
+| 老库带数据升级 | ✅ **已验证通过**（业务数据保真） |
+| 迁移往返测试 | **不存在**（无 `test_alembic_migration_roundtrip.py`），上述验证为一次性手工执行，**无回归护栏** |
+
+**已验证结论**：迁移链**本身完整可用**，不存在 MineAdmin 那样的「缺建表语句」缺口。
 
 **待办方向**（需用户决策后执行，不要擅自开工）：
 
-- 将 `init_data` 改为「版本检测 → alembic 执行」，移除 `create_all` 全库建表与 `stamp` 兜底；
-- 补齐 `582670eaa9ea` 之后的建表语句缺口（**是否真有缺口未验证**——需实际用一个全新空库跑 `alembic upgrade head` 才能确认）；
-- 新增迁移往返测试文件。
+1. 将 `init_data` 改为「版本检测 → alembic 执行」，移除 `create_all` 全库建表与 `stamp` 兜底——**注意 `create_all` 全量移除后，新环境首次启动将依赖迁移链**（已实测可用，风险可控）；
+2. 把上述四场景固化为 `tests/test_alembic_migration_roundtrip.py`，作为回归护栏（**这是当前最大缺口**：验证只存在于本文档的一次性记录中，代码改动后无人能自动发现链断裂）。
 
 > ⚠️ **在改造完成前**：凡改模型字段，**仍必须**生成迁移脚本并手动验证，**不要以为「反正 create_all 会建表」**。当前机制下新字段在老库上不会被自动添加，**且没有任何自愈兜底**。
+
+### 本次验证的复现方式（供后续复跑）
+
+```bash
+cd backend
+rm -f /tmp/verify.sqlite
+ALEMBIC_DB_URL="sqlite:////tmp/verify.sqlite" uv run alembic upgrade head
+# 比对：逐表逐列 set 比较 SQLModel.metadata.tables 与 inspect(engine).get_columns(t)
+ALEMBIC_DB_URL="sqlite:////tmp/verify.sqlite" uv run alembic downgrade base
+ALEMBIC_DB_URL="sqlite:////tmp/verify.sqlite" uv run alembic upgrade head
+```
+
+- `alembic/env.py:27` 支持 `ALEMBIC_DB_URL` 环境变量覆盖，**无需改动 `.env` 即可用临时库验证**。
+- **比对必须逐表逐列做 set 比较，不能用抽查**（理由见第 4 条第 0.2 项）。
