@@ -43,6 +43,7 @@ FROM python:3.13-slim
 RUN apt-get update && \
   apt-get install -y nginx sqlite3 libmagic1 file jq && \
   pip install uv && \
+  uv self update && \
   rm -rf /var/lib/apt/lists/*
 
 # 设置工作目录

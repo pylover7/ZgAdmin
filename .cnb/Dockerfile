@@ -20,6 +20,7 @@ FROM docker.cnb.cool/pylover/docker
 # 安装一些常用的工具
 RUN apt-get update && \
     apt-get install -y sqlite3 libmagic1 file jq && \
+    uv self update && \
     apt-get -y autoremove && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
