@@ -2,8 +2,8 @@
 set -Eeuo pipefail
 
 # ==============================================================================
-# deps-check.sh — 每日依赖版本检测（方案 B：检测 + Changelog + AI 分析）
-# 流程：检测更新 → 拉取实际 Changelog → AI 分析 → 关闭旧 Issue → 创建新 Issue
+# deps-check.sh — 每日依赖版本检测
+# 流程：检测更新 → 生成报告 → 关闭旧 Issue → 创建新 Issue
 # 由 CNB crontab 每日 9:00 触发
 # ==============================================================================
 
@@ -31,7 +31,6 @@ require_cmd jq
 : "${CNB_TOKEN:?CNB_TOKEN is not set}"
 : "${CNB_REPO_SLUG:?CNB_REPO_SLUG is not set}"
 CNB_API_ENDPOINT="${CNB_API_ENDPOINT:-https://api.cnb.cool}"
-DEEPSEEK_API_KEY="${DEEPSEEK_API_KEY:-}"
 
 # ---- 升级工具链自身 ----
 log_info "升级工具链到最新版本..."
@@ -324,229 +323,7 @@ semver_level() {
 }
 
 # ==============================================================================
-# 4. 获取依赖的更新日志（PyPI + GitHub）
-# ==============================================================================
-fetch_changelogs() {
-    local backend_updates="$1"
-    local frontend_updates="$2"
-
-    local changelogs=""
-
-    # ---- 后端各包的 changelog ----
-    # 优先级：GitHub Releases → GitHub Compare API → PyPI changelog URL
-    if [[ -n "${backend_updates}" ]]; then
-        while IFS='|' read -r pkg old_ver new_ver; do
-            [[ -z "${pkg}" ]] && continue
-
-            log_info "获取 ${pkg} (${old_ver} → ${new_ver}) 的更新日志..."
-
-            # 1. 从 PyPI 获取包信息，找到 GitHub 仓库
-            local pypi_json github_repo slug
-            pypi_json=$(curl -sf --max-time 10 "https://pypi.org/pypi/${pkg}/json" 2>/dev/null || echo "{}")
-            github_repo=$(echo "${pypi_json}" | jq -r '
-                [.info.project_urls // {} | to_entries[]? | select(.key | test("github|source|repository|homepage"; "i")) | .value]
-                | map(select(test("github\\.com"; "i")))
-                | first // empty' 2>/dev/null)
-
-            local got_changelog=false
-
-            if [[ -n "${github_repo}" ]]; then
-                slug=$(echo "${github_repo}" | sed -E 's|.*github\.com/||; s|/tree/.*||; s|/releases.*||; s|\.git$||; s|/$||; s|^/||')
-                slug=$(echo "${slug}" | cut -d'/' -f1,2)
-
-                # 2a. 优先：GitHub Releases API
-                local releases_json release_count
-                releases_json=$(curl -sf --max-time 10 \
-                    "https://api.github.com/repos/${slug}/releases?per_page=30" 2>/dev/null || echo "[]")
-                release_count=$(echo "${releases_json}" | jq -r 'length // 0' 2>/dev/null)
-
-                if [[ "${release_count}" -gt 0 ]]; then
-                    local release_notes
-                    release_notes=$(echo "${releases_json}" | jq -r \
-                        '[.[] | select(.prerelease == false)] | reverse[:5] | .[] |
-                        "### \(.tag_name) (\(.published_at[:10] // ""))\n\(.body[:600] // "无详细说明")\n"' \
-                        2>/dev/null || echo "")
-
-                    if [[ -n "$(echo "${release_notes}" | tr -d '[:space:]')" ]]; then
-                        changelogs+=$'\n'"## ${pkg} (${old_ver} → ${new_ver})"$'\n'
-                        changelogs+="来源: https://github.com/${slug}/releases"$'\n\n'
-                        changelogs+="${release_notes}"$'\n'
-                        changelogs+="---"$'\n'
-                        got_changelog=true
-                    fi
-                fi
-
-                # 2b. 降级：GitHub Compare API（不需要 releases，有 tag 即可）
-                if [[ "${got_changelog}" == false ]]; then
-                    local compare_json total_commits
-                    compare_json=$(curl -sf --max-time 10 \
-                        "https://api.github.com/repos/${slug}/compare/${old_ver}...${new_ver}" 2>/dev/null || echo "{}")
-                    total_commits=$(echo "${compare_json}" | jq -r '.total_commits // 0' 2>/dev/null)
-
-                    if [[ "${total_commits}" -gt 0 ]]; then
-                        local commit_list files_list files_count
-                        commit_list=$(echo "${compare_json}" | jq -r '
-                            [.commits[:15][] | "  - `\(.sha[:7])` \(.commit.message | split("\n")[0])"] | join("\n")
-                        ' 2>/dev/null)
-                        files_count=$(echo "${compare_json}" | jq -r '.files | length // 0' 2>/dev/null)
-                        files_list=$(echo "${compare_json}" | jq -r '
-                            [.files[:10][] | "  - `\(.filename)` (+\(.additions // 0)/-\(.deletions // 0))"] | join("\n")
-                        ' 2>/dev/null)
-
-                        local compare_notes=""
-                        compare_notes+="共 ${total_commits} 个 commit，${files_count} 个文件变更"$'\n\n'
-                        compare_notes+="**Commits (前 15):**"$'\n'
-                        compare_notes+="${commit_list}"$'\n\n'
-                        compare_notes+="**变更文件 (前 10):**"$'\n'
-                        compare_notes+="${files_list}"$'\n'
-
-                        changelogs+=$'\n'"## ${pkg} (${old_ver} → ${new_ver})"$'\n'
-                        changelogs+="来源: https://github.com/${slug}/compare/${old_ver}...${new_ver}"$'\n\n'
-                        changelogs+="${compare_notes}"$'\n'
-                        changelogs+="---"$'\n'
-                        got_changelog=true
-                    fi
-                fi
-            fi
-
-            # 3. 最终降级：仅提供 PyPI changelog 链接
-            if [[ "${got_changelog}" == false ]]; then
-                local changelog_url
-                changelog_url=$(echo "${pypi_json}" | jq -r '
-                    [.info.project_urls // {} | to_entries[]? | select(.key | test("changelog|changes|release"; "i")) | .value]
-                    | first // empty' 2>/dev/null)
-
-                if [[ -n "${changelog_url}" ]]; then
-                    changelogs+=$'\n'"## ${pkg} (${old_ver} → ${new_ver})"$'\n'
-                    changelogs+="📎 Changelog: ${changelog_url} (无法自动提取，请手动查看)"$'\n\n'
-                    changelogs+="---"$'\n'
-                else
-                    changelogs+=$'\n'"## ${pkg} (${old_ver} → ${new_ver})"$'\n'
-                    changelogs+="(无法获取 changelog)"$'\n'
-                    changelogs+="---"$'\n'
-                fi
-            fi
-        done <<< "${backend_updates}"
-    fi
-
-    # ---- 前端 upstream release notes（已有） ----
-    if [[ -n "${frontend_updates}" ]]; then
-        changelogs+=$'\n'"## 前端 (vue-pure-admin 上游)"$'\n'
-        local current_line release_lines
-        while IFS= read -r line; do
-            [[ -z "${line}" ]] && continue
-            if [[ "${line}" == CURRENT* ]]; then
-                current_line="${line}"
-            elif [[ "${line}" == RELEASE* ]]; then
-                release_lines+="${line}"$'\n'
-            fi
-        done <<< "${frontend_updates}"
-
-        if [[ -n "${current_line}" ]]; then
-            local cur_ver latest_ver latest_link
-            IFS='|' read -r _ cur_ver latest_ver _ latest_link <<< "${current_line}"
-            changelogs+="当前: v${cur_ver} → 最新: v${latest_ver}"$'\n'
-            changelogs+="链接: ${latest_link}"$'\n\n'
-        fi
-
-        if [[ -n "${release_lines}" ]]; then
-            while IFS= read -r rline; do
-                [[ -z "${rline}" ]] && continue
-                local _t r_tag r_name r_pub r_url r_body
-                IFS='|' read -r _t r_tag r_name r_pub r_url r_body <<< "${rline}"
-                changelogs+="### ${r_tag} ($(echo "${r_pub}" | cut -dT -f1))"$'\n'
-                changelogs+="${r_body}"$'\n\n'
-            done <<< "${release_lines}"
-        fi
-        changelogs+="---"$'\n'
-    fi
-
-    echo "${changelogs}"
-}
-
-# ==============================================================================
-# 5. AI 影响分析（DeepSeek）
-# ==============================================================================
-ai_analysis() {
-    local report="$1"
-    local changelogs="$2"
-
-    if [[ -z "${DEEPSEEK_API_KEY}" ]]; then
-        log_warn "DEEPSEEK_API_KEY 未设置，跳过 AI 分析"
-        echo "AI 分析未启用（缺少 DEEPSEEK_API_KEY）。请人工查看上述更新的官方 changelog。"
-        return
-    fi
-
-    local prompt
-    read -r -d '' prompt << 'PROMPT_EOF'
-你是 ZgAdmin 项目的依赖管理专家。以下包含两部分信息：
-1. 依赖更新检测报告（版本变化列表）
-2. 各依赖的实际 Release Notes / Changelog（从 PyPI 和 GitHub 自动拉取）
-
-请**严格按以下格式**输出分析结果，不要添加任何额外内容：
-
----
-
-## 🎯 逐个分析
-
-| 包名 | 版本变化 | 级别 | 决策 | 影响说明 |
-|------|---------|------|------|---------|
-| ... | ... | ... | ... | ... |
-
-决策必须是以下三者之一：
-- ✅ 安全更新：补丁/次版本，changelog 中无破坏性变更，可直接更新
-- ⚠️ 需要确认：有 API 变更或行为变化，建议阅读 changelog 后决定
-- 🔴 暂缓：有明确破坏性变更，或与项目技术栈冲突
-
-影响说明必须**基于你看到的实际 changelog 内容**来写，阐述对 ZgAdmin 的具体影响。
-如果 changelog 中没有提及任何与项目相关的变更，请写"对项目无直接影响"。
-**禁止使用"未验证"、"不确定"等模糊词汇**——你手上有 changelog 原文，根据它做判断。
-
-## 📊 总结
-
-必须给出一个明确的总结论，格式为：
-> **结论：[一句话：是否可以直接执行 uv sync / bun update]**
-
-然后给出操作清单：
-- [ ] 可以直接更新的包：列出包名
-- [ ] 需要确认的包：列出包名和关注点
-- [ ] 需要手动操作的变更：列出具体操作（如代码适配、配置修改等）
-
-## ⚡ 项目技术栈参考
-
-后端：FastAPI + SQLModel + Uvicorn + Redis + APScheduler + SQLite/PostgreSQL
-前端：vue-pure-admin（Vue 3 + Element Plus + Pinia + Vite + Tailwind CSS）
-PROMPT_EOF
-
-    local full_content
-    full_content="${report}"$'\n\n'"---"$'\n\n'"## 📋 各依赖实际 Changelog"$'\n\n'"${changelogs}"
-
-    # stdin 管道传参，彻底避开 ARG_MAX
-    local response
-    response=$(printf '%s' "${full_content}" | jq -Rs --arg prompt "${prompt}" '{
-        model: "deepseek-chat",
-        messages: [{role: "system", content: "你是一个严谨的依赖管理专家，只基于给定的 changelog 内容做判断，不臆测。"}, {role: "user", content: ($prompt + "\n\n" + .)}],
-        temperature: 0.2,
-        max_tokens: 4000
-    }' | curl -sf -X POST "https://api.deepseek.com/chat/completions" \
-        -H "Authorization: Bearer ${DEEPSEEK_API_KEY}" \
-        -H "Content-Type: application/json" \
-        -d @- 2>/dev/null || true)
-
-    if [[ -z "${response}" ]]; then
-        log_warn "DeepSeek API 请求失败，跳过 AI 分析"
-        echo "AI 分析暂时不可用。请人工查看上述更新的官方 changelog。"
-        return
-    fi
-
-    local ai_content
-    ai_content=$(echo "${response}" | jq -r '.choices[0].message.content // "AI 分析返回为空"' 2>/dev/null || echo "AI 分析解析失败")
-
-    echo "${ai_content}"
-}
-
-# ==============================================================================
-# 5. CNB Issue 管理
+# 4. CNB Issue 管理
 # ==============================================================================
 
 # 查找已有的 open 的 dependency-check Issue
@@ -657,26 +434,10 @@ main() {
     report=$(generate_report "${backend_updates}" "${frontend_updates}" \
         "${uv_old}" "${uv_new}" "${bun_old}" "${bun_new}")
 
-    # 5. 获取各依赖的实际 changelog
-    log_info "获取各依赖的更新日志..."
-    local changelogs
-    changelogs=$(fetch_changelogs "${backend_updates}" "${frontend_updates}")
-
-    # 6. AI 分析（传入实际 changelog）
-    log_info "调用 AI 分析..."
-    local ai_result
-    ai_result=$(ai_analysis "${report}" "${changelogs}")
-
-    # 7. 组装 Issue 正文
+    # 5. 组装 Issue 正文
     local issue_body
     issue_body=$(cat <<BODY_EOF
 ${report}
-
----
-
-## AI 影响分析
-
-${ai_result}
 
 ---
 
@@ -686,14 +447,14 @@ BODY_EOF
 
     local issue_title="📦 依赖更新检测报告 (${TODAY})"
 
-    # 8. 关闭旧的同标签 Issue
+    # 6. 关闭旧的同标签 Issue
     local old_issue
     old_issue=$(find_existing_issue)
     if [[ -n "${old_issue}" ]]; then
         close_old_issue "${old_issue}"
     fi
 
-    # 9. 创建新 Issue
+    # 7. 创建新 Issue
     create_issue "${issue_title}" "${issue_body}"
 
     log_info "========== 依赖版本检测完成 =========="
