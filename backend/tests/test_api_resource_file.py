@@ -310,3 +310,77 @@ class TestFileStatsAPI:
         assert "total_size" in body["data"]
         assert "type_stats" in body["data"]
         assert "total_size_display" in body["data"]
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# 补充分支：空文件名、批量上传、上传者过滤、预览成功
+# ═══════════════════════════════════════════════════════════════════════
+PNG = b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x02\x00\x00\x00\x90wS\xde"
+
+
+class TestFileUploadExtraBranches:
+    def test_upload_empty_filename(self, client, admin_headers, db, admin_user):
+        # 直接构造一个 filename 为空的 multipart 请求
+        boundary = "----testboundary"
+        body_bytes = (
+            (
+                f"--{boundary}\r\n"
+                'Content-Disposition: form-data; name="file"; filename=""\r\n'
+                "Content-Type: image/png\r\n\r\n"
+            ).encode()
+            + PNG
+            + f"\r\n--{boundary}--\r\n".encode()
+        )
+        headers = {**admin_headers, "Content-Type": f"multipart/form-data; boundary={boundary}"}
+        resp = client.post("/api/v1/resource/file/upload", headers=headers, content=body_bytes)
+        body = resp.json()
+        assert body["code"] == 400
+        assert "文件名" in body["msg"]
+
+    def test_upload_batch_mixed(self, client, admin_headers, db, admin_user):
+        resp = client.post(
+            "/api/v1/resource/file/upload-batch",
+            headers=admin_headers,
+            files=[
+                ("files", ("ok.png", PNG, "image/png")),
+                ("files", ("bad.exe", b"MZ", "application/octet-stream")),
+            ],
+        )
+        body = resp.json()
+        assert body["code"] == 200
+        assert len(body["data"]["success"]) == 1
+        assert len(body["data"]["fail"]) == 1
+
+        for item in body["data"]["success"]:
+            path = os.path.join(settings.STATIC_PATH, item["path"])
+            if os.path.exists(path):
+                os.remove(path)
+
+    def test_list_filter_by_uploader(self, client, admin_headers, db, admin_user):
+        client.post(
+            "/api/v1/resource/file/upload",
+            headers=admin_headers,
+            files={"file": ("byuser.png", PNG, "image/png")},
+        )
+        resp = client.post(
+            "/api/v1/resource/file/list",
+            headers=admin_headers,
+            json={"name": None, "file_type": None, "uploader_id": str(admin_user.id)},
+        )
+        body = resp.json()
+        assert body["code"] == 200
+        assert body["total"] >= 1
+
+    def test_preview_success(self, client, admin_headers, db, admin_user):
+        upload = client.post(
+            "/api/v1/resource/file/upload",
+            headers=admin_headers,
+            files={"file": ("preview.png", PNG, "image/png")},
+        ).json()
+        file_id = upload["data"]["id"]
+        resp = client.get(f"/api/v1/resource/file/preview/{file_id}", headers=admin_headers)
+        assert resp.status_code == 200
+
+        path = os.path.join(settings.STATIC_PATH, upload["data"]["path"])
+        if os.path.exists(path):
+            os.remove(path)
