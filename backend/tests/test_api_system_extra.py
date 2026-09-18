@@ -154,3 +154,81 @@ class TestVersionRouter:
         ):
             resp = client.get("/api/v1/system/version/check-update", headers=admin_headers)
         assert resp.json()["code"] == 200
+
+
+class TestNoticeRouterExtra:
+    def _add(self, client, admin_headers, **overrides):
+        payload = {"title": "通知X", "content": "c", "type": 0, "level": "info", "status": 1}
+        payload.update(overrides)
+        return client.post("/api/v1/system/notice/add", headers=admin_headers, json=payload).json()
+
+    def test_list_with_all_filters(self, client, admin_headers, db, admin_user):
+        self._add(client, admin_headers, title="过滤通知", level="warning")
+        resp = client.post(
+            "/api/v1/system/notice/list?currentPage=1&pageSize=10",
+            headers=admin_headers,
+            json={"title": "过滤", "type": 0, "level": "warning", "status": 1},
+        ).json()
+        assert resp["code"] == 200
+        assert resp["total"] >= 1
+
+    def test_update_not_found(self, client, admin_headers, db):
+        from uuid import uuid4
+
+        body = client.post(
+            "/api/v1/system/notice/update",
+            headers=admin_headers,
+            json={"id": str(uuid4()), "title": "不存在"},
+        ).json()
+        assert "不存在" in body["msg"]
+
+    def test_unread_grouping_message_type(self, client, admin_headers, db, admin_user):
+        self._add(client, admin_headers, title="业务消息", type=1)
+        body = client.get("/api/v1/system/notice/unread", headers=admin_headers).json()
+        assert body["code"] == 200
+        assert "notify" in body["data"] and "message" in body["data"]
+
+
+class TestSecurityIpRuleUpdateBranches:
+    def _add_rule(self, client, headers, cidr="10.0.0.0/8"):
+        return client.post(
+            "/api/v1/settings/security/ip-rules/add",
+            headers=headers,
+            json={"ip_cidr": cidr, "rule_type": "whitelist"},
+        ).json()["data"]["id"]
+
+    def test_update_invalid_rule_type(self, client, admin_headers, db, test_redis):
+        rule_id = self._add_rule(client, admin_headers)
+        body = client.post(
+            "/api/v1/settings/security/ip-rules/update",
+            headers=admin_headers,
+            json={"id": rule_id, "rule_type": "bogus"},
+        ).json()
+        assert "rule_type" in body["msg"]
+
+    def test_update_invalid_cidr(self, client, admin_headers, db, test_redis):
+        rule_id = self._add_rule(client, admin_headers)
+        body = client.post(
+            "/api/v1/settings/security/ip-rules/update",
+            headers=admin_headers,
+            json={"id": rule_id, "ip_cidr": "not-a-cidr"},
+        ).json()
+        assert "格式不正确" in body["msg"]
+
+    def test_update_valid_cidr(self, client, admin_headers, db, test_redis):
+        rule_id = self._add_rule(client, admin_headers)
+        body = client.post(
+            "/api/v1/settings/security/ip-rules/update",
+            headers=admin_headers,
+            json={"id": rule_id, "ip_cidr": "172.16.0.0/12"},
+        ).json()
+        assert body["code"] == 200
+
+    def test_update_single_ip_valid(self, client, admin_headers, db, test_redis):
+        rule_id = self._add_rule(client, admin_headers)
+        body = client.post(
+            "/api/v1/settings/security/ip-rules/update",
+            headers=admin_headers,
+            json={"id": rule_id, "ip_cidr": "1.2.3.4"},
+        ).json()
+        assert body["code"] == 200

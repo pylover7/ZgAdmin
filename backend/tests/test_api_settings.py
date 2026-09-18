@@ -87,7 +87,7 @@ class TestIPRuleAPI:
             headers=admin_headers,
             json={
                 "ip_cidr": "1.2.3.4",
-                "rule_type": "invalid_type",
+                "rule_type": "xx",
                 "description": "",
             },
         )

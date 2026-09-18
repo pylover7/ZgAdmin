@@ -509,3 +509,23 @@ class TestModuleHelpers:
         monkeypatch.setattr(redis_mod.redis_manager, "_instance", sentinel)
         assert redis_mod.get_redis() is sentinel
         assert isinstance(sentinel, redis_mod.RedisClient)
+
+
+class TestRealRedisImportError:
+    def test_missing_redis_package_raises(self, monkeypatch):
+        import builtins
+        import sys
+
+        from app.core import redis as redis_mod
+
+        real_import = builtins.__import__
+
+        def fake_import(name, *args, **kwargs):
+            if name == "redis.asyncio" or name.startswith("redis.asyncio"):
+                raise ImportError("no redis")
+            return real_import(name, *args, **kwargs)
+
+        monkeypatch.delitem(sys.modules, "redis.asyncio", raising=False)
+        monkeypatch.setattr(builtins, "__import__", fake_import)
+        with pytest.raises(ImportError, match="生产环境需要 redis 包"):
+            redis_mod.RealRedis("redis://h:6379/0")
