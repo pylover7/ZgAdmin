@@ -1,4 +1,5 @@
 """models 层单元测试 — 序列化、校验、默认值、边界"""
+
 from datetime import UTC, datetime
 from uuid import UUID
 
@@ -16,10 +17,13 @@ from app.models.user import UpdatePassword, User, UserCreate
 # BaseModel
 # ═══════════════════════════════════════════════════════════════════════
 
+
 class TestBaseModel:
     def test_id_auto_generated(self):
         user = User(
-            username="test", email="t@t.com", password="12345678",
+            username="test",
+            email="t@t.com",
+            password="12345678",
         )
         assert user.id is not None
         assert isinstance(user.id, UUID)
@@ -27,7 +31,9 @@ class TestBaseModel:
     @pytest.mark.asyncio
     async def test_to_dict(self):
         user = User(
-            username="test", email="t@t.com", password="12345678",
+            username="test",
+            email="t@t.com",
+            password="12345678",
         )
         d = await user.to_dict()
         assert "id" in d
@@ -37,7 +43,9 @@ class TestBaseModel:
     @pytest.mark.asyncio
     async def test_to_dict_exclude_fields(self):
         user = User(
-            username="test", email="t@t.com", password="12345678",
+            username="test",
+            email="t@t.com",
+            password="12345678",
         )
         d = await user.to_dict(exclude_fields=["password"])
         assert "password" not in d
@@ -54,6 +62,7 @@ class TestBaseModel:
 # TimestampMixin
 # ═══════════════════════════════════════════════════════════════════════
 
+
 class TestTimestampMixin:
     def test_created_at_auto_filled(self):
         user = User(username="test", email="t@t.com", password="12345678")
@@ -64,6 +73,7 @@ class TestTimestampMixin:
 # ═══════════════════════════════════════════════════════════════════════
 # 响应模型
 # ═══════════════════════════════════════════════════════════════════════
+
 
 class TestResponseModels:
     def test_success_default(self):
@@ -98,6 +108,7 @@ class TestResponseModels:
 # User 模型
 # ═══════════════════════════════════════════════════════════════════════
 
+
 class TestUserModel:
     def test_user_create_minimal(self):
         uc = UserCreate(
@@ -111,7 +122,9 @@ class TestUserModel:
 
     def test_user_create_defaults(self):
         uc = UserCreate(
-            username="test", email="t@t.com", password="12345678",
+            username="test",
+            email="t@t.com",
+            password="12345678",
         )
         assert uc.sex == 1
         assert uc.status == 1
@@ -127,6 +140,7 @@ class TestUserModel:
 # Role 模型
 # ═══════════════════════════════════════════════════════════════════════
 
+
 class TestRoleModel:
     def test_role_create(self):
         rc = RoleCreate(name="管理员", code="admin", status=0)
@@ -141,6 +155,7 @@ class TestRoleModel:
 # ═══════════════════════════════════════════════════════════════════════
 # Notice 模型
 # ═══════════════════════════════════════════════════════════════════════
+
 
 class TestNoticeModel:
     def test_notice_create(self):
@@ -161,6 +176,7 @@ class TestNoticeModel:
 # ═══════════════════════════════════════════════════════════════════════
 # SecurityPolicy 模型
 # ═══════════════════════════════════════════════════════════════════════
+
 
 class TestSecurityPolicyModel:
     def test_default_values(self):
@@ -185,6 +201,7 @@ class TestSecurityPolicyModel:
 # IPRule 模型
 # ═══════════════════════════════════════════════════════════════════════
 
+
 class TestIPRuleModel:
     def test_ip_rule_create(self):
         rule = IPRuleCreate(
@@ -204,6 +221,7 @@ class TestIPRuleModel:
 # ═══════════════════════════════════════════════════════════════════════
 # Login 模型
 # ═══════════════════════════════════════════════════════════════════════
+
 
 class TestLoginModels:
     def test_credentials_schema(self):
@@ -226,6 +244,7 @@ class TestLoginModels:
 # ═══════════════════════════════════════════════════════════════════════
 # Enums
 # ═══════════════════════════════════════════════════════════════════════
+
 
 class TestEnums:
     def test_method_type_values(self):

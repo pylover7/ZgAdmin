@@ -392,8 +392,19 @@ describe("router/utils", () => {
       expect(result[0].meta.backstage).toBe(true);
     });
 
-    // Note: redirect and name auto-setting requires children with length > 0
-    // and the component resolution requires import.meta.glob which is empty in tests
+    it("resolves component by explicit component field when provided", () => {
+      const routes = [
+        {
+          meta: {},
+          path: "/bycomp",
+          component: "system/user/index",
+          children: []
+        }
+      ] as any;
+      const result = addAsyncRoutes(routes);
+      // 显式 component → 走 findIndex(ev => ev.includes(v.component))
+      expect(result[0].meta.backstage).toBe(true);
+    });
   });
 
   describe("getTopMenu", () => {
@@ -407,6 +418,212 @@ describe("router/utils", () => {
     it("returns a promise", () => {
       const result = initRouter();
       expect(result).toBeInstanceOf(Promise);
+    });
+  });
+});
+
+import { usePermissionStoreHook } from "@/store/modules/permission";
+import { useMultiTagsStoreHook } from "@/store/modules/multiTags";
+
+describe("router/utils extra branches", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  describe("filterTree / filterChildrenTree nested children", () => {
+    it("keeps children with non-zero length", () => {
+      const tree = [
+        {
+          path: "/a",
+          meta: { showLink: true },
+          children: [
+            { path: "/a/1", meta: { showLink: true }, children: [] },
+            { path: "/a/2", meta: { showLink: false }, children: [] }
+          ]
+        }
+      ] as any;
+      const result = filterTree(tree);
+      expect(result[0].children.length).toBe(1);
+    });
+  });
+
+  describe("getParentPaths deep traversal", () => {
+    it("pops parents when a branch misses", () => {
+      const routes = [
+        {
+          path: "/x",
+          children: [{ path: "/x/y", children: [{ path: "/x/y/z" }] }]
+        }
+      ] as any;
+      expect(getParentPaths("/x/y/z", routes)).toEqual(["/x", "/x/y"]);
+      // 未找到 → 覆盖 parents.pop()
+      expect(getParentPaths("/nope", routes)).toEqual([]);
+    });
+  });
+
+  describe("findRouteByPath nested", () => {
+    it("finds deep child", () => {
+      const routes = [
+        { path: "/p", children: [{ path: "/p/c", children: [] }] }
+      ] as any;
+      expect(findRouteByPath("/p/c", routes).path).toBe("/p/c");
+    });
+  });
+
+  describe("addAsyncRoutes with children and no component", () => {
+    it("sets redirect/name/component when children present", () => {
+      const routes = [
+        {
+          meta: {},
+          path: "/parent",
+          children: [{ path: "/parent/child", name: "Child", meta: {} }]
+        }
+      ] as any;
+      const result = addAsyncRoutes(routes);
+      expect(result[0].name).toBe("ChildParent");
+      expect(result[0].redirect).toBe("/parent/child");
+    });
+
+    it("uses IFrame component when meta.frameSrc is set", () => {
+      const routes = [
+        { meta: { frameSrc: "https://example.com" }, path: "/frame" }
+      ] as any;
+      const result = addAsyncRoutes(routes);
+      expect(result[0].meta.backstage).toBe(true);
+    });
+  });
+
+  describe("getTopMenu with children", () => {
+    it("returns child matching redirect", () => {
+      const child = { path: "/child1", name: "c1" };
+      (usePermissionStoreHook as any).mockReturnValue({
+        wholeMenus: [
+          {
+            path: "/top",
+            redirect: "/child1",
+            children: [child, { path: "/child2", name: "c2" }]
+          }
+        ],
+        flatteningRoutes: [],
+        handleWholeMenus: mockHandleWholeMenus
+      });
+      expect(getTopMenu().path).toBe("/child1");
+    });
+
+    it("returns first child when no redirect", () => {
+      (usePermissionStoreHook as any).mockReturnValue({
+        wholeMenus: [
+          {
+            path: "/top",
+            children: [
+              { path: "/c1", name: "c1" },
+              { path: "/c2", name: "c2" }
+            ]
+          }
+        ],
+        flatteningRoutes: [],
+        handleWholeMenus: mockHandleWholeMenus
+      });
+      expect(getTopMenu().path).toBe("/c1");
+    });
+
+    it("pushes tag when tag=true", () => {
+      const handleTags = vi.fn();
+      (usePermissionStoreHook as any).mockReturnValue({
+        wholeMenus: [{ path: "/top", children: [{ path: "/c1", name: "c1" }] }],
+        flatteningRoutes: [],
+        handleWholeMenus: mockHandleWholeMenus
+      });
+      (useMultiTagsStoreHook as any).mockReturnValue({
+        handleTags,
+        getMultiTagsCache: false,
+        multiTags: []
+      });
+      getTopMenu(true);
+      expect(handleTags).toHaveBeenCalledWith("push", expect.anything());
+    });
+  });
+});
+
+describe("router/utils handleAsyncRoutes & handleTopMenu", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  describe("filterChildrenTree via filterNoPermissionTree", () => {
+    it("removes empty-child dirs and applies filterTree to nested children", () => {
+      const tree = [
+        {
+          path: "/dir",
+          meta: { title: "d" },
+          children: [
+            { path: "/dir/a", meta: { title: "a", showLink: true } },
+            { path: "/dir/b", meta: { title: "b", showLink: false } }
+          ]
+        },
+        { path: "/empty", meta: { title: "e" }, children: [] }
+      ] as any;
+      const res = filterNoPermissionTree(tree);
+      expect(res.find((r: any) => r.path === "/empty")).toBeUndefined();
+      const dir = res.find((r: any) => r.path === "/dir");
+      // filterTree 过滤掉 showLink=false 的子项
+      expect(
+        dir.children.find((c: any) => c.path === "/dir/b")
+      ).toBeUndefined();
+    });
+  });
+
+  describe("handleTopMenu branches", () => {
+    it("returns redirect-matched child when redirect set", () => {
+      (usePermissionStoreHook as any).mockReturnValue({
+        wholeMenus: [
+          {
+            path: "/root",
+            children: [
+              {
+                path: "/top",
+                redirect: "/child1",
+                children: [
+                  { path: "/child1", name: "c1" },
+                  { path: "/child2", name: "c2" }
+                ]
+              }
+            ]
+          }
+        ],
+        flatteningRoutes: [],
+        handleWholeMenus: mockHandleWholeMenus
+      });
+      expect(getTopMenu().path).toBe("/child1");
+    });
+
+    it("returns first child when no redirect", () => {
+      (usePermissionStoreHook as any).mockReturnValue({
+        wholeMenus: [
+          {
+            path: "/root",
+            children: [
+              {
+                path: "/top",
+                children: [
+                  { path: "/c1", name: "c1" },
+                  { path: "/c2", name: "c2" }
+                ]
+              }
+            ]
+          }
+        ],
+        flatteningRoutes: [],
+        handleWholeMenus: mockHandleWholeMenus
+      });
+      expect(getTopMenu().path).toBe("/c1");
+    });
+
+    it("returns route itself when children length <= 1", () => {
+      (usePermissionStoreHook as any).mockReturnValue({
+        wholeMenus: [
+          { path: "/root", children: [{ path: "/only", name: "only" }] }
+        ],
+        flatteningRoutes: [],
+        handleWholeMenus: mockHandleWholeMenus
+      });
+      expect(getTopMenu().path).toBe("/only");
     });
   });
 });

@@ -18,7 +18,8 @@ import {
   updatePreferences,
   getMineLogs,
   getQQAuthUrl,
-  qqLogin
+  qqLogin,
+  logoutApi
 } from "@/api/user";
 
 describe("api/user", () => {
@@ -95,6 +96,22 @@ describe("api/user", () => {
     qqLogin({ code: "abc", state: "xyz" });
     expect(mockRequest).toHaveBeenCalledWith("post", "/api/v1/base/qq/login", {
       data: { code: "abc", state: "xyz" }
+    });
+  });
+
+  it("logoutApi POSTs with refreshToken", () => {
+    mockRequest.mockClear();
+    logoutApi("rt");
+    expect(mockRequest).toHaveBeenCalledWith("post", "/api/v1/base/logout", {
+      data: { refreshToken: "rt" }
+    });
+  });
+
+  it("logoutApi POSTs without refreshToken", () => {
+    mockRequest.mockClear();
+    logoutApi();
+    expect(mockRequest).toHaveBeenCalledWith("post", "/api/v1/base/logout", {
+      data: undefined
     });
   });
 });

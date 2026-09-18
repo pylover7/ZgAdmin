@@ -1,4 +1,5 @@
 """API 集成测试 — base 路由（核心路径 100%）"""
+
 from datetime import UTC, datetime, timedelta
 
 from app.models import SecurityPolicy
@@ -10,6 +11,7 @@ from app.utils.jwtt import create_access_token
 def _get_captcha_code_sync(test_redis, captcha_key: str) -> str | None:
     """同步获取 Redis 中的验证码"""
     import asyncio
+
     try:
         loop = asyncio.get_running_loop()
     except RuntimeError:
@@ -21,6 +23,7 @@ def _get_captcha_code_sync(test_redis, captcha_key: str) -> str | None:
     if loop and loop.is_running():
         # 已在异步上下文中 — 用线程执行
         import concurrent.futures
+
         with concurrent.futures.ThreadPoolExecutor() as pool:
             future = pool.submit(asyncio.run, _fetch())
             return future.result()
@@ -31,6 +34,7 @@ def _get_captcha_code_sync(test_redis, captcha_key: str) -> str | None:
 # ═══════════════════════════════════════════════════════════════════════
 # 公开接口
 # ═══════════════════════════════════════════════════════════════════════
+
 
 class TestHealthCheck:
     def test_health_returns_ok(self, client):
@@ -63,6 +67,7 @@ class TestInitConfig:
 # 登录流程（核心路径！）
 # ═══════════════════════════════════════════════════════════════════════
 
+
 class TestLogin:
     def test_login_success(self, client, db, admin_user, test_redis, security_policy):
         """完整登录流程：获取验证码 → 登录 → 返回 Token"""
@@ -75,12 +80,15 @@ class TestLogin:
         assert code is not None, "验证码未存入 Redis，检查 get_redis 全局替换是否生效"
 
         # 3. 登录
-        resp = client.post("/api/v1/base/accessToken", json={
-            "username": "admin",
-            "password": "admin123456",
-            "captcha_key": captcha_key,
-            "captcha_code": code,
-        })
+        resp = client.post(
+            "/api/v1/base/accessToken",
+            json={
+                "username": "admin",
+                "password": "admin123456",
+                "captcha_key": captcha_key,
+                "captcha_code": code,
+            },
+        )
         body = resp.json()
         assert body["code"] == 200
         assert "accessToken" in body["data"]
@@ -92,23 +100,29 @@ class TestLogin:
         captcha_key = captcha_resp.json()["data"]["captcha_key"]
         code = _get_captcha_code_sync(test_redis, captcha_key)
 
-        resp = client.post("/api/v1/base/accessToken", json={
-            "username": "admin",
-            "password": "wrongpassword",
-            "captcha_key": captcha_key,
-            "captcha_code": code,
-        })
+        resp = client.post(
+            "/api/v1/base/accessToken",
+            json={
+                "username": "admin",
+                "password": "wrongpassword",
+                "captcha_key": captcha_key,
+                "captcha_code": code,
+            },
+        )
         body = resp.json()
         assert body["code"] in (400, 401)
 
     def test_login_wrong_captcha(self, client, db, admin_user, test_redis, security_policy):
         """验证码错误 → 失败"""
-        resp = client.post("/api/v1/base/accessToken", json={
-            "username": "admin",
-            "password": "admin123456",
-            "captcha_key": "fake-key",
-            "captcha_code": "XXXX",
-        })
+        resp = client.post(
+            "/api/v1/base/accessToken",
+            json={
+                "username": "admin",
+                "password": "admin123456",
+                "captcha_key": "fake-key",
+                "captcha_code": "XXXX",
+            },
+        )
         body = resp.json()
         assert body["code"] != 200
 
@@ -118,10 +132,13 @@ class TestLogin:
         db.add(policy)
         db.commit()
 
-        resp = client.post("/api/v1/base/accessToken", json={
-            "username": "admin",
-            "password": "admin123456",
-        })
+        resp = client.post(
+            "/api/v1/base/accessToken",
+            json={
+                "username": "admin",
+                "password": "admin123456",
+            },
+        )
         body = resp.json()
         assert body["code"] == 200
 
@@ -129,6 +146,7 @@ class TestLogin:
 # ═══════════════════════════════════════════════════════════════════════
 # Token 刷新
 # ═══════════════════════════════════════════════════════════════════════
+
 
 class TestRefreshToken:
     def test_refresh_token_success(self, client, admin_user):
@@ -141,9 +159,12 @@ class TestRefreshToken:
         )
         refresh_token = create_access_token(data=refresh_payload)
 
-        resp = client.post("/api/v1/base/refreshToken", json={
-            "refreshToken": refresh_token,
-        })
+        resp = client.post(
+            "/api/v1/base/refreshToken",
+            json={
+                "refreshToken": refresh_token,
+            },
+        )
         body = resp.json()
         assert body["code"] == 200
         assert "accessToken" in body["data"]
@@ -159,9 +180,12 @@ class TestRefreshToken:
         )
         expired_token = create_access_token(data=expired_payload)
 
-        resp = client.post("/api/v1/base/refreshToken", json={
-            "refreshToken": expired_token,
-        })
+        resp = client.post(
+            "/api/v1/base/refreshToken",
+            json={
+                "refreshToken": expired_token,
+            },
+        )
         body = resp.json()
         assert body["code"] == 401
 
@@ -169,6 +193,7 @@ class TestRefreshToken:
 # ═══════════════════════════════════════════════════════════════════════
 # 用户信息 / 菜单 / API
 # ═══════════════════════════════════════════════════════════════════════
+
 
 class TestUserInfo:
     def test_get_userinfo(self, client, admin_headers, admin_user):
@@ -190,21 +215,30 @@ class TestUserInfo:
 # 修改密码
 # ═══════════════════════════════════════════════════════════════════════
 
+
 class TestUpdatePassword:
     def test_update_password_success(self, client, admin_headers, admin_user, db, security_policy):
         """修改密码成功"""
-        resp = client.post("/api/v1/base/updatePwd", headers=admin_headers, json={
-            "current_password": "admin123456",
-            "new_password": "NewAdmin123",
-        })
+        resp = client.post(
+            "/api/v1/base/updatePwd",
+            headers=admin_headers,
+            json={
+                "current_password": "admin123456",
+                "new_password": "NewAdmin123",
+            },
+        )
         body = resp.json()
         assert body["code"] == 200
 
     def test_update_password_wrong_current(self, client, admin_headers, admin_user, db, security_policy):
         """旧密码错误 → 失败"""
-        resp = client.post("/api/v1/base/updatePwd", headers=admin_headers, json={
-            "current_password": "wrongpassword",
-            "new_password": "NewAdmin123",
-        })
+        resp = client.post(
+            "/api/v1/base/updatePwd",
+            headers=admin_headers,
+            json={
+                "current_password": "wrongpassword",
+                "new_password": "NewAdmin123",
+            },
+        )
         body = resp.json()
         assert body["code"] != 200

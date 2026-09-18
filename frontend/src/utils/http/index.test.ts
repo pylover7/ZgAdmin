@@ -240,3 +240,207 @@ describe("HTTP PureHttp", () => {
     });
   });
 });
+
+// ─── 补充分支：刷新失败、响应拦截器、initConfig 回调 ───
+
+describe("HTTP PureHttp extra branches", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("refresh failure → logOut + warning message", async () => {
+    const pastTime = Date.now() - 1000;
+    mockGetToken.mockReturnValue({
+      accessToken: "expired-token",
+      expires: pastTime,
+      refreshToken: "old-refresh"
+    });
+    mockHandRefreshToken.mockRejectedValue(new Error("refresh failed"));
+    // 刷新失败时原始请求会挂起（设计如此），不 await
+    http.request("get", "/api/v1/system/user/list").catch(() => {});
+    await new Promise(r => setTimeout(r, 20));
+    expect(mockLogOut).toHaveBeenCalled();
+    expect(mockMessage).toHaveBeenCalledWith(
+      "登录已过期，请重新登录！",
+      expect.any(Object)
+    );
+  });
+
+  it("response interceptor 403 → resetRouter + push /error/403", async () => {
+    const handlers: any[] = [];
+    const spy = vi
+      .spyOn(
+        (http as any).constructor.axiosInstance.interceptors.response,
+        "use"
+      )
+      .mockImplementation(((onFulfilled: any, onRejected: any) => {
+        handlers.push({ onFulfilled, onRejected });
+        return 1;
+      }) as any);
+    try {
+      (http as any).httpInterceptorsResponse();
+      const rejected = handlers[handlers.length - 1].onRejected;
+      await rejected({ response: { status: 403 }, config: {} }).catch(() => {});
+      expect(mockResetRouter).toHaveBeenCalled();
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it("response interceptor 401 → logOut + message", async () => {
+    const handlers: any[] = [];
+    const spy = vi
+      .spyOn(
+        (http as any).constructor.axiosInstance.interceptors.response,
+        "use"
+      )
+      .mockImplementation(((onFulfilled: any, onRejected: any) => {
+        handlers.push({ onFulfilled, onRejected });
+        return 1;
+      }) as any);
+    try {
+      (http as any).httpInterceptorsResponse();
+      const rejected = handlers[handlers.length - 1].onRejected;
+      await rejected({
+        response: { status: 401 },
+        config: { url: "/api/x" }
+      }).catch(() => {});
+      expect(mockLogOut).toHaveBeenCalled();
+      expect(mockMessage).toHaveBeenCalledWith(
+        "请重新登录！",
+        expect.any(Object)
+      );
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it("response interceptor 401 on /logout URL skips logOut", async () => {
+    const handlers: any[] = [];
+    const spy = vi
+      .spyOn(
+        (http as any).constructor.axiosInstance.interceptors.response,
+        "use"
+      )
+      .mockImplementation(((onFulfilled: any, onRejected: any) => {
+        handlers.push({ onFulfilled, onRejected });
+        return 1;
+      }) as any);
+    try {
+      (http as any).httpInterceptorsResponse();
+      const rejected = handlers[handlers.length - 1].onRejected;
+      mockLogOut.mockClear();
+      await rejected({
+        response: { status: 401 },
+        config: { url: "/api/v1/base/logout" }
+      }).catch(() => {});
+      expect(mockLogOut).not.toHaveBeenCalled();
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it("response interceptor success passes through beforeResponseCallback", async () => {
+    const handlers: any[] = [];
+    const spy = vi
+      .spyOn(
+        (http as any).constructor.axiosInstance.interceptors.response,
+        "use"
+      )
+      .mockImplementation(((onFulfilled: any, onRejected: any) => {
+        handlers.push({ onFulfilled, onRejected });
+        return 1;
+      }) as any);
+    try {
+      (http as any).httpInterceptorsResponse();
+      const fulfilled = handlers[handlers.length - 1].onFulfilled;
+      const cb = vi.fn();
+      const res = fulfilled({
+        config: { beforeResponseCallback: cb },
+        data: { ok: 1 }
+      });
+      expect(cb).toHaveBeenCalled();
+      expect(res).toEqual({ ok: 1 });
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it("request interceptor uses initConfig.beforeRequestCallback", async () => {
+    const cb = vi.fn();
+    (http as any).constructor.initConfig = { beforeRequestCallback: cb };
+    try {
+      await (http as any).constructor.axiosInstance.request({
+        method: "get",
+        url: "/api/v1/system/x"
+      });
+      expect(cb).toHaveBeenCalled();
+    } finally {
+      (http as any).constructor.initConfig = {};
+    }
+  });
+});
+
+describe("HTTP PureHttp remaining branches", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("request interceptor error handler rejects", () => {
+    const handlers: any[] = [];
+    const spy = vi
+      .spyOn(
+        (http as any).constructor.axiosInstance.interceptors.request,
+        "use"
+      )
+      .mockImplementation(((onFulfilled: any, onRejected: any) => {
+        handlers.push({ onFulfilled, onRejected });
+        return 1;
+      }) as any);
+    try {
+      (http as any).httpInterceptorsRequest();
+      const rejected = handlers[handlers.length - 1].onRejected;
+      const p = rejected(new Error("req error"));
+      expect(p).toBeInstanceOf(Promise);
+      p.catch(() => {});
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it("response interceptor uses initConfig.beforeResponseCallback", () => {
+    const handlers: any[] = [];
+    const spy = vi
+      .spyOn(
+        (http as any).constructor.axiosInstance.interceptors.response,
+        "use"
+      )
+      .mockImplementation(((onFulfilled: any, onRejected: any) => {
+        handlers.push({ onFulfilled, onRejected });
+        return 1;
+      }) as any);
+    const cb = vi.fn();
+    try {
+      (http as any).constructor.initConfig = { beforeResponseCallback: cb };
+      (http as any).httpInterceptorsResponse();
+      const fulfilled = handlers[handlers.length - 1].onFulfilled;
+      const res = fulfilled({ config: {}, data: { ok: 2 } });
+      expect(cb).toHaveBeenCalled();
+      expect(res).toEqual({ ok: 2 });
+    } finally {
+      (http as any).constructor.initConfig = {};
+      spy.mockRestore();
+    }
+  });
+
+  it("request rejects when axios instance request fails", async () => {
+    const spy = vi
+      .spyOn((http as any).constructor.axiosInstance, "request")
+      .mockRejectedValue(new Error("net error"));
+    try {
+      await expect(http.request("get", "/api/v1/system/fail")).rejects.toThrow(
+        "net error"
+      );
+    } finally {
+      spy.mockRestore();
+    }
+  });
+});

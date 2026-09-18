@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from fastapi import APIRouter
 
 from app.controllers.api import apiController
@@ -8,7 +10,7 @@ apiRouter = APIRouter()
 
 
 @apiRouter.post("/delete", summary="删除接口")
-async def delete_api(session: SessionDep, data: list[str]):
+async def delete_api(session: SessionDep, data: list[UUID]):
     await apiController.delete(session, data)
     return Success(msg="接口删除成功！")
 

@@ -54,9 +54,16 @@ markers = [
 [tool.coverage.run]
 source = ["app"]
 omit = ["tests/*", "app/alembic/*"]
+# 排除不可达的标准样板：模块 __main__ 入口与 protocol 声明
+exclude_also = [
+    "if __name__ == .__main__.:",
+]
 
 [tool.coverage.report]
 show_missing = true
+exclude_also = [
+    "if __name__ == .__main__.:",
+]
 
 [tool.ruff]
 line-length = 120

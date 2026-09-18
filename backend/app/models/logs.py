@@ -76,7 +76,9 @@ class OperationLogUpdate(OperationLogCreate):
 
 
 class OperationLogFilter(SQLModel):
-    level: list[str] = Field(default=None, description="日志等级列表", schema_extra={"examples": [["INFO", "WARNING"]]})
+    level: list[str] = Field(
+        default_factory=list, description="日志等级列表", schema_extra={"examples": [["INFO", "WARNING"]]}
+    )
     operationTime: list[datetime] | None = Field(
         default=None,
         description="操作时间范围 [开始时间, 结束时间]",
