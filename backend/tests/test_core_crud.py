@@ -1,4 +1,5 @@
 """core/crud.py CRUDBase 单元测试 — 使用真实 SQLite"""
+
 from uuid import uuid4
 
 import pytest
@@ -51,6 +52,7 @@ def crud_session(crud_engine):
 
 
 # ─── User CRUD 测试 ───────────────────────────────────────────────────
+
 
 class TestCRUDBaseUser:
     @pytest.fixture
@@ -129,6 +131,7 @@ class TestCRUDBaseUser:
 
 # ─── Role CRUD 测试 ───────────────────────────────────────────────────
 
+
 class TestCRUDBaseRole:
     @pytest.fixture
     def role_crud(self):
@@ -158,6 +161,7 @@ class TestCRUDBaseRole:
 
 
 # ─── list with where 条件过滤 ────────────────────────────────────────
+
 
 class TestCRUDBaseListFilter:
     @pytest.fixture

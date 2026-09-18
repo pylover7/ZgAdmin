@@ -1,4 +1,5 @@
 """utils/password_policy.py 单元测试 — 密码复杂度 + 历史检查"""
+
 import pytest
 
 from app.models.security import SecurityPolicy
@@ -12,6 +13,7 @@ from app.utils.password_policy import (
 # ═══════════════════════════════════════════════════════════════════════
 # validate_password_strength
 # ═══════════════════════════════════════════════════════════════════════
+
 
 class TestValidatePasswordStrength:
     @pytest.fixture
@@ -87,6 +89,7 @@ class TestValidatePasswordStrength:
 # check_password_history
 # ═══════════════════════════════════════════════════════════════════════
 
+
 class TestCheckPasswordHistory:
     def test_empty_history_passes(self):
         result = check_password_history("anypassword", None, count=3)
@@ -127,6 +130,7 @@ class TestCheckPasswordHistory:
 # ═══════════════════════════════════════════════════════════════════════
 # update_password_history
 # ═══════════════════════════════════════════════════════════════════════
+
 
 class TestUpdatePasswordHistory:
     def test_append_to_empty(self):

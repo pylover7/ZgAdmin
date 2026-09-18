@@ -12,6 +12,7 @@ def redis():
 
 # ─── 基础 get / set / delete ──────────────────────────────────────────
 
+
 class TestMemoryRedisBasic:
     @pytest.mark.asyncio
     async def test_set_and_get(self, redis):
@@ -51,6 +52,7 @@ class TestMemoryRedisBasic:
 
 
 # ─── exists / expire / ttl ────────────────────────────────────────────
+
 
 class TestMemoryRedisExpiry:
     @pytest.mark.asyncio
@@ -103,6 +105,7 @@ class TestMemoryRedisExpiry:
 
 # ─── incr ─────────────────────────────────────────────────────────────
 
+
 class TestMemoryRedisIncr:
     @pytest.mark.asyncio
     async def test_incr_new_key(self, redis):
@@ -124,6 +127,7 @@ class TestMemoryRedisIncr:
 
 
 # ─── sorted sets: zadd / zremrangebyscore / zcard ────────────────────
+
 
 class TestMemoryRedisSortedSet:
     @pytest.mark.asyncio
@@ -158,17 +162,20 @@ class TestMemoryRedisSortedSet:
 
 # ─── pipeline_exec ────────────────────────────────────────────────────
 
+
 class TestMemoryRedisPipeline:
     @pytest.mark.asyncio
     async def test_pipeline_mixed_commands(self, redis):
-        results = await redis.pipeline_exec([
-            ("set", "pk1", "pv1", None),
-            ("get", "pk1"),
-            ("incr", "counter1"),
-            ("incr", "counter1"),
-            ("exists", "pk1"),
-            ("delete", "pk1"),
-        ])
+        results = await redis.pipeline_exec(
+            [
+                ("set", "pk1", "pv1", None),
+                ("get", "pk1"),
+                ("incr", "counter1"),
+                ("incr", "counter1"),
+                ("exists", "pk1"),
+                ("delete", "pk1"),
+            ]
+        )
         # set -> None, get -> "pv1", incr -> 1, incr -> 2, exists -> True, delete -> 1
         assert results[0] is None
         assert results[1] == "pv1"
@@ -179,13 +186,15 @@ class TestMemoryRedisPipeline:
 
     @pytest.mark.asyncio
     async def test_pipeline_sorted_set_commands(self, redis):
-        results = await redis.pipeline_exec([
-            ("zadd", "ss", {"m1": 1.0}),
-            ("zcard", "ss"),
-            ("zadd", "ss", {"m2": 2.0}),
-            ("zremrangebyscore", "ss", 0.5, 1.5),
-            ("zcard", "ss"),
-        ])
+        results = await redis.pipeline_exec(
+            [
+                ("zadd", "ss", {"m1": 1.0}),
+                ("zcard", "ss"),
+                ("zadd", "ss", {"m2": 2.0}),
+                ("zremrangebyscore", "ss", 0.5, 1.5),
+                ("zcard", "ss"),
+            ]
+        )
         assert results[0] == 1  # zadd added
         assert results[1] == 1  # zcard
         assert results[2] == 1  # zadd added
@@ -194,6 +203,7 @@ class TestMemoryRedisPipeline:
 
 
 # ─── close ────────────────────────────────────────────────────────────
+
 
 class TestMemoryRedisClose:
     @pytest.mark.asyncio

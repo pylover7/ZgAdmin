@@ -1,4 +1,5 @@
 """utils/jwtt.py 单元测试 — JWT 创建/解码、OAuth state"""
+
 from datetime import UTC, datetime, timedelta
 
 import jwt as pyjwt
@@ -42,12 +43,13 @@ class TestCreateAccessToken:
     def test_token_contains_exp(self):
         exp_time = datetime.now(UTC) + timedelta(hours=2)
         payload = JWTPayload(
-            user_id="x", username="y", is_superuser=False, exp=exp_time,
+            user_id="x",
+            username="y",
+            is_superuser=False,
+            exp=exp_time,
         )
         token = create_access_token(data=payload)
-        decoded_raw = pyjwt.decode(
-            token, settings.SECRET_KEY, algorithms=[settings.JWT_ALGORITHM]
-        )
+        decoded_raw = pyjwt.decode(token, settings.SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
         assert "exp" in decoded_raw
 
 
@@ -109,9 +111,7 @@ class TestOAuthState:
             "nonce": "test",
             "exp": datetime.now(UTC) - timedelta(minutes=1),
         }
-        expired_state = pyjwt.encode(
-            expired_payload, settings.SECRET_KEY, algorithm=settings.JWT_ALGORITHM
-        )
+        expired_state = pyjwt.encode(expired_payload, settings.SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
         assert verify_oauth_state(expired_state, purpose="qq_login") is False
 
     def test_invalid_state_returns_false(self):
