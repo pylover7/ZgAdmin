@@ -212,3 +212,300 @@ class TestMemoryRedisClose:
         await redis.close()
         assert len(redis._data) == 0
         assert len(redis._sorted_sets) == 0
+
+
+# ─── 补充分支：惰性过期、删除 sorted set、pipeline 未知命令 ──────────────
+
+
+class TestMemoryRedisExtraBranches:
+    @pytest.mark.asyncio
+    async def test_lazy_expiry_deletes_key(self, redis):
+        await redis.set("k", "v", ex=1)
+        redis._data["k"] = ("v", __import__("time").monotonic() - 1)
+        assert await redis.get("k") is None
+        assert "k" not in redis._data
+
+    @pytest.mark.asyncio
+    async def test_delete_removes_sorted_set(self, redis):
+        await redis.zadd("z", {"a": 1.0})
+        assert await redis.delete("z") == 1
+        assert await redis.zcard("z") == 0
+
+    @pytest.mark.asyncio
+    async def test_pipeline_unknown_command(self, redis):
+        results = await redis.pipeline_exec([("hset", "h", "f", "v")])
+        assert results == [None]
+
+    @pytest.mark.asyncio
+    async def test_pipeline_set_without_ex(self, redis):
+        results = await redis.pipeline_exec([("set", "k", "v")])
+        assert results == [None]
+        assert await redis.get("k") == "v"
+
+    @pytest.mark.asyncio
+    async def test_close_idempotent(self, redis):
+        await redis.set("k", "v")
+        await redis.close()
+        await redis.close()
+        assert await redis.get("k") is None
+
+
+# ─── RealRedis（真实客户端全部委托方法，用 Mock 覆盖） ─────────────────
+
+
+class TestRealRedis:
+    @pytest.fixture
+    def fake_redis(self):
+        from unittest.mock import AsyncMock, MagicMock, patch
+
+        inner = MagicMock()
+        inner.get = AsyncMock(return_value="v")
+        inner.set = AsyncMock()
+        inner.delete = AsyncMock(return_value=1)
+        inner.exists = AsyncMock(return_value=1)
+        inner.expire = AsyncMock(return_value=True)
+        inner.incr = AsyncMock(return_value=2)
+        inner.ttl = AsyncMock(return_value=10)
+        inner.zadd = AsyncMock(return_value=1)
+        inner.zremrangebyscore = AsyncMock(return_value=1)
+        inner.zcard = AsyncMock(return_value=1)
+        inner.close = AsyncMock()
+        pipe = MagicMock()
+        pipe.execute = AsyncMock(return_value=["ok"])
+        for name in (
+            "zremrangebyscore",
+            "zcard",
+            "zadd",
+            "expire",
+            "incr",
+            "get",
+            "set",
+            "delete",
+            "exists",
+        ):
+            setattr(pipe, name, MagicMock())
+        inner.pipeline = MagicMock(return_value=pipe)
+
+        pool = MagicMock()
+        pool.disconnect = AsyncMock()
+
+        with (
+            patch("redis.asyncio.ConnectionPool.from_url", return_value=pool),
+            patch("redis.asyncio.Redis", return_value=inner),
+        ):
+            from app.core.redis import RealRedis
+
+            instance = RealRedis("redis://localhost:6379/0")
+        instance._pipe = pipe
+        return instance
+
+    @pytest.mark.asyncio
+    async def test_delegates(self, fake_redis):
+        assert await fake_redis.get("k") == "v"
+        assert await fake_redis.set("k", "v", ex=1) is None
+        assert await fake_redis.delete("k") == 1
+        assert await fake_redis.exists("k") is True
+        assert await fake_redis.expire("k", 1) is True
+        assert await fake_redis.incr("k") == 2
+        assert await fake_redis.ttl("k") == 10
+        assert await fake_redis.zadd("z", {"a": 1.0}) == 1
+        assert await fake_redis.zremrangebyscore("z", 0, 1) == 1
+        assert await fake_redis.zcard("z") == 1
+
+    @pytest.mark.asyncio
+    async def test_pipeline_all_commands(self, fake_redis):
+        cmds = [
+            ("zremrangebyscore", "z", 0, 1),
+            ("zcard", "z"),
+            ("zadd", "z", {"a": 1.0}),
+            ("expire", "k", 10),
+            ("incr", "c"),
+            ("get", "k"),
+            ("set", "k", "v", 5),
+            ("delete", "k"),
+            ("exists", "k"),
+        ]
+        result = await fake_redis.pipeline_exec(cmds)
+        assert result == ["ok"]
+
+    @pytest.mark.asyncio
+    async def test_close(self, fake_redis):
+        await fake_redis.close()
+
+
+class TestCreateRedis:
+    def test_local_without_url(self, monkeypatch):
+        from app.core import redis as redis_mod
+
+        monkeypatch.setattr(redis_mod.settings, "ENVIRONMENT", "local", raising=False)
+        monkeypatch.setattr(redis_mod.settings, "REDIS_URL", "", raising=False)
+        assert isinstance(redis_mod._create_redis(), redis_mod.MemoryRedis)
+
+    def test_local_with_url(self, monkeypatch):
+        from unittest.mock import patch
+
+        from app.core import redis as redis_mod
+
+        monkeypatch.setattr(redis_mod.settings, "ENVIRONMENT", "local", raising=False)
+        monkeypatch.setattr(redis_mod.settings, "REDIS_URL", "redis://u:p@h:6379/0", raising=False)
+        with patch.object(redis_mod, "RealRedis") as mock_real:
+            redis_mod._create_redis()
+        mock_real.assert_called_once()
+
+    def test_prod_without_url_raises(self, monkeypatch):
+        from app.core import redis as redis_mod
+
+        monkeypatch.setattr(redis_mod.settings, "ENVIRONMENT", "production", raising=False)
+        monkeypatch.setattr(redis_mod.settings, "REDIS_URL", "", raising=False)
+        with pytest.raises(ValueError, match="REDIS_URL"):
+            redis_mod._create_redis()
+
+    def test_prod_with_url(self, monkeypatch):
+        from unittest.mock import patch
+
+        from app.core import redis as redis_mod
+
+        monkeypatch.setattr(redis_mod.settings, "ENVIRONMENT", "production", raising=False)
+        monkeypatch.setattr(redis_mod.settings, "REDIS_URL", "redis://h:6379/0", raising=False)
+        with patch.object(redis_mod, "RealRedis") as mock_real:
+            redis_mod._create_redis()
+        mock_real.assert_called_once()
+
+
+class TestRedisManager:
+    def test_get_creates_singleton(self, monkeypatch):
+        from app.core import redis as redis_mod
+
+        manager = redis_mod._RedisManager()
+        created = []
+
+        def fake_create():
+            created.append(1)
+            return redis_mod.MemoryRedis()
+
+        monkeypatch.setattr(redis_mod, "_create_redis", fake_create)
+        a = manager.get()
+        b = manager.get()
+        assert a is b
+        assert len(created) == 1
+
+    @pytest.mark.asyncio
+    async def test_init_memory_noop(self, monkeypatch):
+        from unittest.mock import MagicMock
+
+        from app.core import redis as redis_mod
+
+        manager = redis_mod._RedisManager()
+        monkeypatch.setattr(redis_mod, "_create_redis", MagicMock(return_value=redis_mod.MemoryRedis()))
+        await manager.init()
+        assert isinstance(manager._instance, redis_mod.MemoryRedis)
+
+    @pytest.mark.asyncio
+    async def test_init_real_ping_success(self, monkeypatch):
+        from unittest.mock import AsyncMock, MagicMock
+
+        from app.core import redis as redis_mod
+
+        manager = redis_mod._RedisManager()
+        real = MagicMock(spec=redis_mod.RealRedis)
+        real.set = AsyncMock()
+        real.get = AsyncMock(return_value="pong")
+        real.close = AsyncMock()
+        monkeypatch.setattr(redis_mod, "_create_redis", MagicMock(return_value=real))
+        await manager.init()
+        assert manager._instance is real
+
+    @pytest.mark.asyncio
+    async def test_init_real_ping_fail_local_fallback(self, monkeypatch):
+        from unittest.mock import AsyncMock, MagicMock
+
+        from app.core import redis as redis_mod
+
+        manager = redis_mod._RedisManager()
+        real = MagicMock(spec=redis_mod.RealRedis)
+        real.set = AsyncMock(side_effect=ConnectionError("nope"))
+        real.get = AsyncMock()
+        real.close = AsyncMock()
+        monkeypatch.setattr(redis_mod, "_create_redis", MagicMock(return_value=real))
+        monkeypatch.setattr(redis_mod.settings, "ENVIRONMENT", "local", raising=False)
+        await manager.init()
+        assert isinstance(manager._instance, redis_mod.MemoryRedis)
+        real.close.assert_awaited_once()
+
+    @pytest.mark.asyncio
+    async def test_init_real_ping_fail_prod_raises(self, monkeypatch):
+        from unittest.mock import AsyncMock, MagicMock
+
+        from app.core import redis as redis_mod
+
+        manager = redis_mod._RedisManager()
+        real = MagicMock(spec=redis_mod.RealRedis)
+        real.set = AsyncMock(side_effect=ConnectionError("nope"))
+        real.get = AsyncMock()
+        real.close = AsyncMock()
+        monkeypatch.setattr(redis_mod, "_create_redis", MagicMock(return_value=real))
+        monkeypatch.setattr(redis_mod.settings, "ENVIRONMENT", "production", raising=False)
+        with pytest.raises(ConnectionError):
+            await manager.init()
+
+    @pytest.mark.asyncio
+    async def test_init_pong_mismatch(self, monkeypatch):
+        from unittest.mock import AsyncMock, MagicMock
+
+        from app.core import redis as redis_mod
+
+        manager = redis_mod._RedisManager()
+        real = MagicMock(spec=redis_mod.RealRedis)
+        real.set = AsyncMock()
+        real.get = AsyncMock(return_value="not-pong")
+        real.close = AsyncMock()
+        monkeypatch.setattr(redis_mod, "_create_redis", MagicMock(return_value=real))
+        monkeypatch.setattr(redis_mod.settings, "ENVIRONMENT", "local", raising=False)
+        await manager.init()
+        assert isinstance(manager._instance, redis_mod.MemoryRedis)
+
+    @pytest.mark.asyncio
+    async def test_close_resets(self, monkeypatch):
+        from unittest.mock import AsyncMock, MagicMock
+
+        from app.core import redis as redis_mod
+
+        manager = redis_mod._RedisManager()
+        inst = MagicMock()
+        inst.close = AsyncMock()
+        manager._instance = inst
+        await manager.close()
+        assert manager._instance is None
+        inst.close.assert_awaited_once()
+
+    @pytest.mark.asyncio
+    async def test_close_when_none(self):
+        from app.core import redis as redis_mod
+
+        manager = redis_mod._RedisManager()
+        await manager.close()
+
+
+class TestModuleHelpers:
+    @pytest.mark.asyncio
+    async def test_init_and_close_helpers(self, monkeypatch):
+        from unittest.mock import AsyncMock
+
+        from app.core import redis as redis_mod
+
+        monkeypatch.setattr(redis_mod.redis_manager, "init", AsyncMock())
+        await redis_mod.init_redis()
+        redis_mod.redis_manager.init.assert_awaited_once()
+
+        monkeypatch.setattr(redis_mod.redis_manager, "close", AsyncMock())
+        await redis_mod.close_redis()
+        redis_mod.redis_manager.close.assert_awaited_once()
+
+    def test_get_redis_returns_instance(self, monkeypatch):
+
+        from app.core import redis as redis_mod
+
+        sentinel = redis_mod.MemoryRedis()
+        monkeypatch.setattr(redis_mod.redis_manager, "_instance", sentinel)
+        assert redis_mod.get_redis() is sentinel
+        assert isinstance(sentinel, redis_mod.RedisClient)
