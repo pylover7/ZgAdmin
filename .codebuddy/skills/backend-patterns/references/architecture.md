@@ -54,6 +54,55 @@ backend/app/
 │   └── version.py        # 版本信息工具
 ```
 
+## 依赖注入速查
+
+| 依赖 | 定义位置 | 用途 |
+|------|---------|------|
+| `SessionDep` | `core/dependency.py` | `Annotated[Session, Depends(get_db)]`，数据库会话注入 |
+| `DependAuth` | `core/dependency.py` | 仅认证（`AuthControl.is_authed`），返回 `User` |
+| `DependPermission` | `core/dependency.py` | 认证 + 权限检查（比对 `(method, path)` 是否在角色绑定的 API 集合内） |
+| `DependUser` | `core/dependency.py` | `Annotated[User, DependAuth]`，直接注入当前用户 |
+| `DependRateLimit` | `core/dependency.py` | IP 级别限流（Redis 滑动窗口） |
+
+**认证要点**：
+- `AuthControl.is_authed` **要求 `Authorization` 头存在**（`Header(...)` 必填）→ **缺头时 FastAPI 先做参数校验返回 422，不是 401**；非法 token 才 401。
+- 超级管理员（`is_superuser=True`）**跳过所有权限检查**。
+- JWT 的 access / refresh 靠 payload 的 `token_type` 区分，类型不匹配即 401。
+- `CTX_USER_ID` 只在认证成功后设置（防审计日志脏数据）。
+
+## 统一响应格式
+
+```python
+Success(code=200, msg="OK", data=..., success=True)
+Fail(code=400, msg="Fail", data=None)
+SuccessExtra(code=200, data=..., total=0, currentPage=1, pageSize=20)  # 分页
+FailAuth(code=401, msg="Unauthorized")
+```
+
+**契约注意点**：
+- 路由函数**必须有显式 `return Success(...)`**——返回 `None` 会被转成非 200。
+- `Success` / `SuccessExtra` 是 starlette `Response` 子类，**直接调用端点函数时需 `json.loads(resp.body)`**，不能访问 `.success` / `.code` / `.data` 属性。
+- `Fail()` 默认返回 **HTTP 400**，响应体是 `{code, msg, data}`——**没有 `success` 字段**。
+
+## CRUDBase 方法签名
+
+`core/crud.py`，泛型 `CRUDBase[ModelType, CreateSchemaType, UpdateSchemaType]`：
+
+```python
+async def create(session, obj_in) -> ModelType
+async def delete(session, idList) -> bool          # 传 UUID 列表，不要 str() 包一层
+async def delete_all(session) -> int
+async def update(session, pk, obj_in) -> ModelType | None
+async def get(session, pk) -> ModelType | None
+async def get_latest(session) -> ModelType | None
+async def all(session) -> list[ModelType]
+async def list(session, currentPage, pageSize, where, order, options) -> tuple[int, list[ModelType]]
+```
+
+**另一模式：单行配置表**用 `ConfigController`（不继承 `CRUDBase`），实例见 `controllers/config.py`：
+`siteConfigController` / `oauthConfigController` / `emailConfigController` / `securityPolicyController`。
+消费方**不得裸解引用 `.first()` 的结果**（需 `or Model()` 就地兜底）。
+
 ## API 路由结构
 
 所有 API 以 `/api/v1` 为前缀，路由注册在 `app/api/v1/__init__.py`：

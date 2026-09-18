@@ -365,3 +365,62 @@ class TestRepairDirtyTables:
         self._repair(tmp_db_url)
 
         assert _snapshot_structure(tmp_db_url) == before, "自愈在完好的库上产生了结构改动"
+
+    def test_repaired_column_loses_constraints(self, tmp_db_url: str) -> None:
+        """⚠️ 补列语句**只带类型、不带约束**：补出来的列恒为可空、无默认值。
+
+        实现是 `col_type = column.type.compile(dialect)` →
+        `ALTER TABLE "t" ADD COLUMN "c" INTEGER`，模型上的 `nullable=False`
+        与 default 都不会出现。**库结构因此静默偏离模型定义**。
+
+        本测试锁定该现状，用途有二：
+        1. 它是「自愈掩盖漏迁移」的**加强版论据** —— 不仅列会被悄悄补上，
+           补出来的列**语义还与模型不符**；
+        2. 若将来有人给补列加上 `nullable` / default，本测试会变红，
+           提醒同步更新 `.codebuddy/rules/backend-architecture.md`「脏库自愈」一节。
+
+        用的是 `department.status`（模型为 `Field(default=0)` → `nullable=False`），
+        且其补列 SQL `ADD COLUMN "status" INTEGER` 在表非空时也**不会抛错**
+        （NOT NULL 约束未被带出，故不触发 SQLite「不给非空表加无默认值 NOT NULL 列」的限制）。
+        """
+        _alembic_ok(tmp_db_url, "upgrade", "head")
+
+        # 表非空：证明「有数据」也不影响补列成功（NOT NULL 未被带出，故不受 SQLite 限制）
+        engine = create_engine(tmp_db_url)
+        try:
+            with engine.begin() as conn:
+                conn.execute(
+                    text(
+                        "INSERT INTO department (id, name, sort, status, created_at) "
+                        "VALUES ('00000000-0000-0000-0000-000000000001', '老部门', 1, 1, '2024-01-01 00:00:00')"
+                    )
+                )
+                conn.execute(text("ALTER TABLE department DROP COLUMN status"))
+        finally:
+            engine.dispose()
+
+        assert "status" not in _snapshot_structure(tmp_db_url)["department"], "脏态构造失败：status 列仍存在"
+
+        # 自愈不应抛错（先前「撞 NOT NULL 失败」的假设是错的）
+        self._repair(tmp_db_url)
+
+        engine = create_engine(tmp_db_url)
+        try:
+            with engine.connect() as conn:
+                rows = conn.execute(text("PRAGMA table_info(department)")).all()
+        finally:
+            engine.dispose()
+
+        status_col = next((r for r in rows if r[1] == "status"), None)
+        assert status_col is not None, "自愈未补上缺失的列 status"
+
+        # PRAGMA table_info 列序：cid, name, type, notnull, dflt_value, pk
+        notnull, dflt_value = status_col[3], status_col[4]
+        assert notnull == 0, (
+            f"补列意外带上了 NOT NULL（notnull={notnull}）——"
+            "实现若已变更，请同步更新 .codebuddy/rules/backend-architecture.md"
+        )
+        assert dflt_value is None, (
+            f"补列意外带上了默认值（dflt_value={dflt_value!r}）——"
+            "实现若已变更，请同步更新 .codebuddy/rules/backend-architecture.md"
+        )
