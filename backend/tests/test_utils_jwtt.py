@@ -128,7 +128,6 @@ class TestOAuthState:
         assert verify_oauth_state("invalid_state_token", purpose="qq_login") is False
 
 
-
 class TestCreateTokenPair:
     @pytest.mark.asyncio
     async def test_creates_pair(self):
@@ -169,9 +168,7 @@ class TestValidateTokenAndGetUser:
         import hashlib
 
         token = create_access_token(
-            data=JWTPayload(
-                user_id="x", username="y", is_superuser=False, exp=datetime.now(UTC) + timedelta(hours=1)
-            )
+            data=JWTPayload(user_id="x", username="y", is_superuser=False, exp=datetime.now(UTC) + timedelta(hours=1))
         )
         await test_redis.set(f"token:blacklist:{hashlib.sha256(token.encode()).hexdigest()[:16]}", "1", ex=60)
         with pytest.raises(HTTPException) as exc:
@@ -182,9 +179,7 @@ class TestValidateTokenAndGetUser:
     @pytest.mark.asyncio
     async def test_expired_token(self, db, test_redis):
         token = create_access_token(
-            data=JWTPayload(
-                user_id="x", username="y", is_superuser=False, exp=datetime.now(UTC) - timedelta(hours=1)
-            )
+            data=JWTPayload(user_id="x", username="y", is_superuser=False, exp=datetime.now(UTC) - timedelta(hours=1))
         )
         with pytest.raises(HTTPException) as exc:
             await validate_token_and_get_user(token, db)
@@ -254,9 +249,7 @@ class TestBlacklistToken:
     @pytest.mark.asyncio
     async def test_expired_token_silently_skipped(self, test_redis):
         token = create_access_token(
-            data=JWTPayload(
-                user_id="x", username="y", is_superuser=False, exp=datetime.now(UTC) - timedelta(hours=1)
-            )
+            data=JWTPayload(user_id="x", username="y", is_superuser=False, exp=datetime.now(UTC) - timedelta(hours=1))
         )
         await blacklist_token(token)
 
@@ -269,9 +262,7 @@ class TestBlacklistToken:
         import hashlib
 
         token = create_access_token(
-            data=JWTPayload(
-                user_id="x", username="y", is_superuser=False, exp=datetime.now(UTC) + timedelta(hours=1)
-            )
+            data=JWTPayload(user_id="x", username="y", is_superuser=False, exp=datetime.now(UTC) + timedelta(hours=1))
         )
         await blacklist_token(token)
         key = f"token:blacklist:{hashlib.sha256(token.encode()).hexdigest()[:16]}"

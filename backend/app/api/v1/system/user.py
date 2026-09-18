@@ -73,7 +73,7 @@ async def list_user(
     if data.email:
         where.append(User.email == data.email)
     if data.deptId:
-        where.append(User.department_id == data.deptId)
+        where.append(User.department_id == UUID(data.deptId))
     where = and_(*where) if len(where) > 0 else None
     order = col(User.id).desc()
     total, user_objs = await userController.list(
@@ -93,7 +93,7 @@ async def get_user_roles_id_list(session: SessionDep, data: BaseModel):
     user_obj = await userController.get(session, data.id)
     if user_obj is None:
         return Fail(msg="没有这个用户")
-    result = [role.id for role in user_obj.roles]
+    result = [str(role.id) for role in user_obj.roles]
     return Success(msg="成功获取用户角色列表", data=result)
 
 

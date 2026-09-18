@@ -1,4 +1,5 @@
 """core/database.py 全链路单元测试 — init_data / _sync_api_routes / _ensure_admin / _ensure_configs"""
+
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
