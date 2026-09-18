@@ -209,3 +209,45 @@ describe("store/modules/user", () => {
     });
   });
 });
+
+// ─── 补充分支：QQ 登录失败、handRefreshToken 空数据/失败、hook ───
+import { useUserStoreHook } from "@/store/modules/user";
+
+describe("store/modules/user extra branches", () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    vi.clearAllMocks();
+  });
+
+  it("useUserStoreHook returns store instance", async () => {
+    const { useUserStore } = await import("@/store/modules/user");
+    expect(useUserStoreHook().$id).toBe(useUserStore().$id);
+  });
+
+  it("loginByQQ rejects on API error", async () => {
+    mockQQLogin.mockRejectedValue(new Error("qq fail"));
+    const { useUserStore } = await import("@/store/modules/user");
+    const store = useUserStore();
+    await expect(store.loginByQQ({ code: "c", state: "s" })).rejects.toThrow(
+      "qq fail"
+    );
+  });
+
+  it("handRefreshToken rejects when response is empty", async () => {
+    mockRefreshToken.mockResolvedValue(null);
+    const { useUserStore } = await import("@/store/modules/user");
+    const store = useUserStore();
+    await expect(
+      store.handRefreshToken({ refreshToken: "rt" })
+    ).rejects.toThrow("刷新令牌响应数据为空");
+  });
+
+  it("handRefreshToken rejects on API error", async () => {
+    mockRefreshToken.mockRejectedValue(new Error("refresh fail"));
+    const { useUserStore } = await import("@/store/modules/user");
+    const store = useUserStore();
+    await expect(
+      store.handRefreshToken({ refreshToken: "rt" })
+    ).rejects.toThrow("refresh fail");
+  });
+});

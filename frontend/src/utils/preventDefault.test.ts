@@ -112,3 +112,60 @@ describe("preventDefault", () => {
     // and tagName.toLowerCase() would need "img" for the check
   });
 });
+
+import { describe as _d2, it as _i2, expect as _e2, vi as _v2 } from "vitest";
+
+_d2("preventDefault extra", () => {
+  _i2("dragstart on <img> element is prevented", async () => {
+    const listeners: Array<{ event: string; handler: Function }> = [];
+    mockUseEventListener.mockImplementation(
+      (_t: any, event: string, handler: Function) => {
+        listeners.push({ event, handler });
+      }
+    );
+    const { addPreventDefault } = await import("@/utils/preventDefault");
+    addPreventDefault();
+    const drag = listeners.find(l => l.event === "dragstart")!;
+    const img = document.createElement("img");
+    const ev = { target: img, preventDefault: _v2.fn() };
+    drag.handler(ev);
+    _e2(ev.preventDefault).toHaveBeenCalled();
+  });
+
+  _i2("dragstart on non-img element is not prevented", async () => {
+    const listeners: Array<{ event: string; handler: Function }> = [];
+    mockUseEventListener.mockImplementation(
+      (_t: any, event: string, handler: Function) => {
+        listeners.push({ event, handler });
+      }
+    );
+    const { addPreventDefault } = await import("@/utils/preventDefault");
+    addPreventDefault();
+    const drag = listeners.find(l => l.event === "dragstart")!;
+    const div = document.createElement("div");
+    const ev = { target: div, preventDefault: _v2.fn() };
+    drag.handler(ev);
+    _e2(ev.preventDefault).not.toHaveBeenCalled();
+  });
+
+  _i2("isImgElement fallback when HTMLImageElement is undefined", async () => {
+    const listeners: Array<{ event: string; handler: Function }> = [];
+    mockUseEventListener.mockImplementation(
+      (_t: any, event: string, handler: Function) => {
+        listeners.push({ event, handler });
+      }
+    );
+    const original = (globalThis as any).HTMLImageElement;
+    (globalThis as any).HTMLImageElement = undefined;
+    try {
+      const mod = await import("@/utils/preventDefault");
+      mod.addPreventDefault();
+      const drag = listeners.find(l => l.event === "dragstart")!;
+      const imgLike = { tagName: "IMG", preventDefault: _v2.fn() };
+      drag.handler({ target: imgLike, preventDefault: _v2.fn() });
+      _e2(true).toBe(true);
+    } finally {
+      (globalThis as any).HTMLImageElement = original;
+    }
+  });
+});

@@ -58,3 +58,21 @@ describe("message utils", () => {
     expect(ElMessage.closeAll).toHaveBeenCalled();
   });
 });
+
+describe("message onClose closure", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("invokes provided onClose callback", () => {
+    const onClose = vi.fn();
+    message("hi", { onClose });
+    const arg = (ElMessage as any).mock.calls[0][0];
+    arg.onClose();
+    expect(onClose).toHaveBeenCalled();
+  });
+
+  it("handles non-function onClose gracefully", () => {
+    message("hi", { onClose: "not-a-function" as any });
+    const arg = (ElMessage as any).mock.calls[0][0];
+    expect(() => arg.onClose()).not.toThrow();
+  });
+});
