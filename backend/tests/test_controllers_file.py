@@ -1,4 +1,5 @@
 """controllers/file.py 单元测试 — 文件上传/删除/统计"""
+
 import os
 from uuid import uuid4
 
@@ -22,6 +23,7 @@ def file_engine():
 @pytest.fixture
 def file_session(file_engine):
     from sqlalchemy import event
+
     connection = file_engine.connect()
     transaction = connection.begin()
     session = Session(bind=connection, expire_on_commit=False)
@@ -43,11 +45,14 @@ def file_session(file_engine):
 # create_from_upload
 # ═══════════════════════════════════════════════════════════════════════
 
+
 class TestFileCreateFromUpload:
     @pytest.mark.asyncio
     async def test_upload_valid_image(self, file_session):
         # 创建最小 PNG 文件内容
-        png_content = b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x02\x00\x00\x00\x90wS\xde'
+        png_content = (
+            b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x02\x00\x00\x00\x90wS\xde"
+        )
         result = await fileController.create_from_upload(
             session=file_session,
             filename="test.png",
@@ -80,6 +85,7 @@ class TestFileCreateFromUpload:
     async def test_upload_oversized_file(self, file_session):
         # 临时修改 MAX_UPLOAD_SIZE
         from unittest.mock import patch
+
         with patch.object(settings, "MAX_UPLOAD_SIZE", 10):  # 10 bytes
             result = await fileController.create_from_upload(
                 session=file_session,
@@ -96,13 +102,18 @@ class TestFileCreateFromUpload:
 # delete_files
 # ═══════════════════════════════════════════════════════════════════════
 
+
 class TestFileDelete:
     @pytest.mark.asyncio
     async def test_delete_existing_file(self, file_session):
         # 先上传
         file_obj = File(
-            name="del.jpg", path="uploads/test/del.jpg", size=100,
-            mime_type="image/jpeg", file_type="image", extension="jpg",
+            name="del.jpg",
+            path="uploads/test/del.jpg",
+            size=100,
+            mime_type="image/jpeg",
+            file_type="image",
+            extension="jpg",
             uploader_id=uuid4(),
         )
         file_session.add(file_obj)
@@ -134,12 +145,17 @@ class TestFileDelete:
 # get_storage_stats
 # ═══════════════════════════════════════════════════════════════════════
 
+
 class TestFileStats:
     @pytest.mark.asyncio
     async def test_storage_stats(self, file_session):
         file_obj = File(
-            name="stat.jpg", path="uploads/test/stat.jpg", size=500,
-            mime_type="image/jpeg", file_type="image", extension="jpg",
+            name="stat.jpg",
+            path="uploads/test/stat.jpg",
+            size=500,
+            mime_type="image/jpeg",
+            file_type="image",
+            extension="jpg",
             uploader_id=uuid4(),
         )
         file_session.add(file_obj)

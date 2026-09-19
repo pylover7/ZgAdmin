@@ -1,4 +1,5 @@
 """core/dependency.py 单元测试 — AuthControl / PermissionControl / RateLimiter"""
+
 from datetime import UTC, datetime, timedelta
 from unittest.mock import Mock
 

@@ -207,3 +207,112 @@ describe("api/system", () => {
     expect(mockRequest).toHaveBeenCalledWith("get", "/api/v1/system/version");
   });
 });
+
+// ─── 补充：操作日志 / 系统日志 / 版本检查 ───
+import { describe as _d, it as _i, expect as _e, vi as _v } from "vitest";
+
+_d("systemApi extra", () => {
+  _i("getOperationLogsList posts to /monitor/logs/operation/list", () => {
+    mockRequest.mockClear();
+    systemApi.getOperationLogsList(["info"], null, 1, 15);
+    _e(mockRequest).toHaveBeenCalledWith(
+      "post",
+      "/api/v1/monitor/logs/operation/list",
+      {
+        data: { level: ["info"], operationTime: null },
+        params: { pageSize: 15, currentPage: 1 }
+      }
+    );
+  });
+
+  _i("deleteOperationLogs posts to delete", () => {
+    mockRequest.mockClear();
+    systemApi.deleteOperationLogs(["o1"]);
+    _e(mockRequest).toHaveBeenCalledWith(
+      "post",
+      "/api/v1/monitor/logs/operation/delete",
+      { data: ["o1"] }
+    );
+  });
+
+  _i("clearOperationLogs gets clear", () => {
+    mockRequest.mockClear();
+    systemApi.clearOperationLogs();
+    _e(mockRequest).toHaveBeenCalledWith(
+      "get",
+      "/api/v1/monitor/logs/operation/clear"
+    );
+  });
+
+  _i("getSystemLogsList posts to /monitor/logs/system/list", () => {
+    mockRequest.mockClear();
+    systemApi.getSystemLogsList("m", null, 1, 15);
+    _e(mockRequest).toHaveBeenCalledWith(
+      "post",
+      "/api/v1/monitor/logs/system/list",
+      {
+        data: { module: "m", operationTime: null },
+        params: { pageSize: 15, currentPage: 1 }
+      }
+    );
+  });
+
+  _i("deleteSystemLogs posts to delete", () => {
+    mockRequest.mockClear();
+    systemApi.deleteSystemLogs(["s1"]);
+    _e(mockRequest).toHaveBeenCalledWith(
+      "post",
+      "/api/v1/monitor/logs/system/delete",
+      { data: ["s1"] }
+    );
+  });
+
+  _i("clearSystemLogs gets clear", () => {
+    mockRequest.mockClear();
+    systemApi.clearSystemLogs();
+    _e(mockRequest).toHaveBeenCalledWith(
+      "get",
+      "/api/v1/monitor/logs/system/clear"
+    );
+  });
+
+  _i("checkUpdate gets check-update", () => {
+    mockRequest.mockClear();
+    systemApi.checkUpdate();
+    _e(mockRequest).toHaveBeenCalledWith(
+      "get",
+      "/api/v1/system/version/check-update"
+    );
+  });
+
+  _i("getLoginLogsList posts to /monitor/logs/login/list", () => {
+    mockRequest.mockClear();
+    systemApi.getLoginLogsList("", "", null, 1, 15);
+    _e(mockRequest).toHaveBeenCalledWith(
+      "post",
+      "/api/v1/monitor/logs/login/list",
+      {
+        data: { username: "", level: "", loginTime: null },
+        params: { pageSize: 15, currentPage: 1 }
+      }
+    );
+  });
+
+  _i("updateDept / getApiList / getRoleIds smoke", () => {
+    mockRequest.mockClear();
+    systemApi.updateDept({ id: "d1" });
+    systemApi.getApiList();
+    systemApi.getRoleIds("u1");
+    _e(mockRequest).toHaveBeenCalledTimes(3);
+  });
+});
+
+_d("systemApi extra 2", () => {
+  _i("updateRole / updateRoleStatus / updateMenu", () => {
+    mockRequest.mockClear();
+    systemApi.updateRole({ id: "r1" });
+    systemApi.updateRoleStatus({ id: "r1" });
+    systemApi.updateMenu({ id: "m1" });
+    _e(mockRequest).toHaveBeenCalledTimes(3);
+  });
+});

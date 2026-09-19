@@ -29,6 +29,7 @@ class TestGenerateCode:
 
     def test_uppercase_and_digits_only(self):
         import string
+
         valid_chars = set(string.ascii_uppercase + string.digits) - set("0O1I2Z5S8B")
         for _ in range(100):
             code = _generate_code()

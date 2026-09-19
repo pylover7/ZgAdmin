@@ -134,19 +134,66 @@
 - **静态清单（盘点报告）必然腐化，必须标注快照日期**：其保质期取决于下一次字段增删。**写盘点类文档必须标日期**，否则后来者会按过期结论行动。
 - **issue 描述会过期，处理前必须复现**：issue 里写的现象是「历史时点的现场」，可能已被别的改动悄悄修好。**读描述就动手会做无用功**。
 
+## 3.7 规则与实现不一致时，规则是负债
+
+- **一条与实现相反的规则，比没有规则更危险**：它会让排查者**主动排除掉正确的假设**（「文档说不阻断启动，那这次启动失败肯定是别的原因」）。**没有规则时人会去读代码，有错误规则时人不会。**
+- **判据**：写下任何「行为承诺」类规则（不阻断启动 / 不会抛错 / 自动兜底）时，**必须回读实现确认该承诺成立**。承诺类措辞的举证责任在写规则的人，不在读规则的人。
+- **通用来源**：「避开反模式」类规则容易写成**理想态**而非**现状描述**——必须区分「我们希望怎样」与「现在实际怎样」，两者混写即产生此类负债。
+
+## 3.8 「症状相似」≠「机制相同」：归因必须实测
+
+- **判据**：当某现象与已知教训**看起来是同一类**时，只能据此**提出假设**，不能据此**写出归因**。归因是一个独立的、需要单独验证的断言。
+- **反例（本次实际发生）**：已知「SQLite 上 `ADD COLUMN ... NOT NULL` 只在表非空时失败」→ 看到自愈会补列 → **推断**「自愈补列会撞 `NOT NULL` 抛错」，并写进规则文件。**实测发现自愈的补列 SQL 只带类型、根本不生成 `NOT NULL`，故不会抛错**——真实问题（补列静默丢失约束）与推断的问题**完全不同**。
+- **代价**：错误归因写进规则后，会让后来者按错误机制排查；且它会**污染同一条规则里的其他正确结论**（本次「函数无异常保护」是对的，被错误的失败路径示例拖累）。
+- **正解**：写归因前**先跑一次最小复现**（成本通常几分钟）。**「症状相似」提供的是排查方向，不是结论。**
+
+## 3.9 生命周期视角：写之前问「谁来删」
+
+- **判据**：一个修复让某条路径**产生更多数据**时，必须顺带问 **「这些数据在生命周期末端会被清理吗？」**——**数据的产生者可能是新加的，而清理者根本不存在**。
+- **推论**：**修复 A 问题可能「暴露」B 问题，而 B 一直存在，只是被 A 的症状掩盖**。因此修复类交付应含一句「本次修复新产生了哪些数据、它们在何处被回收」。
+- **与 3.3 的关系**：3.3 讲「**删之前**要说清删掉什么」，本条讲「**写之前**要问谁来删」——**两者都要求跨越「单个操作的边界」去看全生命周期**，缺一即只有半套视角。
+- **同族形态**（均为「某部分看起来完整但实际悬空」）：忘记生成迁移被脏库自愈掩盖、新增字段无消费方、有字段无归属。
+
+## 3.10 转义类安全工具的边界必须显式标注
+
+- **转义的完备性取决于「值所处的上下文」，不取决于「有没有调用转义函数」**：自建副本极易写出「对当前上下文够用、换上下文即失效」的残缺集合。
+- **`escapeHtml`（转义 `& < > " '`）的适用边界**：✅ 文本节点 / ⚠️ 带引号属性（可阻断闭合，但**伪协议如 `javascript:` 不在转义范围内**，调用方须另行校验协议）/ ❌ 不带引号属性 / ❌ 执行上下文。
+- **判据**：安全工具的价值不仅在于「功能正确」，还在于「**边界清晰**」——没有标注适用边界的转义函数，在被移动到新上下文时会**静默失效**。
+- **需要更强保证时改用 DOM API**（`textContent` / `setAttribute`），让浏览器负责转义，而不是自己拼字符串。
+- **优先「结构性消除」而非「约定性防御」**：删掉危险能力（如一个多余的开关）**严格优于**小心翼翼地使用它——没有开关就没有被误开的可能。
+
+## 3.11 mock 是「对实现的断言」，重构后必须跟着改
+
+- **判据**：mock 语句（`patch.object(模块, "被替换的名字")`）与被 mock 的**名字本身**，都是对「实现当前长什么样」的断言。**被测符号一旦重命名 / 被移除，所有指向它的 patch 都失去了意义**。
+- **两种失效形态（实测）**：
+  1. **显式失败**：`patch.object(target, "已删的名字")` 默认即抛 `AttributeError: <target> does not have the attribute '...'`。**注意 `create=False` 是 `patch.object` 的默认值**——网上常说的「patch 默认静默」**对本项目不成立**，不要据此推断「测试还在过所以符号还在」。
+  2. **语义漂移（真正的静默失败）**：名字仍存在，但**含义变了**——最典型的是把「工厂 / 构造器」mock 成 `MagicMock`。`create=True` 时才会在符号不存在时静默通过，掩盖脱节。
+- **典型案例**：测试里 `patch.object(模块, "Config")` 把 alembic 配置工厂 mock 成 `MagicMock`，被测代码随后 `ScriptDirectory.from_config(MagicMock)` → 报错 `Path doesn't exist: MagicMock/Config()...`。**报错文本里那个刺眼的 `MagicMock` 就是「你 mock 了不该 mock 的东西」的唯一提示**——若不去读实现，很容易误判为「路径配置错了」。
+- **更深一层的教训：mock 粒度决定了测试在重构后还剩多少价值**。同一个测试，可以选「只 mock 一个内部动作」或「mock 掉被测函数的整个依赖链」——后者在重构后只会**一半失效一半仍绿**，最危险。**正解：只替换「会触碰外部世界」的最小动作**（真实库 / 网络 / 时钟），其余路径跑真实实现，并让断言落在**真实产生的副作用**上。
+- **连带判据**：凡是测试里出现「上一个实现才有的名字」（`stamp` / `create_all` / 已删的参数），说明**测试与实现已经脱节**，是必改项而非「反正过了」。
+
 ---
 
 # 4. 具体技术教训
 
 ## 4.1 数据库与迁移
 
-- **`create_all` + `stamp` 模式：已存在表升级后不自动加列**：`create_all` 只建不存在的表，`stamp` 只标版本号不跑迁移 → 已有数据的环境升级新字段不会自动加。**判据：加字段后必须用 `PRAGMA table_info` 校验列是否真加上，不要只看版本号。**
-- 本项目 `init_data` 当前即处于该模式（`app/core/database.py:127` + `:145`），**但迁移链本身已实测完整可用**：空库 4 步跑通、往返对称、老库带数据升级后 19 表与模型零列差异。**之前「很可能与参考项目一样缺建表语句」的推断已被实测推翻。**
-- **当前真实缺口不是链断裂，而是缺回归护栏**：以上验证是一次性手工执行，无 `tests/test_alembic_migration_roundtrip.py`——代码改动后无人能自动发现链断裂。
+- **`init_data` 已改造为「版本检测 → alembic 执行」**：读 `alembic_version` 取版本（无表返回 `None`）→ `get_heads()` 取 head（多头显式抛错）→ 不一致才 `upgrade`，并执行脏库自愈 `_repair_dirty_tables`。原来的 `create_all` + `stamp` 已移除。
+- **自愈的边界**：只补**缺表**与**缺列**（`ALTER TABLE ADD COLUMN`）；**不处理列类型变更 / 列删除 / 约束变更**。它本身会掩盖「忘记生成迁移脚本」的错误，属兜底而非替代。
+- ⚠️ **补列 SQL 只带类型、不带约束（实测）**：实现为 `column.type.compile(dialect)` → `ALTER TABLE "t" ADD COLUMN "c" INTEGER`。模型的 `nullable=False` / default **都不会带出**，补出来的列恒为**可空、无默认值** → **库结构静默偏离模型定义**（有回归护栏：`test_repaired_column_loses_constraints`）。
+  - **推论：不要把 `NOT NULL` 当成自愈的失败路径**——自愈根本不生成该约束。SQLite「非空表不能加无默认值的 `NOT NULL` 列」这一限制只约束**手写迁移脚本**。曾据「症状相似」误推自愈会撞 `NOT NULL` 抛错，实测已推翻（见 3.8）。
+- ⚠️ **自愈函数无异常保护**：`_repair_dirty_tables()` 自身**没有 try/except**，其内部 SQL 抛错会冒泡打断 `init_data` → **服务启动失败**；`_upgrade_to_head()` 的 `command.upgrade()` 亦无保护（属有意设计）。**不得承诺「自愈失败不影响使用」**（缺列会让后续启动步骤直接抛错，「带病启动」做不到）。详见 3.7。
+- **回归护栏**：`backend/tests/test_alembic_migration_roundtrip.py`（9 场景：单头 / 空库 / 往返 / 老库升级 / 老库带数据保真 / 自愈三类）。**改迁移链、`init_data`、自愈逻辑后必须跑**。测试用 `subprocess` 跑 alembic，避免同进程内 `app.core.engine` 与 `env.py` 引擎指向不同库导致的错配假绿。
+- **`init_data` 会把 `ALEMBIC_DB_URL` 设为 `settings.SQLALCHEMY_DATABASE_URI`**（统一权威引擎，避免「检测一个库、升级另一个库」）。
+- **SQLite 上「结构跨版本升级」是空转**：链上结构变更实际只有 `582670eaa9ea`（建全部表）；`f9c9610dbf51` 是纯数据迁移（`UPDATE systemlog`）；`30bcfbeddb70` 在 `dialect.name == "sqlite"` 时直接 `return`。因此 **downgrade 到任何非 base 版本结构都不变**，真正的结构跨版本升级只能在 PostgreSQL 上验证。**SQLite 上有效的老库场景是「模型加了字段但库上缺列」→ 自愈**。
+- **`1e99a7fcad44` 是历史遗留的空迁移**（`upgrade`/`downgrade` 均 `pass`，原操作已并入基线）——**是既有事实不是缺陷**，但它是 `alembic downgrade -1` 无操作的原因。**新迁移不得为空**；历史空迁移不得为「补内容」而改其语义。
+- **迁移链只能追加，不得修改历史脚本的 `revision` / `down_revision` / `upgrade()` 语义**：已落过 `stamp` 版本的库会形成「同版本号、不同内容」的并存风险。
+- **`create_all` + `stamp` 的老问题（已消除）**：`create_all` 只建不存在的表、`stamp` 只标版本号不跑迁移 → 老库升级不会加新列。**判据：加字段后必须用 `PRAGMA table_info` 校验列是否真加上，不要只看版本号。**（历史记录：该模式曾被用于本项目，迁移链本身经实测完整可用，之前的「链缺建表语句」推断已被推翻。）
 - **迁移验证可用 `ALEMBIC_DB_URL` 环境变量指向临时库**（`alembic/env.py:27` 支持覆盖），无需改动 `.env`。
-- **`backend/.venv` 权限异常**：该目录可能无写权限（`uv run` 报 `Permission denied (os error 13)`），绕过方式为 `UV_PROJECT_ENVIRONMENT=/tmp/<name> uv run ...`，无需动原目录。
-- **构造测试数据前必须先查真实 schema**：`user` 表密码列名是 `password`（不是 `hashed_password`），且有多个 NOT NULL 无默认列（`sex` / `failed_status_count` 等）。**凭字段名推测会连续失败**。
-- SQLite 不支持 `DROP COLUMN`，需 `batch_alter_table(...)` 重建表；加 `NOT NULL` 列需 `server_default`。
+- **`sqlite` 分支的库路径硬编码**（`app/settings/database.py:23`），指向 `backend/static/zgadmin.sqlite`，**`DB_PATH` 对该分支不生效**。
+- **「开发库不存在」的结论极易失效**：`create_app()` 会 `mkdir`，`init_data` 会建库，**跑一次 `pytest` 就可能把 `static/zgadmin.sqlite` 建出来**。**凡断言「某物不存在」，在跑过任何写盘命令后必须重新验证。**
+- **构造测试数据前必须先查真实 schema**：`user` 表密码列名是 `password`（不是 `hashed_password`），计数字段是 `failed_login_count`（不是 `failed_status_count`），且有多个 NOT NULL 无默认列（`created_at` / `sex` / `failed_login_count` / `status` / `is_superuser`）。**凭字段名推测会连续失败**（本项目已因此踩坑三次）。
+- SQLite 不支持 `DROP COLUMN`，需 `batch_alter_table(...)` 重建表；加 `NOT NULL` 列需 `server_default`。**注意 Python 3.13 的实际 SQLite 版本可能已支持 `DROP COLUMN`**，但迁移脚本仍应按最小能力写。
 - `alembic history` 的输出折行会产生「多头」假象，**判断分支数必须用 `alembic heads`**。
 - 降级时若表结构不一致，手动改 `alembic_version` 回退版本号再 upgrade（**仅限临时库，开发库走重建流程**）。
 
@@ -183,14 +230,18 @@
 - `el-popconfirm` 的 `#reference` slot 内 `v-if` 会空 slot 报 `ElOnlyChild`，`v-if` 应放在 `el-popconfirm` 上。
 - **`el-select` 的 `model-value` 不在 options 中会回退显示原始值**而非 placeholder；规避：options 未加载时不渲染 el-select。
 - **非代码资源文件（YAML / JSON / 配置）改了之后，必须用「解析它 / 构建它」的方式验证**：typecheck / eslint / vitest 都**不解析** locale YAML 语法，三项全绿也可能是坏的——只有 `bun run build` 或独立解析脚本能发现。**别把「工具没报错」当成「文件没问题」。**
-- ReDialog 表单：`beforeSure` 必须经子组件 `defineExpose` 的 `getFormData()` 读实时数据，不能读 dialog 创建时的 props 快照。
+- **`dangerouslyUseHTMLString` 只允许在消息体确实含 HTML 标签时开启**（`ElMessageBox` / `ElNotification` 通用）：判据是**去掉该开关后消息渲染是否变形**——不变形即开关多余，**必须删除**；确需 HTML 时**每一个动态插入值必须转义**（尤其落在 `href` 等属性上下文时，还需**另做协议白名单校验**，转义挡不住 `javascript:` 伪协议）。**边界与理由见 3.8。**
+- **HTML 转义统一走 `@/utils/escapeHtml`，禁止在业务页面自建副本**；**该工具当前尚未创建**（遗留：需新增，边界须按 3.8 标注）。
+- ReDialog 表单：`beforeSure` 必须经子组件 `defineExpose()` 的 `getFormData()` 读实时数据，不能读 dialog 创建时的 props 快照。
 
 ## 4.6 测试基础设施
 
-- **后端测试**：`cd backend && uv run pytest`。当前 `pyproject.toml` **未设置 `asyncio_mode`**（async 测试需自行确认运行方式）与 **`fail_under` 覆盖率门槛**。
+- **后端测试**：`cd backend && uv run pytest`。`pyproject.toml` 的 `[tool.pytest.ini_options]` 只有 `testpaths` / `addopts`（`-v --tb=short`）/ `filterwarnings` / `markers`，**未设置 `asyncio_mode`**（async 测试需自行确认运行方式）、**未设置 `--cov`**、**未设置 `fail_under` 覆盖率门槛**。`backend/.coverage` 的更新**不是 pytest 自动产生的**——别把它当作「跑测试的必然副产物」，也别据此以为覆盖率是自动强制的。
 - **前端测试**：`cd frontend && bun run test`。
 - **⚠️ `conftest.py` 的共享 fixture 是 session 级的**：任何测试都**不得**对其做破坏性 DDL（删表等）。需要真实改结构的测试用独立临时引擎（`create_engine("sqlite:///:memory:")`），不要 patch 共享引擎。
 - **跨模块 / 跨会话污染时，单文件全绿不代表安全**：必须全量跑（SQLAlchemy mapper 配置、session 级引擎等均为全局状态）。
+- **⚠️ 测试与实现脱节的典型现场（`test_core_database.py::test_full_init`）**：该测试写于 `init_data` 的 `create_all` + `stamp` 时代，`init_data` 重构为「版本检测 → alembic 迁移」后，测试里残留 `patch.object(db_module, "Config")` 与 `mock_command.stamp.assert_called_once()`，随即报 `Path doesn't exist: MagicMock/Config()...`。**根因是合并时测试未随实现同步更新，不是实现回归**（证实手段：`git log --format="%h %ad %s" --date=short -- <文件>` 比对两者提交时间）。
+  - **修复原则**：只 patch 「会触碰外部世界的最小动作」（此处为 `_upgrade_to_head` / `_repair_dirty_tables`），**不要**再把整个依赖链 mock 掉——`_engine()`（`create_all` 建）仅作为写默认配置与同步路由的载体尚可接受，但它**不参与结构比对**，不能用来验证迁移。真实迁移路径的覆盖在 `test_alembic_migration_roundtrip.py`（subprocess + 独立临时库）。
 - **测试夹具撞 UUID 的坑**：fixture 若用 `uuid4()` 造目录名而 DB 记录用独立生成 id，两者不相等——凡直写按 DB id 拼的路径前必须 `mkdir`。
 - **mock 约定**：① 函数内 from-import 必须 patch **源模块**属性（patch 使用方命名空间无效）；② `with obj as x` 的 mock 需 `__enter__.return_value = obj` 自指；③ async 函数的测试要 `async def`，同步测试拿到 coroutine 必挂；④ mock asyncio 原语时 side_effect 必须消费已创建的实参协程（`coro.close()`），否则 GC 报 RuntimeWarning 且挂在无关测试上。
 - **pydantic 只读 property 不可 setattr 实例**：patch 须走类级替换。

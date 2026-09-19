@@ -107,3 +107,12 @@ describe("store/modules/permission", () => {
     });
   });
 });
+
+// ─── 补充分支：usePermissionStoreHook ───
+import { usePermissionStoreHook } from "@/store/modules/permission";
+
+describe("permission store hook", () => {
+  it("usePermissionStoreHook returns store instance", () => {
+    expect(usePermissionStoreHook().$id).toBe(usePermissionStore().$id);
+  });
+});

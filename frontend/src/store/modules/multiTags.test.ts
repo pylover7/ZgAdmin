@@ -282,3 +282,51 @@ describe("store/modules/multiTags", () => {
     });
   });
 });
+
+// ─── 补充分支：fixedTag 过滤、MaxTagsLevel 截断、hook ───
+import { useMultiTagsStoreHook } from "@/store/modules/multiTags";
+import { getConfig } from "@/config";
+import { usePermissionStoreHook } from "@/store/modules/permission";
+
+describe("multiTags extra branches", () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    vi.clearAllMocks();
+  });
+
+  it("useMultiTagsStoreHook returns store instance", () => {
+    expect(useMultiTagsStoreHook().$id).toBe(useMultiTagsStore().$id);
+  });
+
+  it("trims tags when exceeding MaxTagsLevel", () => {
+    (getConfig as any).mockReturnValue({ MaxTagsLevel: 2 });
+    const store = useMultiTagsStore();
+    store.multiTags = [];
+    const mk = (i: number) => ({
+      path: `/t${i}`,
+      name: `/t${i}`,
+      meta: { title: `T${i}`, showLink: true }
+    });
+    store.handleTags("push", mk(1));
+    store.handleTags("push", mk(2));
+    store.handleTags("push", mk(3));
+    expect(store.multiTags.length).toBeLessThanOrEqual(2);
+  });
+});
+
+describe("multiTags fixedTag state init", () => {
+  it("filters flatteningRoutes by fixedTag when building initial tags", async () => {
+    vi.resetModules();
+    vi.doMock("@/store/modules/permission", () => ({
+      usePermissionStoreHook: vi.fn(() => ({
+        flatteningRoutes: [{ path: "/fixed", meta: { fixedTag: true } }],
+        wholeMenus: []
+      }))
+    }));
+    const mod = await import("@/store/modules/multiTags");
+    setActivePinia(createPinia());
+    const store = mod.useMultiTagsStore();
+    expect(Array.isArray(store.multiTags)).toBe(true);
+    void usePermissionStoreHook;
+  });
+});

@@ -1,4 +1,5 @@
 """utils/password.py 单元测试 — 纯函数，无需 DB"""
+
 from app.utils.password import (
     generate_password,
     get_password_hash,

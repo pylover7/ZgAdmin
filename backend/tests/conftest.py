@@ -13,6 +13,7 @@
   使用全局 engine 写入不存在的日志表
 - MemoryRedis 替换全局 Redis 单例，确保 get_redis() 返回内存适配器
 """
+
 import os
 
 # 测试环境下关闭数据库日志写入，避免全局 engine 产生 no such table 错误
@@ -73,6 +74,7 @@ def create_test_app() -> FastAPI:
 # Session 级 fixtures
 # ═══════════════════════════════════════════════════════════════════════
 
+
 @pytest.fixture(scope="session")
 def test_engine():
     """Session 级 SQLite 内存引擎 — 所有表只创建一次"""
@@ -105,6 +107,7 @@ def test_redis():
 # ═══════════════════════════════════════════════════════════════════════
 # Function 级 fixtures
 # ═══════════════════════════════════════════════════════════════════════
+
 
 @pytest.fixture
 def db(test_engine):
@@ -151,6 +154,7 @@ def client(db, test_redis):
 
     # 全局替换 Redis 单例 — 因为部分代码直接调用 get_redis() 而非依赖注入
     import app.core.redis as redis_mod
+
     original_instance = redis_mod.redis_manager._instance
     redis_mod.redis_manager._instance = test_redis
 
@@ -169,6 +173,7 @@ def client(db, test_redis):
 # ═══════════════════════════════════════════════════════════════════════
 # 用户 / 认证 fixtures
 # ═══════════════════════════════════════════════════════════════════════
+
 
 @pytest.fixture
 def admin_user(db):

@@ -132,19 +132,22 @@ release_port() {
 }
 
 cleanup() {
+    # 保留调用方传入的退出码，避免把失败改写为成功（EXIT trap 传 $? 进来）
+    local exit_code="${1:-0}"
+
     # 1. 先取消 trap，防止 EXIT 重复触发形成循环
     trap - EXIT SIGINT SIGTERM
-    
+
     echo ""
     log_warn "正在停止服务..."
-    
+
     # 2. 向子进程的进程组发 SIGTERM（负 PID = 整个进程组）
     #    uv run / bun dev 会成为新进程组组长，PID 即 PGID
     for pid in "$BACKEND_PID" "$FRONTEND_PID"; do
         [ -n "$pid" ] || continue
         kill -- -"$pid" 2>/dev/null || kill "$pid" 2>/dev/null || true
     done
-    
+
     # 3. 轮询等待进程退出，最多 3 秒（进程退出快就立即继续）
     local deadline=$((SECONDS + 3))
     for pid in "$BACKEND_PID" "$FRONTEND_PID"; do
@@ -155,17 +158,64 @@ cleanup() {
         # 超时则强杀整个进程组
         kill -9 -- -"$pid" 2>/dev/null || kill -9 "$pid" 2>/dev/null || true
     done
-    
+
     # 4. 按端口兜底强制清理残余进程
     local pids
     pids=$(lsof -ti :"$BACKEND_PORT" -sTCP:LISTEN 2>/dev/null) && kill -9 $pids 2>/dev/null || true
     pids=$(lsof -ti :"$FRONTEND_PORT" -sTCP:LISTEN 2>/dev/null) && kill -9 $pids 2>/dev/null || true
-    
+
     log_info "所有服务已停止"
-    exit 0
+    exit "$exit_code"
 }
 
-trap cleanup SIGINT SIGTERM EXIT
+# EXIT 时把真实退出码透传给 cleanup，否则失败会被改写为 0
+trap 'cleanup $?' EXIT
+trap 'cleanup 130' SIGINT
+trap 'cleanup 143' SIGTERM
+
+# ──────────────────────── 依赖安装重试 ────────────────────────────────────────
+INSTALL_MAX_ATTEMPTS=3
+
+# 带重试的依赖安装：最多 3 次，间隔指数退避 2s → 4s
+# 前 N-1 次用静默模式（只回显末 3 行），最后一次去掉静默并保留完整输出，
+# 保证失败时错误信息可见而不是被 tail 截掉。
+# 用法: retry_install <名称> <静默命令> <详细命令> [失败提示...]
+retry_install() {
+    local name="$1" quiet_cmd="$2" verbose_cmd="$3"
+    shift 3
+    local hints=("$@")
+
+    local attempt=1 delay=2
+    while [ "$attempt" -le "$INSTALL_MAX_ATTEMPTS" ]; do
+        if [ "$attempt" -gt 1 ]; then
+            log_warn "$name 依赖安装第 $attempt/$INSTALL_MAX_ATTEMPTS 次尝试..."
+        fi
+
+        # 用 PIPESTATUS 取真实命令的退出码，避免被 tail 吞掉
+        if [ "$attempt" -lt "$INSTALL_MAX_ATTEMPTS" ]; then
+            eval "$quiet_cmd" 2>&1 | tail -3
+            if [ "${PIPESTATUS[0]}" -eq 0 ]; then
+                return 0
+            fi
+            log_warn "$name 依赖安装失败（第 $attempt/$INSTALL_MAX_ATTEMPTS 次），${delay}s 后重试..."
+            sleep "$delay"
+            delay=$((delay * 2))
+        else
+            # 最后一次：完整输出，便于定位真实原因
+            log_warn "最后一次尝试 — 显示完整安装输出"
+            if eval "$verbose_cmd"; then
+                return 0
+            fi
+        fi
+        attempt=$((attempt + 1))
+    done
+
+    log_error "$name 依赖安装失败，已重试 $INSTALL_MAX_ATTEMPTS 次"
+    for hint in "${hints[@]}"; do
+        log_info "$hint"
+    done
+    return 1
+}
 
 # ──────────────────────── 后端 ────────────────────────────────────────────────
 run_backend() {
@@ -175,7 +225,10 @@ run_backend() {
     release_port "$BACKEND_PORT"
     log_step "安装后端依赖..."
     cd "$BACKEND_DIR"
-    uv sync --no-dev --quiet 2>&1 | tail -3
+    retry_install "后端" \
+        "uv sync --no-dev --quiet" \
+        "uv sync --no-dev" \
+        "网络原因可尝试切换镜像源: uv sync --index-url <镜像地址>" || exit 1
     log_step "启动后端 (端口 $BACKEND_PORT)..."
     PYTHONUNBUFFERED=1 uv run python main.py &
     BACKEND_PID=$!
@@ -189,7 +242,10 @@ run_frontend() {
     release_port "$FRONTEND_PORT"
     log_step "安装前端依赖..."
     cd "$FRONTEND_DIR"
-    bun install --silent 2>&1 | tail -3
+    retry_install "前端" \
+        "bun install --silent" \
+        "bun install" \
+        "网络原因可尝试切换镜像源: bun install --registry <镜像地址>" || exit 1
     log_step "启动前端 (端口 $FRONTEND_PORT)..."
     bun dev &
     FRONTEND_PID=$!
@@ -199,12 +255,18 @@ run_frontend() {
 sync_deps() {
     log_step "安装后端依赖..."
     cd "$BACKEND_DIR"
-    uv sync --no-dev
+    retry_install "后端" \
+        "uv sync --no-dev --quiet" \
+        "uv sync --no-dev" \
+        "网络原因可尝试切换镜像源: uv sync --index-url <镜像地址>" || exit 1
     log_info "后端依赖安装完成"
 
     log_step "安装前端依赖..."
     cd "$FRONTEND_DIR"
-    bun install
+    retry_install "前端" \
+        "bun install --silent" \
+        "bun install" \
+        "网络原因可尝试切换镜像源: bun install --registry <镜像地址>" || exit 1
     log_info "前端依赖安装完成"
 
     echo ""

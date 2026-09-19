@@ -1,4 +1,5 @@
 """core/middlewares.py 单元测试 — IP 过滤中间件"""
+
 import json
 from unittest.mock import AsyncMock, Mock, patch
 
@@ -64,14 +65,97 @@ class TestIPFilterMiddleware:
 
     @pytest.mark.asyncio
     async def test_get_rules_empty_cache(self, middleware):
-        """Redis 无缓存 → 返回空列表（因为测试 DB 无数据）"""
+        """Redis 无缓存 → 回源数据库，测试 DB 无数据时返回空列表并回写缓存"""
+        from sqlmodel import create_engine
+        from sqlmodel.pool import StaticPool
+
+        import app.core as core_module
+
+        engine = create_engine(
+            "sqlite://",
+            connect_args={"check_same_thread": False},
+            poolclass=StaticPool,
+        )
+        from sqlmodel import SQLModel
+
+        from app.models.security import IPRule  # noqa: F401
+
+        SQLModel.metadata.create_all(engine)
+
         mock_redis = AsyncMock()
         mock_redis.get = AsyncMock(return_value=None)
         mock_redis.set = AsyncMock()
 
-        with patch("app.core.middlewares.get_redis", return_value=mock_redis):
+        with (
+            patch("app.core.middlewares.get_redis", return_value=mock_redis),
+            patch.object(core_module, "engine", engine),
+        ):
             rules = await middleware._get_rules()
-        assert isinstance(rules, list)
+
+        assert rules == []
+        mock_redis.set.assert_awaited_once()
+
+    @pytest.mark.asyncio
+    async def test_get_rules_from_database(self, middleware):
+        """Redis 无缓存 → 回源数据库读取活跃规则"""
+        from sqlmodel import Session, SQLModel, create_engine
+        from sqlmodel.pool import StaticPool
+
+        import app.core as core_module
+        from app.models.security import IPRule
+
+        engine = create_engine(
+            "sqlite://",
+            connect_args={"check_same_thread": False},
+            poolclass=StaticPool,
+        )
+        SQLModel.metadata.create_all(engine)
+
+        with Session(engine) as session:
+            session.add(IPRule(ip_cidr="9.9.9.9", rule_type="blacklist", is_active=True))
+            session.add(IPRule(ip_cidr="8.8.8.8", rule_type="whitelist", is_active=False))
+            session.commit()
+
+        mock_redis = AsyncMock()
+        mock_redis.get = AsyncMock(return_value=None)
+        mock_redis.set = AsyncMock()
+
+        with (
+            patch("app.core.middlewares.get_redis", return_value=mock_redis),
+            patch.object(core_module, "engine", engine),
+        ):
+            rules = await middleware._get_rules()
+
+        assert len(rules) == 1
+        assert rules[0]["ip_cidr"] == "9.9.9.9"
+
+    @pytest.mark.asyncio
+    async def test_get_rules_broken_cache(self, middleware):
+        """Redis 缓存内容非法 JSON → 忽略缓存并回源数据库"""
+        from sqlmodel import SQLModel, create_engine
+        from sqlmodel.pool import StaticPool
+
+        import app.core as core_module
+        from app.models.security import IPRule  # noqa: F401
+
+        engine = create_engine(
+            "sqlite://",
+            connect_args={"check_same_thread": False},
+            poolclass=StaticPool,
+        )
+        SQLModel.metadata.create_all(engine)
+
+        mock_redis = AsyncMock()
+        mock_redis.get = AsyncMock(return_value="{not-json")
+        mock_redis.set = AsyncMock()
+
+        with (
+            patch("app.core.middlewares.get_redis", return_value=mock_redis),
+            patch.object(core_module, "engine", engine),
+        ):
+            rules = await middleware._get_rules()
+
+        assert rules == []
 
     @pytest.mark.asyncio
     async def test_before_request_health_path(self, middleware):
@@ -113,7 +197,7 @@ class TestIPFilterMiddleware:
         req.client = Mock()
         req.client.host = "1.2.3.4"
 
-        with patch.object(middleware, '_get_rules', new_callable=AsyncMock, return_value=[]):
+        with patch.object(middleware, "_get_rules", new_callable=AsyncMock, return_value=[]):
             result = await middleware.before_request(req)
         assert result == middleware.app
 
@@ -129,7 +213,7 @@ class TestIPFilterMiddleware:
         req.client.host = "10.0.0.1"
 
         rules = [{"ip_cidr": "10.0.0.1", "rule_type": "blacklist"}]
-        with patch.object(middleware, '_get_rules', new_callable=AsyncMock, return_value=rules):
+        with patch.object(middleware, "_get_rules", new_callable=AsyncMock, return_value=rules):
             result = await middleware.before_request(req)
         assert isinstance(result, JSONResponse)
         assert result.status_code == 403
@@ -146,7 +230,7 @@ class TestIPFilterMiddleware:
         req.client.host = "10.0.0.1"
 
         rules = [{"ip_cidr": "192.168.1.0/24", "rule_type": "whitelist"}]
-        with patch.object(middleware, '_get_rules', new_callable=AsyncMock, return_value=rules):
+        with patch.object(middleware, "_get_rules", new_callable=AsyncMock, return_value=rules):
             result = await middleware.before_request(req)
         assert isinstance(result, JSONResponse)
         assert result.status_code == 403
@@ -161,7 +245,7 @@ class TestIPFilterMiddleware:
         req.client.host = "192.168.1.5"
 
         rules = [{"ip_cidr": "192.168.1.0/24", "rule_type": "whitelist"}]
-        with patch.object(middleware, '_get_rules', new_callable=AsyncMock, return_value=rules):
+        with patch.object(middleware, "_get_rules", new_callable=AsyncMock, return_value=rules):
             result = await middleware.before_request(req)
         assert result == middleware.app
 
@@ -174,7 +258,7 @@ class TestIPFilterMiddleware:
         req.client = Mock()
         req.client.host = "1.2.3.4"
 
-        with patch.object(middleware, '_get_rules', new_callable=AsyncMock, side_effect=Exception("DB error")):
+        with patch.object(middleware, "_get_rules", new_callable=AsyncMock, side_effect=Exception("DB error")):
             result = await middleware.before_request(req)
         assert result == middleware.app
 
@@ -183,6 +267,7 @@ class TestBackGroundTaskMiddleware:
     @pytest.mark.asyncio
     async def test_before_request(self):
         from app.core.bgtask import BgTasks
+
         middleware = BackGroundTaskMiddleware(Mock())
         req = Mock()
         with patch.object(BgTasks, "init_bg_tasks_obj", new_callable=AsyncMock):
@@ -191,6 +276,7 @@ class TestBackGroundTaskMiddleware:
     @pytest.mark.asyncio
     async def test_after_request(self):
         from app.core.bgtask import BgTasks
+
         middleware = BackGroundTaskMiddleware(Mock())
         req = Mock()
         with patch.object(BgTasks, "execute_tasks", new_callable=AsyncMock):

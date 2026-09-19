@@ -3,7 +3,7 @@ from pathlib import Path
 from pydantic_core import MultiHostUrl
 
 
-def db_engine(  # noqa: PLR0913
+def db_engine(  # noqa: PLR0913,PLR0917
     scheme: str = "sqlite", username: str = "", password: str = "", host: str = "", port: int = 5432, path: str = ""
 ) -> str:
     match scheme:

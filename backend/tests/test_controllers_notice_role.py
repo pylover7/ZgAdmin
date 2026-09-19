@@ -1,4 +1,5 @@
 """controllers/notice.py + controllers/role.py 单元测试"""
+
 from uuid import uuid4
 
 import pytest
@@ -23,6 +24,7 @@ def ctrl_engine():
 @pytest.fixture
 def ctrl_session(ctrl_engine):
     from sqlalchemy import event
+
     connection = ctrl_engine.connect()
     transaction = connection.begin()
     session = Session(bind=connection, expire_on_commit=False)
@@ -44,12 +46,17 @@ def ctrl_session(ctrl_engine):
 # NoticeController
 # ═══════════════════════════════════════════════════════════════════════
 
+
 class TestNoticeController:
     @pytest.mark.asyncio
     async def test_get_unread_count_empty(self, ctrl_session):
         user = User(
-            username="ncuser", nickname="NC", email="nc@test.com",
-            password=get_password_hash("Nc12345678"), phone="13800000100", remark="test",
+            username="ncuser",
+            nickname="NC",
+            email="nc@test.com",
+            password=get_password_hash("Nc12345678"),
+            phone="13800000100",
+            remark="test",
         )
         ctrl_session.add(user)
         ctrl_session.commit()
@@ -61,8 +68,12 @@ class TestNoticeController:
     @pytest.mark.asyncio
     async def test_get_unread_count_with_unread(self, ctrl_session):
         user = User(
-            username="ncuser2", nickname="NC2", email="nc2@test.com",
-            password=get_password_hash("Nc22345678"), phone="13800000101", remark="test",
+            username="ncuser2",
+            nickname="NC2",
+            email="nc2@test.com",
+            password=get_password_hash("Nc22345678"),
+            phone="13800000101",
+            remark="test",
         )
         ctrl_session.add(user)
         ctrl_session.commit()
@@ -80,8 +91,12 @@ class TestNoticeController:
     @pytest.mark.asyncio
     async def test_get_unread_list(self, ctrl_session):
         user = User(
-            username="ncuser3", nickname="NC3", email="nc3@test.com",
-            password=get_password_hash("Nc32345678"), phone="13800000102", remark="test",
+            username="ncuser3",
+            nickname="NC3",
+            email="nc3@test.com",
+            password=get_password_hash("Nc32345678"),
+            phone="13800000102",
+            remark="test",
         )
         ctrl_session.add(user)
         ctrl_session.commit()
@@ -97,8 +112,12 @@ class TestNoticeController:
     @pytest.mark.asyncio
     async def test_mark_as_read(self, ctrl_session):
         user = User(
-            username="ncuser4", nickname="NC4", email="nc4@test.com",
-            password=get_password_hash("Nc42345678"), phone="13800000103", remark="test",
+            username="ncuser4",
+            nickname="NC4",
+            email="nc4@test.com",
+            password=get_password_hash("Nc42345678"),
+            phone="13800000103",
+            remark="test",
         )
         ctrl_session.add(user)
         notice = Notice(title="read test", content="test", type=0, level="info", status=1)
@@ -115,8 +134,12 @@ class TestNoticeController:
     async def test_mark_as_read_duplicate(self, ctrl_session):
         """重复标记已读 → 返回 False"""
         user = User(
-            username="ncuser5", nickname="NC5", email="nc5@test.com",
-            password=get_password_hash("Nc52345678"), phone="13800000104", remark="test",
+            username="ncuser5",
+            nickname="NC5",
+            email="nc5@test.com",
+            password=get_password_hash("Nc52345678"),
+            phone="13800000104",
+            remark="test",
         )
         notice = Notice(title="dup read", content="test", type=0, level="info", status=1)
         ctrl_session.add(user)
@@ -132,8 +155,12 @@ class TestNoticeController:
     @pytest.mark.asyncio
     async def test_mark_all_as_read(self, ctrl_session):
         user = User(
-            username="ncuser6", nickname="NC6", email="nc6@test.com",
-            password=get_password_hash("Nc62345678"), phone="13800000105", remark="test",
+            username="ncuser6",
+            nickname="NC6",
+            email="nc6@test.com",
+            password=get_password_hash("Nc62345678"),
+            phone="13800000105",
+            remark="test",
         )
         ctrl_session.add(user)
         for i in range(3):
@@ -149,14 +176,21 @@ class TestNoticeController:
 # RoleController
 # ═══════════════════════════════════════════════════════════════════════
 
+
 class TestRoleController:
     @pytest.mark.asyncio
     async def test_update_menus(self, ctrl_session):
         role = Role(name="菜单角色", code="menu_role", status=0, remark="test")
         ctrl_session.add(role)
         menu = Menu(
-            parentId=None, menuType=0, title="测试菜单", name="TestMenu",
-            path="/test", component="", rank=1, showLink=True,
+            parentId=None,
+            menuType=0,
+            title="测试菜单",
+            name="TestMenu",
+            path="/test",
+            component="",
+            rank=1,
+            showLink=True,
         )
         ctrl_session.add(menu)
         ctrl_session.commit()

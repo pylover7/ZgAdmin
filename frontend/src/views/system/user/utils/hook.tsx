@@ -173,7 +173,6 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
         confirmButtonText: transformI18n("system.confirm"),
         cancelButtonText: transformI18n("system.cancel"),
         type: "warning",
-        dangerouslyUseHTMLString: true,
         draggable: true
       }
     )

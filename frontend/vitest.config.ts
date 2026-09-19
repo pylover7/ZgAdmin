@@ -22,6 +22,9 @@ export default defineConfig({
         "src/style/**",
         "src/assets/**",
         "src/types/**",
+        // 纯类型 / 纯 re-export 文件，无运行时代码
+        "src/store/types.ts",
+        "src/store/utils.ts",
         "src/views/**",
         "src/components/**",
         "src/layout/**",

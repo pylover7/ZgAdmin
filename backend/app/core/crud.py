@@ -60,7 +60,7 @@ class CRUDBase[ModelType: SQLModel, CreateSchemaType: SQLModel, UpdateSchemaType
     async def all(self, session: Session) -> list[ModelType]:
         return list(session.exec(select(self.model)).all())
 
-    async def list(  # noqa: PLR0913
+    async def list(  # noqa: PLR0913,PLR0917
         self,
         session: Session,
         currentPage: int = 1,
