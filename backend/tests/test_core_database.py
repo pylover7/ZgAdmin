@@ -148,16 +148,18 @@ class TestInitData:
             patch.object(db_module, "_ensure_admin", AsyncMock()),
             patch.object(db_module, "scheduler", mock_scheduler),
             patch.object(db_module, "check_dir_exists"),
-            patch.object(db_module, "command") as mock_command,
-            patch.object(db_module, "Config"),
+            # init_data 已改为「版本检测 → alembic 迁移」，不再走 create_all + stamp。
+            # 此处只替换「迁移执行」与「结构自愈」两个动作，使其不触碰真实库；
+            # 版本检测 / 默认配置 / 路由同步仍跑真实实现，故下面的断言才有意义。
+            patch.object(db_module, "_upgrade_to_head"),
+            patch.object(db_module, "_repair_dirty_tables"),
             patch.object(db_module.logging.config, "dictConfig"),
         ):
             await db_module.init_data(app)
 
         mock_scheduler.add_job.assert_called_once()
         mock_scheduler.start.assert_called_once()
-        mock_command.stamp.assert_called_once()
-        # init_data 内建表 + 默认配置 + 同步路由均生效
+        # 默认配置 + 同步路由均生效（本测试已将共享 engine 指向临时内存库）
         with Session(engine) as session:
             assert session.exec(select(SecurityPolicy)).first() is not None
             assert session.exec(select(Api).where(Api.path == "/api/v1/health")).first() is not None
