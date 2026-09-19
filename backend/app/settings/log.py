@@ -90,7 +90,7 @@ class Logger:
                 session=session, obj_in=SystemLogCreate(module=module, message=msg, level="debug")
             )
 
-    async def loginSuccess(self, username: str, ip: str, address: str, system: str, browser: str, behavior: int):  # noqa: PLR0913
+    async def loginSuccess(self, username: str, ip: str, address: str, system: str, browser: str, behavior: int):  # noqa: PLR0913,PLR0917
         self.loginLogger.success(
             self.loginType(behavior), user=username, ip=ip, address=address, system=system, browser=browser
         )
@@ -110,7 +110,7 @@ class Logger:
                 ),
             )
 
-    async def loginFail(self, username: str, ip: str, address: str, system: str, browser: str, behavior: int):  # noqa: PLR0913
+    async def loginFail(self, username: str, ip: str, address: str, system: str, browser: str, behavior: int):  # noqa: PLR0913,PLR0917
         self.loginLogger.error(
             self.loginType(behavior), user=username, ip=ip, address=address, system=system, browser=browser
         )

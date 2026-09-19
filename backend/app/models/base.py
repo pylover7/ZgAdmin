@@ -105,7 +105,7 @@ class Fail(JSONResponse):
 
 
 class SuccessExtra(JSONResponse):
-    def __init__(  # noqa: PLR0913
+    def __init__(  # noqa: PLR0913,PLR0917
         self,
         code: int = 200,
         success: bool = True,

@@ -1,6 +1,7 @@
 import { getSystemVersion, checkUpdate } from "@/api/system";
 import { onMounted, ref } from "vue";
 import { transformI18n } from "@/plugins/i18n";
+import { escapeForHtml, escapeHtml } from "@/utils/escapeHtml";
 import { ElMessage, ElNotification } from "element-plus";
 
 export function useColumns() {
@@ -39,8 +40,8 @@ export function useColumns() {
         dangerouslyUseHTMLString: true,
         message: `
           <div>
-            <p>${transformI18n("system.about.currentVersion")} ${res.data.current_version} → ${transformI18n("system.about.latestVersion")} ${res.data.latest_version}</p>
-            ${res.data.release_url ? `<p style="margin-top: 8px;"><a href="${res.data.release_url}" target="_blank" style="color: var(--el-color-primary)">${transformI18n("system.about.viewChangelog")}</a></p>` : ""}
+            <p>${transformI18n("system.about.currentVersion")} ${escapeHtml(res.data.current_version)} → ${transformI18n("system.about.latestVersion")} ${escapeHtml(res.data.latest_version)}</p>
+            ${res.data.release_url ? `<p style="margin-top: 8px;"><a href="${escapeForHtml(res.data.release_url, { isUrl: true })}" target="_blank" rel="noopener noreferrer" style="color: var(--el-color-primary)">${transformI18n("system.about.viewChangelog")}</a></p>` : ""}
             <p style="margin-top: 8px; color: var(--el-text-color-secondary); font-size: 13px;">${transformI18n("system.about.updateCommand")}：<code>bash scripts/update.sh</code></p>
           </div>
         `,

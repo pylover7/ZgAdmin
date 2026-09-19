@@ -2,19 +2,11 @@ $:
   vscode:
     - docker:
         image: docker.cnb.cool/pylover/tools/zgadmin:env
-        volumes:
-          - ./backend/.venv:rw
-          - ./backend/static:rw
-          - ./frontend/node_modules:rw
-          - ./docs/node_modules:rw
       runner:
         cpus: 8
       services:
         - docker
         - vscode
-      imports:
-        - https://cnb.cool/pylover/key/-/blob/main/deepseek.yml
-        - https://cnb.cool/pylover/key/-/blob/main/edgeone.yml
       stages:
         - name: ls
           script: ls -la
@@ -33,28 +25,6 @@ $:
           script: docker push ${IMAGE_TAG}
 
   tag_push:
-    - services:
-        - docker
-      docker:
-        volumes:
-          - /data/codewiki/${CNB_REPO_SLUG}:data
-      stages:
-        - name: generate codewiki
-          timeout: 10h
-          image: cnbcool/codewiki:latest
-          settings:
-            git_doc_dir: /data/codewiki/${CNB_REPO_SLUG}
-
-    - docker:
-        image: docker.cnb.cool/pylover/tools/zgadmin:env
-        volumes:
-          - ./docs/node_modules:rw
-      imports:
-        - https://cnb.cool/pylover/key/-/blob/main/edgeone.yml
-      stages:
-        - name: deploy docs
-          script: bash scripts/deploy-docs.sh
-
     # 构建 Docker 镜像并推送
     - services:
         - docker
@@ -68,11 +38,6 @@ main:
     - name: dependency-check
       docker:
         image: docker.cnb.cool/pylover/tools/zgadmin:env
-        volumes:
-          - ./backend/.venv:rw
-          - ./frontend/node_modules:rw
-      imports:
-        - https://cnb.cool/pylover/key/-/blob/main/deepseek.yml
       services:
         - docker
       stages:
@@ -92,11 +57,6 @@ main:
   vscode:
     - docker:
         image: docker.cnb.cool/pylover/tools/zgadmin:env
-        volumes:
-          - ./backend/.venv:r
-          - ./backend/static:r
-          - ./frontend/node_modules:r
-          - ./docs/node_modules:r
       runner:
         cpus: 8
       services:
